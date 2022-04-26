@@ -3,15 +3,18 @@ import dayjs from 'dayjs'
 import { createDirectoryIfNotExist, downloadFile } from './files'
 import { Config } from './config'
 
-const token = `5368390662:AAF8FgsLBYQFW53CB25Weoh5ZOuUI-DyTc0`
-
 export interface CustomContext extends Context {
   config: Config
 }
 
 export const createBot = (config: Config) => {
-  const bot = new Telegraf<CustomContext>(token)
-  bot.context.config = config
+  const bot = new Telegraf<CustomContext>(config.token)
+
+  // add config to context
+  bot.use((ctx, next) => {
+    ctx.config = config
+    return next()
+  })
 
   bot.start((ctx) => ctx.reply(`Welcome!`))
 

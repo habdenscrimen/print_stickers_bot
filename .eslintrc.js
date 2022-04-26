@@ -26,6 +26,7 @@ module.exports = {
     'import/no-unresolved': 0,
     camelcase: 0,
     'no-console': 0,
+    '@typescript-eslint/no-non-null-assertion': 0,
     // 'import/order': 2,
     // 'no-nested-ternary': 0,
     // '@typescript-eslint/ban-types': 0,

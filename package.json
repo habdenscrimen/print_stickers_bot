@@ -24,6 +24,7 @@
   "homepage": "https://github.com/habdenscrimen/print_stickers_bot#readme",
   "dependencies": {
     "dayjs": "^1.11.1",
+    "dotenv": "^16.0.0",
     "download": "^8.0.0",
     "telegraf": "^4.7.0"
   },

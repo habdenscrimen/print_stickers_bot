@@ -8,6 +8,8 @@ import {
   selectStickersScene,
   confirmStickersScene,
   questionsScene,
+  deliveryScene,
+  orderConfirmedScene,
 } from './scenes'
 
 export interface CustomContext extends Context {
@@ -26,6 +28,8 @@ export const createBot = (config: Config) => {
     selectStickersScene,
     confirmStickersScene,
     questionsScene,
+    deliveryScene,
+    orderConfirmedScene,
   ])
 
   // add config to context
@@ -50,6 +54,8 @@ export const createBot = (config: Config) => {
   bot.action(scenes.SELECT_STICKERS, (ctx) => ctx.scene.enter(scenes.SELECT_STICKERS))
   bot.action(scenes.CONFIRM_STICKERS, (ctx) => ctx.scene.enter(scenes.CONFIRM_STICKERS))
   bot.action(scenes.QUESTIONS, (ctx) => ctx.scene.enter(scenes.QUESTIONS))
+  bot.action(scenes.DELIVERY, (ctx) => ctx.scene.enter(scenes.DELIVERY))
+  bot.action(scenes.ORDER_CONFIRMED, (ctx) => ctx.scene.enter(scenes.ORDER_CONFIRMED))
 
   // bot.on('sticker', async (ctx) => {
   //   try {

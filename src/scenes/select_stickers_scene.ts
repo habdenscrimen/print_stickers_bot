@@ -10,6 +10,8 @@ export const selectStickersScene = new Scenes.BaseScene<CustomContext>(
 selectStickersScene.enter(async (ctx) => {
   console.debug('select stickers scene: enter')
 
+  // TODO: delete existing sticker set created by the bot
+
   // show "Select stickers" message with "Go back" button
   await ctx.reply(ctx.config.messages.scenes.selectStickers.enter, {
     reply_markup: {
@@ -24,6 +26,8 @@ selectStickersScene.enter(async (ctx) => {
 selectStickersScene.on('sticker', async (ctx) => {
   try {
     console.debug(`select stickers scene: got sticker`)
+
+    // TODO: check for duplicated sticker
 
     // confirm getting sticker
     await ctx.reply(ctx.config.messages.scenes.selectStickers.gotSticker, {

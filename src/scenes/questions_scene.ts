@@ -8,7 +8,7 @@ export const questionsScene = new Scenes.BaseScene<CustomContext>(scenes.QUESTIO
 questionsScene.enter(async (ctx) => {
   console.debug('questions scene: enter')
 
-  // show "FAQ" message with "Go back" button
+  // show the "FAQ" message with "Go back" button
   await ctx.reply(ctx.config.messages.scenes.questions.enter, {
     reply_markup: {
       inline_keyboard: [

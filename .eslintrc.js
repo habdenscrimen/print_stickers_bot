@@ -1,5 +1,5 @@
 module.exports = {
-  ignorePatterns: ['node_modules', 'dist', 'cache'],
+  ignorePatterns: ['node_modules', 'dist', 'cache', 'functions'],
   root: true,
   extends: [
     'airbnb',

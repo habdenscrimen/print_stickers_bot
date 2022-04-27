@@ -1,6 +1,4 @@
 import { Telegraf, Context, Scenes, session } from 'telegraf'
-import dayjs from 'dayjs'
-import { createDirectoryIfNotExist, downloadFile } from './files'
 import { Config } from './config'
 import {
   scenes,
@@ -34,8 +32,6 @@ export const createBot = (config: Config) => {
 
   // add config to context
   bot.use((ctx, next) => {
-    console.log('MIDDLEWARE')
-
     ctx.config = config
     return next()
   })

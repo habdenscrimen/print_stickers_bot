@@ -29,6 +29,8 @@ selectStickersScene.on('sticker', async (ctx) => {
 
     // TODO: check for duplicated sticker
 
+    // TODO: delete previous message (bot's message with button)
+
     // confirm getting sticker
     await ctx.reply(ctx.config.messages.scenes.selectStickers.gotSticker, {
       // add `finish` button

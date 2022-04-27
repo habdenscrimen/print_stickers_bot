@@ -1,8 +1,9 @@
 import 'dotenv/config'
+import * as functions from 'firebase-functions'
 
 export const config = {
-  filesDirectory: `./files`,
-  token: process.env.TOKEN!,
+  token: process.env.TOKEN || functions.config().telegrambot.token,
+  firebaseFunctionsRegion: 'europe-central2',
   messages: {
     scenes: {
       start: {

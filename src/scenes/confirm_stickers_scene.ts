@@ -22,10 +22,18 @@ confirmStickersScene.enter(async (ctx) => {
         [
           {
             text: ctx.config.messages.scenes.confirmStickers.clearStickers,
-            callback_data: scenes.SELECT_STICKERS,
+            callback_data: scenes.START,
           },
         ],
       ],
     },
   })
+})
+
+// leave the scene
+confirmStickersScene.leave(async (ctx) => {
+  console.debug('confirm stickers scene: leave')
+
+  // delete previous message
+  await ctx.deleteMessage()
 })

@@ -11,6 +11,8 @@ deliveryScene.enter(async (ctx) => {
   // TODO: get price from context
   const price = 200
 
+  // TODO: save delivery info somewhere
+
   await ctx.reply(ctx.config.messages.scenes.confirmStickers.enter, {
     reply_markup: {
       inline_keyboard: [

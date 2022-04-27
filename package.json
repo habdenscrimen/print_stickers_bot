@@ -9,7 +9,11 @@
     "check:eslint": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "check": "npm run check:format && npm run check:typescript && npm run check:eslint",
     "dev": "ts-node-dev --respawn ./src/index.ts",
-    "start": "ts-node ./src/index.ts"
+    "start": "ts-node ./src/index.ts",
+    "build": "rm -rf ./functions && tsc --build",
+    "firebase:logs": "firebase functions:log",
+    "firebase:serve": "npm run build && firebase emulators:start --only functions",
+    "firebase:deploy": "npm run build && cp package.json functions/package.json && firebase deploy --only functions"
   },
   "repository": {
     "type": "git",
@@ -27,6 +31,8 @@
     "dayjs": "^1.11.1",
     "dotenv": "^16.0.0",
     "download": "^8.0.0",
+    "firebase-admin": "^10.1.0",
+    "firebase-functions": "^3.20.1",
     "grammy": "^1.8.0",
     "telegraf": "^4.7.0"
   },

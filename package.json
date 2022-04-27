@@ -23,9 +23,11 @@
   },
   "homepage": "https://github.com/habdenscrimen/print_stickers_bot#readme",
   "dependencies": {
+    "@grammyjs/stateless-question": "^3.0.1",
     "dayjs": "^1.11.1",
     "dotenv": "^16.0.0",
     "download": "^8.0.0",
+    "grammy": "^1.8.0",
     "telegraf": "^4.7.0"
   },
   "devDependencies": {

@@ -4,6 +4,7 @@ import * as functions from 'firebase-functions'
 export const config = {
   token: process.env.TOKEN || functions.config().telegrambot.token,
   firebaseFunctionsRegion: 'europe-central2',
+  stickerCostUAH: 6,
   messages: {
     scenes: {
       start: {
@@ -21,11 +22,11 @@ export const config = {
       },
       delivery: {
         enter: (price: number) =>
-          `Дякую, сума замовлення (не враховуючи доставку): ${price} \n Напиши дані для доставки стікерів Новою Поштою (імʼя, номер телефону, місто і номер відділення/поштомату)`,
+          `Дякую, сума замовлення (не враховуючи доставку): ${price} грн \nНапиши дані для доставки стікерів Новою Поштою (імʼя, номер телефону, місто і номер відділення/поштомату)`,
         clearStickers: `Я помилився, відмінити замовлення`,
       },
       orderConfirmed: {
-        enter: `Дякую, прийняв замовлення ✅ \n Очікуйте відправку протягом 3 робочих днів`,
+        enter: `Супер, прийняв замовлення ✅ \nОчікуй відправку протягом 3 робочих днів`,
         goToStart: `Повернутися на початок`,
       },
       questions: {

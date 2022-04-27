@@ -10,13 +10,14 @@ export const confirmStickersScene = new Scenes.BaseScene<CustomContext>(
 confirmStickersScene.enter(async (ctx) => {
   console.debug('confirm stickers scene: enter')
 
+  // ask user to confirm stickers and show 2 buttons: "Confirm" and "Cancel"
   await ctx.reply(ctx.config.messages.scenes.confirmStickers.enter, {
     reply_markup: {
       inline_keyboard: [
         [
           {
             text: ctx.config.messages.scenes.confirmStickers.confirmStickers,
-            callback_data: scenes.ORDER_CONFIRMED,
+            callback_data: scenes.DELIVERY,
           },
         ],
         [

@@ -2,7 +2,9 @@ import { Scenes } from 'telegraf'
 import { CustomContext } from '../bot'
 import { scenes } from './scenes'
 
-export const orderConfirmedScene = new Scenes.BaseScene<CustomContext>(scenes.DELIVERY)
+export const orderConfirmedScene = new Scenes.BaseScene<CustomContext>(
+  scenes.ORDER_CONFIRMED,
+)
 
 // enter the scene
 orderConfirmedScene.enter(async (ctx) => {

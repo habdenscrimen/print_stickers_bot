@@ -27,7 +27,11 @@ selectStickersScene.on('sticker', async (ctx) => {
   try {
     console.debug(`select stickers scene: got sticker`)
 
-    // TODO: check for duplicated sticker
+    // add sticker id to session
+    const newStickerID = ctx.message.sticker.file_unique_id
+    const oldStickerIDs = ctx.session?.stickerIDs || []
+
+    ctx.session.stickerIDs = [...new Set([...oldStickerIDs, newStickerID])]
 
     // TODO: delete previous message (bot's message with button)
 

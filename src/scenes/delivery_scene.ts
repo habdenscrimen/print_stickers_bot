@@ -8,20 +8,12 @@ export const deliveryScene = new Scenes.BaseScene<CustomContext>(scenes.DELIVERY
 deliveryScene.enter(async (ctx) => {
   console.debug('delivery scene: enter')
 
-  // TODO: get price from context
-  const price = 200
+  // calculate price
+  const price = ctx.session.stickerIDs.length * ctx.config.stickerCostUAH
 
-  // TODO: save delivery info somewhere
-
-  await ctx.reply(ctx.config.messages.scenes.confirmStickers.enter, {
+  await ctx.reply(ctx.config.messages.scenes.delivery.enter(price), {
     reply_markup: {
       inline_keyboard: [
-        [
-          {
-            text: ctx.config.messages.scenes.delivery.enter(price),
-            callback_data: scenes.START,
-          },
-        ],
         [
           {
             text: ctx.config.messages.scenes.delivery.clearStickers,
@@ -31,4 +23,25 @@ deliveryScene.enter(async (ctx) => {
       ],
     },
   })
+})
+
+// listen for message with delivery address
+deliveryScene.on('message', async (ctx) => {
+  console.debug('delivery scene: got message')
+
+  // get delivery address
+  // @ts-expect-error
+  const deliveryAddress = ctx.message.text as string
+
+  // check if delivery address is valid
+  if (deliveryAddress.trim().length === 0) {
+    return
+  }
+
+  // save delivery address to session
+  ctx.session.deliveryAddress = deliveryAddress
+
+  // TODO: save delivery info to firebase storage
+
+  ctx.scene.enter(scenes.ORDER_CONFIRMED)
 })

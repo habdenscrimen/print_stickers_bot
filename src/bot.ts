@@ -19,6 +19,7 @@ export interface CustomContext extends Context {
     __scenes: SessionContext<SceneSession<SceneSessionData>>
     stickerIDs: string[]
     deliveryAddress: string
+    contact: string
   }
 }
 
@@ -49,7 +50,11 @@ export const createBot = (config: Config) => {
   bot.use(stage.middleware())
 
   // enter `START` scene
-  bot.start((ctx) => ctx.scene.enter(scenes.START))
+  bot.start(async (ctx) => {
+    ctx.session.contact = 'contact'
+
+    await ctx.scene.enter(scenes.START)
+  })
 
   // setup bot actions for navigating between scenes
   bot.action(scenes.START, (ctx) => ctx.scene.enter(scenes.START))
@@ -58,30 +63,6 @@ export const createBot = (config: Config) => {
   bot.action(scenes.DELIVERY, (ctx) => ctx.scene.enter(scenes.DELIVERY))
   bot.action(scenes.ORDER_CONFIRMED, (ctx) => ctx.scene.enter(scenes.ORDER_CONFIRMED))
   bot.action(scenes.QUESTIONS, (ctx) => ctx.scene.enter(scenes.QUESTIONS))
-
-  // bot.on('sticker', async (ctx) => {
-  //   try {
-  //     // TODO: refactor this
-  //     // create user directory
-  //     const { id, username, first_name, last_name } = ctx.message.from
-
-  //     const userDirectory = `${ctx.config.filesDirectory}/${
-  //       username || `${first_name} ${last_name}`
-  //     }_${id}_${dayjs(ctx.message.date * 1000).format('DD-MM-YYYY')}`
-
-  //     createDirectoryIfNotExist(userDirectory)
-
-  //     // get file link for downloading
-  //     const fileDownloadURL = await ctx.telegram.getFileLink(ctx.message.sticker.file_id)
-
-  //     // download file by url
-  //     await downloadFile(fileDownloadURL.href, ctx.message.sticker.file_id, userDirectory)
-
-  //     ctx.reply(`👍`)
-  //   } catch (error) {
-  //     console.error(`Failed to handle sticker message: ${error}`)
-  //   }
-  // })
 
   // Enable graceful stop
   process.once('SIGINT', () => bot.stop('SIGINT'))

@@ -27,6 +27,7 @@ module.exports = {
     camelcase: 0,
     'no-console': 0,
     '@typescript-eslint/no-non-null-assertion': 0,
+    'no-use-before-define': 0,
   },
   env: {
     node: true,

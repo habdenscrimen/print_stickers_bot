@@ -1,5 +1,7 @@
+import dayjs from 'dayjs'
 import { Scenes } from 'telegraf'
 import { CustomContext } from '../bot'
+import { saveFileToStorage } from '../firebase_storage'
 import { scenes } from './scenes'
 
 export const deliveryScene = new Scenes.BaseScene<CustomContext>(scenes.DELIVERY)
@@ -41,7 +43,14 @@ deliveryScene.on('message', async (ctx) => {
   // save delivery address to session
   ctx.session.deliveryAddress = deliveryAddress
 
-  // TODO: save delivery info to firebase storage
+  // convert delivery address to buffer
+  const deliveryAddressBuffer = Buffer.from(deliveryAddress, 'utf-8')
+
+  // save delivery info to firebase storage
+  const filePath = `${ctx.session.contact}/${dayjs(ctx.message.date * 1000).format(
+    'DD-MM-YYYY',
+  )}/delivery.txt`
+  await saveFileToStorage(filePath, deliveryAddressBuffer)
 
   ctx.scene.enter(scenes.ORDER_CONFIRMED)
 })

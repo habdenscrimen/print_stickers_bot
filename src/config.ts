@@ -6,12 +6,15 @@ const firebaseConfig = functions.config()
 export const config = {
   token: process.env.TOKEN || firebaseConfig.telegrambot.token,
   firebaseFunctionsRegion: 'europe-central2',
+  firebaseStorageBucket: `gs://print-stickers.appspot.com`,
   stickerCostUAH:
     process.env.STICKER_COST_UAH || firebaseConfig.telegrambot.sticker_cost_uah,
   messages: {
     scenes: {
       start: {
         enter: `Привіт! Надішли мені стікери, які хочеш роздрукувати, а далі я сам 😁`,
+        requestContact: ``,
+        requestContactNoUsername: ``,
       },
       selectStickers: {
         enter: `Надішли мені потрібні стікери`,

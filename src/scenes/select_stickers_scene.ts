@@ -35,7 +35,11 @@ selectStickersScene.on('sticker', async (ctx) => {
 
     // TODO(minor): delete previous message (bot's message with button)
 
-    // TODO: validate sticker type - animated stickers are not supported
+    // validate sticker type - animated stickers are not supported
+    if (ctx.message.sticker.is_animated || ctx.message.sticker.is_video) {
+      await ctx.reply(ctx.config.messages.animatedStickersNotSupported)
+      return
+    }
 
     // add sticker id to session
     const newStickerID = ctx.message.sticker.file_unique_id

@@ -1,14 +1,22 @@
 import admin from 'firebase-admin'
+// import firebaseApp from 'firebase/app'
+// import firebaseDatabase from 'firebase/database'
 import { config } from './config'
 
-// initFirebaseApp initializes firebase app
-export const initFirebaseApp = async () => {
-  admin.initializeApp({
+// initFirebaseApp initializes firebase admin (used for firebase storage and functions)
+export const initFirebaseAdmin = () => {
+  // init firebase admin
+  const app = admin.initializeApp({
     credential: admin.credential.applicationDefault(),
-    storageBucket: config.firebaseStorageBucket,
+    storageBucket: config.firebase.storageBucket,
+    databaseURL: config.firebase.databaseURL,
   })
 
-  console.debug('firebase app initialized')
+  // init database
+  const db = admin.database(app)
+
+  console.debug('firebase admin app and database initialized')
+  return { app, db }
 }
 
 // saveFileToStorage saves a file buffer to firebase storage

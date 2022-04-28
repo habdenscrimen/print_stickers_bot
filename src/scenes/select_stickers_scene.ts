@@ -45,13 +45,17 @@ selectStickersScene.on('sticker', async (ctx) => {
     const newStickerID = ctx.message.sticker.file_unique_id
     const oldStickerIDs = ctx.session?.stickerIDs || []
 
-    // if sticker already exists, don't add it again
-    if (!oldStickerIDs.includes(newStickerID)) {
-      ctx.session.stickerIDs = [...oldStickerIDs, newStickerID]
-
-      // get sticker and save it to firebase storage
-      getFileAndSaveToStorage(ctx.telegram, ctx.message, ctx.session.contact)
+    // check if sticker is already added
+    if (oldStickerIDs.includes(newStickerID)) {
+      ctx.reply(ctx.config.messages.scenes.selectStickers.duplicateSticker)
+      return
     }
+
+    // add sticker id to session
+    ctx.session.stickerIDs = [...oldStickerIDs, newStickerID]
+
+    // get sticker and save it to firebase storage
+    getFileAndSaveToStorage(ctx.telegram, ctx.message, ctx.session.userID)
 
     // confirm getting sticker
     await ctx.reply(ctx.config.messages.scenes.selectStickers.gotSticker, {
@@ -76,7 +80,7 @@ selectStickersScene.on('sticker', async (ctx) => {
 const getFileAndSaveToStorage = async (
   telegram: Telegram,
   message: Message.StickerMessage,
-  contact: string,
+  userID: number,
 ) => {
   // get file link for downloading
   const fileDownloadURL = await telegram.getFileLink(message.sticker.file_id)
@@ -85,7 +89,7 @@ const getFileAndSaveToStorage = async (
   const fileBuffer = await download(fileDownloadURL.href)
 
   // get data for saving file to firebase storage
-  const filePath = `${contact}/${dayjs(message.date * 1000).format('DD-MM-YYYY')}`
+  const filePath = `${userID}/${dayjs(message.date * 1000).format('DD-MM-YYYY')}`
   const randomFileName = nanoid(10)
   const fileExtension = fileDownloadURL.href.split('.').pop()
 

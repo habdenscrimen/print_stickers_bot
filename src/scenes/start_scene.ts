@@ -12,7 +12,7 @@ startScene.enter(async (ctx) => {
     reply_markup: {
       inline_keyboard: [
         [
-          { text: 'Обрати стікери', callback_data: scenes.SELECT_STICKERS },
+          { text: 'Обрати стікери', callback_data: scenes.REQUEST_CONTACT },
           { text: 'У мене є питання', callback_data: scenes.QUESTIONS },
         ],
       ],

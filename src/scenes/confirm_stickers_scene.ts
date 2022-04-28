@@ -10,6 +10,8 @@ export const confirmStickersScene = new Scenes.BaseScene<CustomContext>(
 confirmStickersScene.enter(async (ctx) => {
   console.debug('confirm stickers scene: enter')
 
+  // TODO: show temp sticker set created by the bot
+
   // ask user to confirm stickers and show 2 buttons: "Confirm" and "Cancel"
   await ctx.reply(ctx.config.messages.scenes.confirmStickers.enter, {
     reply_markup: {

@@ -1,6 +1,7 @@
 import { Telegraf, Context, Scenes, session } from 'telegraf'
 import { SceneSession, SceneSessionData } from 'telegraf/typings/scenes'
 import { SessionContext } from 'telegraf/typings/session'
+import { Database } from 'firebase-admin/database'
 import { Config } from './config'
 import {
   scenes,
@@ -10,6 +11,7 @@ import {
   questionsScene,
   deliveryScene,
   orderConfirmedScene,
+  requestContactScene,
 } from './scenes'
 
 export interface CustomContext extends Context {
@@ -19,12 +21,13 @@ export interface CustomContext extends Context {
     __scenes: SessionContext<SceneSession<SceneSessionData>>
     stickerIDs: string[]
     deliveryAddress: string
-    contact: string
+    userID: number
   }
+  database: Database
 }
 
 /** createBot creates a new bot */
-export const createBot = (config: Config) => {
+export const createBot = (config: Config, database: Database) => {
   // create a bot
   const bot = new Telegraf<CustomContext>(config.token)
 
@@ -36,11 +39,13 @@ export const createBot = (config: Config) => {
     questionsScene,
     deliveryScene,
     orderConfirmedScene,
+    requestContactScene,
   ])
 
   // add config to context
   bot.use((ctx, next) => {
     ctx.config = config
+    ctx.database = database
     return next()
   })
 
@@ -50,11 +55,7 @@ export const createBot = (config: Config) => {
   bot.use(stage.middleware())
 
   // enter `START` scene
-  bot.start(async (ctx) => {
-    ctx.session.contact = 'contact'
-
-    await ctx.scene.enter(scenes.START)
-  })
+  bot.start((ctx) => ctx.scene.enter(scenes.START))
 
   // setup bot actions for navigating between scenes
   bot.action(scenes.START, (ctx) => ctx.scene.enter(scenes.START))
@@ -63,6 +64,7 @@ export const createBot = (config: Config) => {
   bot.action(scenes.DELIVERY, (ctx) => ctx.scene.enter(scenes.DELIVERY))
   bot.action(scenes.ORDER_CONFIRMED, (ctx) => ctx.scene.enter(scenes.ORDER_CONFIRMED))
   bot.action(scenes.QUESTIONS, (ctx) => ctx.scene.enter(scenes.QUESTIONS))
+  bot.action(scenes.REQUEST_CONTACT, (ctx) => ctx.scene.enter(scenes.REQUEST_CONTACT))
 
   // Enable graceful stop
   process.once('SIGINT', () => bot.stop('SIGINT'))

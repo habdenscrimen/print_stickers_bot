@@ -47,7 +47,7 @@ deliveryScene.on('message', async (ctx) => {
   const deliveryAddressBuffer = Buffer.from(deliveryAddress, 'utf-8')
 
   // save delivery info to firebase storage
-  const filePath = `${ctx.session.contact}/${dayjs(ctx.message.date * 1000).format(
+  const filePath = `${ctx.session.userID}/${dayjs(ctx.message.date * 1000).format(
     'DD-MM-YYYY',
   )}/delivery.txt`
   await saveFileToStorage(filePath, deliveryAddressBuffer)

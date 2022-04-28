@@ -5,8 +5,11 @@ const firebaseConfig = functions.config()
 
 export const config = {
   token: process.env.TOKEN || firebaseConfig.telegrambot.token,
-  firebaseFunctionsRegion: 'europe-central2',
-  firebaseStorageBucket: `gs://print-stickers.appspot.com`,
+  firebase: {
+    functionsRegion: 'europe-central2',
+    storageBucket: `gs://print-stickers.appspot.com`,
+    databaseURL: `https://print-stickers-default-rtdb.europe-west1.firebasedatabase.app/`,
+  },
   stickerCostUAH:
     process.env.STICKER_COST_UAH || firebaseConfig.telegrambot.sticker_cost_uah,
   messages: {
@@ -16,10 +19,18 @@ export const config = {
         requestContact: ``,
         requestContactNoUsername: ``,
       },
+      // TODO: add real text
+      requestContact: {
+        enterWithUsername: `Мені потрібен контакт або юзернейм`,
+        enterWithoutUsername: `Мені обовʼязково потрібен контакт, у тебе немає юзернейму`,
+        requestContactButton: `Надати контакт`,
+        skipContactButton: `Мені і так ок`,
+      },
       selectStickers: {
-        enter: `Надішли мені потрібні стікери`,
+        enter: `Супер! Надішли мені потрібні стікери`,
         gotSticker: `Отримав ✅ \nПродовжуй надсилати стікери`,
         finish: `Це все`,
+        duplicateSticker: `Стікер уже доданий, пропускаю`,
       },
       confirmStickers: {
         enter: `Перевір, чи правильні стікери вибрані`,
@@ -36,6 +47,7 @@ export const config = {
         goToStart: `Повернутися на початок`,
       },
       questions: {
+        // TODO: add text
         enter: `FAQ 🤔`,
       },
     },

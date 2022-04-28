@@ -1,10 +1,13 @@
 import 'dotenv/config'
 import * as functions from 'firebase-functions'
 
+const firebaseConfig = functions.config()
+
 export const config = {
-  token: process.env.TOKEN || functions.config().telegrambot.token,
+  token: process.env.TOKEN || firebaseConfig.telegrambot.token,
   firebaseFunctionsRegion: 'europe-central2',
-  stickerCostUAH: 6,
+  stickerCostUAH:
+    process.env.STICKER_COST_UAH || firebaseConfig.telegrambot.sticker_cost_uah,
   messages: {
     scenes: {
       start: {

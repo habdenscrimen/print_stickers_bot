@@ -2,6 +2,7 @@ import { Scenes } from 'telegraf'
 import { CustomContext } from '../bot'
 import { checkIfUserContactExists, updateOrder, getOrder } from '../firebase_database'
 import { deleteFileFromStorage } from '../firebase_storage'
+import { deleteStickerSet } from '../sticker_set'
 import { scenes } from './scenes'
 
 export const startScene = new Scenes.BaseScene<CustomContext>(scenes.START)
@@ -31,7 +32,16 @@ startScene.enter(async (ctx) => {
       ctx.session.databaseOrderID = ''
     }
 
+    console.log('ctx.session.stickerSetName', ctx.session.stickerSetName)
+
+    // check if sticker set name is in session
+    if (ctx.session.stickerSetName) {
+      // delete all stickers from temp sticker set
+      await deleteStickerSet(ctx)
+    }
+
     // clear session data
+    ctx.session.stickerSetName = ''
     ctx.session.stickerIDs = []
     ctx.session.deliveryAddress = ''
 

@@ -1,5 +1,5 @@
 import { ReplyKeyboardMarkup } from 'typegram'
-import { Scenes } from 'telegraf'
+import { Markup, Scenes } from 'telegraf'
 import { CustomContext } from '../bot'
 import { scenes } from './scenes'
 import { saveUserContact } from '../firebase_database'
@@ -40,6 +40,7 @@ requestContactScene.enter(async (ctx) => {
   await ctx.reply(enterMessage, {
     reply_markup: {
       keyboard,
+      remove_keyboard: true,
       one_time_keyboard: true,
       resize_keyboard: true,
     },
@@ -101,6 +102,12 @@ requestContactScene.on('contact', async (ctx) => {
 // leave the scene
 requestContactScene.leave(async (ctx) => {
   console.debug('request contact scene: leave')
+
+  // show thanks message and remove keyboard
+  await ctx.reply(
+    ctx.config.messages.scenes.requestContact.thanksForContact,
+    Markup.removeKeyboard(),
+  )
 
   // delete previous message
   await ctx.deleteMessage()

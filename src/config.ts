@@ -25,9 +25,10 @@ export const config = {
         enterWithoutUsername: `Мені обовʼязково потрібен контакт, у тебе немає юзернейму`,
         requestContactButton: `Надати контакт`,
         skipContactButton: `Мені і так ок`,
+        thanksForContact: `Супер, дякую!`,
       },
       selectStickers: {
-        enter: `Супер! Надішли мені потрібні стікери`,
+        enter: `Надішли мені потрібні стікери`,
         gotSticker: `Отримав ✅ \nПродовжуй надсилати стікери`,
         finish: `Це все`,
         duplicateSticker: `Стікер уже доданий, пропускаю \nПродовжуй надсилати стікери`,

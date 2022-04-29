@@ -1,5 +1,7 @@
 import { Scenes } from 'telegraf'
 import { CustomContext } from '../bot'
+import { checkIfUserContactExists, updateOrder, getOrder } from '../firebase_database'
+import { deleteFileFromStorage } from '../firebase_storage'
 import { scenes } from './scenes'
 
 export const startScene = new Scenes.BaseScene<CustomContext>(scenes.START)
@@ -9,13 +11,32 @@ startScene.enter(async (ctx) => {
   try {
     console.debug('start scene: enter')
 
+    // check if there's order id in session
+    if (ctx.session.databaseOrderID) {
+      // get order from database
+      const order = await getOrder(ctx.database, ctx.session.databaseOrderID)
+
+      // check if order is not confirmed
+      if (order?.status === 'unconfirmed') {
+        // delete order files from storage
+        await deleteFileFromStorage(ctx.session.databaseOrderID)
+
+        // delete order from database
+        await updateOrder(ctx.database, ctx.session.databaseOrderID, {
+          status: 'cancelled',
+        })
+      }
+
+      // clear order id from session
+      ctx.session.databaseOrderID = ''
+    }
+
     // clear session data
     ctx.session.stickerIDs = []
     ctx.session.deliveryAddress = ''
 
-    // // check if contact exists in database
-    const snapshot = await ctx.database.ref(`users/${ctx.from!.id}`).get()
-    const contactExists = snapshot.exists()
+    // check if contact exists in database
+    const contactExists = await checkIfUserContactExists(ctx.database, ctx.from!.id)
 
     // if contact exists in database, save user id to session
     if (contactExists) {

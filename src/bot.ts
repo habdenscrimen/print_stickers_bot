@@ -23,6 +23,7 @@ export interface CustomContext extends Context {
     deliveryAddress: string
     userID: number
     stickerSetName: string
+    databaseOrderID: string
   }
   database: Database
 }

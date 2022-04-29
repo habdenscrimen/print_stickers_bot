@@ -2,6 +2,7 @@ import { ReplyKeyboardMarkup } from 'typegram'
 import { Scenes } from 'telegraf'
 import { CustomContext } from '../bot'
 import { scenes } from './scenes'
+import { saveUserContact } from '../firebase_database'
 
 export const requestContactScene = new Scenes.BaseScene<CustomContext>(
   scenes.REQUEST_CONTACT,
@@ -61,10 +62,9 @@ requestContactScene.on('text', async (ctx) => {
     ctx.session.userID = ctx.message.from.id
 
     // save user username to firebase database
-    await ctx.database.ref(`users/${ctx.message.from.id}`).update({
-      username: ctx.message.from.username,
+    await saveUserContact(ctx.database, ctx.message.from.id, {
+      username: ctx.message.from.username!,
     })
-    console.debug('successfully saved user username to database')
 
     // go to next scene
     await ctx.scene.enter(scenes.SELECT_STICKERS)
@@ -80,14 +80,15 @@ requestContactScene.on('contact', async (ctx) => {
     // update user id in session
     ctx.session.userID = ctx.message.contact.user_id!
 
+    const { phone_number, first_name, last_name, user_id } = ctx.message.contact
+
     // save user contact to database
-    await ctx.database.ref(`users/${ctx.message.contact.user_id}`).set({
-      phone_number: ctx.message.contact.phone_number,
-      username: ctx.message.from.username,
-      first_name: ctx.message.contact.first_name,
-      last_name: ctx.message.contact.last_name,
+    await saveUserContact(ctx.database, user_id!, {
+      username: ctx.message.from.username!,
+      phone_number,
+      first_name,
+      last_name,
     })
-    console.debug('successfully saved contact to database')
 
     // go to next scene
     await ctx.scene.enter(scenes.SELECT_STICKERS)

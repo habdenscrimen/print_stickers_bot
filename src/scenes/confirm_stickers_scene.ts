@@ -50,19 +50,6 @@ confirmStickersScene.enter(async (ctx) => {
 confirmStickersScene.leave(async (ctx) => {
   console.debug('confirm stickers scene: leave')
 
-  // get temp sticker set
-  const stickerSet = await ctx.telegram.getStickerSet(ctx.session.stickerSetName)
-
-  // delete all stickers from temp sticker set
-  const deleteStickersPromises = stickerSet.stickers.map((sticker) =>
-    ctx.telegram.deleteStickerFromSet(sticker.file_id),
-  )
-
-  await Promise.all(deleteStickersPromises)
-
-  // clear sticker set name
-  ctx.session.stickerSetName = ''
-
   // delete previous message
   await ctx.deleteMessage()
 })

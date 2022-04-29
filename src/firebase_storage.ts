@@ -32,3 +32,17 @@ export const saveFileToStorage = async (path: string, buffer: Buffer) => {
     console.error(`failed to save file to storage: ${error}`)
   }
 }
+
+/** deleteFileFromStorage deletes a file from firebase storage */
+export const deleteFileFromStorage = async (path: string) => {
+  try {
+    console.debug('deleting file from storage')
+
+    // delete file from storage
+    await admin.storage().bucket().deleteFiles({ prefix: path })
+
+    console.debug('successfully deleted file from storage')
+  } catch (error) {
+    console.error(`failed to delete file from storage: ${error}`)
+  }
+}

@@ -1,11 +1,11 @@
 import { Scenes, Telegram } from 'telegraf'
 import { nanoid } from 'nanoid'
 import download from 'download'
-import dayjs from 'dayjs'
 
 import { saveFileToStorage } from '../firebase_storage'
 import { CustomContext } from '../bot'
 import { scenes } from './scenes'
+import { createOrder } from '../firebase_database'
 
 export const selectStickersScene = new Scenes.BaseScene<CustomContext>(
   scenes.SELECT_STICKERS,
@@ -27,6 +27,7 @@ selectStickersScene.enter(async (ctx) => {
   })
 })
 
+// TODO: looks like shit, refactor it
 // handle getting sticker
 selectStickersScene.on('sticker', async (ctx) => {
   try {
@@ -74,16 +75,23 @@ selectStickersScene.on('sticker', async (ctx) => {
       ctx.message.sticker.file_id,
     )
 
-    // get data for saving file to firebase storage
-    const filePath = `${ctx.session.userID}/${dayjs(ctx.message.date * 1000).format(
-      'DD-MM-YYYY',
-    )}`
+    // create order if it doesn't exist
+    if (!ctx.session.databaseOrderID) {
+      const orderID = nanoid(10)
+      ctx.session.databaseOrderID = orderID
+
+      // create order
+      await createOrder(ctx.database, orderID, ctx.session.userID)
+    }
+
+    // generate random file name
     const randomFileName = nanoid(10)
 
     // save sticker to firebase storage
-    await saveFileToStorage(`${filePath}/${randomFileName}.${fileExtension}`, fileBuffer)
-
-    // add sticker to sticker set
+    await saveFileToStorage(
+      `${ctx.session.databaseOrderID}/${randomFileName}.${fileExtension}`,
+      fileBuffer,
+    )
 
     // if sticker set exists, add sticker to it
     if (ctx.session.stickerSetName) {
@@ -100,8 +108,10 @@ selectStickersScene.on('sticker', async (ctx) => {
     // if temp sticker set doesn't exist, create it
     const randomStickerSetID = Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000
 
+    // create sticker set name
     const stickerSetName = `print_stickers_${randomStickerSetID}_by_print_stickers_ua_bot`
 
+    // create sticker set
     await ctx.createNewStickerSet(stickerSetName, ctx.config.tempStickerSetName, {
       emojis: `😆`,
       png_sticker: ctx.message.sticker.file_id,

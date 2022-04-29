@@ -1,4 +1,3 @@
-import { Message } from 'telegraf/typings/core/types/typegram'
 import { Scenes, Telegram } from 'telegraf'
 import { nanoid } from 'nanoid'
 import download from 'download'
@@ -54,9 +53,6 @@ selectStickersScene.on('sticker', async (ctx) => {
     // add sticker id to session
     ctx.session.stickerIDs = [...oldStickerIDs, newStickerID]
 
-    // get sticker and save it to firebase storage
-    getFileAndSaveToStorage(ctx.telegram, ctx.message, ctx.session.userID)
-
     // confirm getting sticker
     await ctx.reply(ctx.config.messages.scenes.selectStickers.gotSticker, {
       // add `finish` button
@@ -71,32 +67,65 @@ selectStickersScene.on('sticker', async (ctx) => {
         ],
       },
     })
+
+    // download sticker file
+    const { fileBuffer, fileExtension } = await downloadStickerFile(
+      ctx.telegram,
+      ctx.message.sticker.file_id,
+    )
+
+    // get data for saving file to firebase storage
+    const filePath = `${ctx.session.userID}/${dayjs(ctx.message.date * 1000).format(
+      'DD-MM-YYYY',
+    )}`
+    const randomFileName = nanoid(10)
+
+    // save sticker to firebase storage
+    await saveFileToStorage(`${filePath}/${randomFileName}.${fileExtension}`, fileBuffer)
+
+    // add sticker to sticker set
+
+    // if sticker set exists, add sticker to it
+    if (ctx.session.stickerSetName) {
+      // add sticker to sticker set
+      await ctx.addStickerToSet(ctx.session.stickerSetName, {
+        emojis: `😆`,
+        png_sticker: ctx.message.sticker.file_id,
+      })
+
+      console.debug('successfully added sticker to temp sticker set')
+      return
+    }
+
+    // if temp sticker set doesn't exist, create it
+    const randomStickerSetID = Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000
+
+    const stickerSetName = `print_stickers_${randomStickerSetID}_by_print_stickers_ua_bot`
+
+    await ctx.createNewStickerSet(stickerSetName, ctx.config.tempStickerSetName, {
+      emojis: `😆`,
+      png_sticker: ctx.message.sticker.file_id,
+    })
+    ctx.session.stickerSetName = stickerSetName
+
+    console.debug('successfully created new temp sticker set')
   } catch (error) {
     console.error(`failed to handle sticker message: ${error}`)
   }
 })
 
-/** getFileAndSaveToStorage downloads sticker as file from Telegram server and uploads it to Firebase Storage */
-const getFileAndSaveToStorage = async (
-  telegram: Telegram,
-  message: Message.StickerMessage,
-  userID: number,
-) => {
+/** downloadStickerFile downloads sticker file */
+const downloadStickerFile = async (telegram: Telegram, stickerFileID: string) => {
+  console.debug(`downloading sticker file: ${stickerFileID}`)
+
   // get file link for downloading
-  const fileDownloadURL = await telegram.getFileLink(message.sticker.file_id)
+  const fileDownloadURL = await telegram.getFileLink(stickerFileID)
 
   // get file buffer
   const fileBuffer = await download(fileDownloadURL.href)
 
-  // get data for saving file to firebase storage
-  const filePath = `${userID}/${dayjs(message.date * 1000).format('DD-MM-YYYY')}`
-  const randomFileName = nanoid(10)
-  const fileExtension = fileDownloadURL.href.split('.').pop()
-
-  // save sticker to firebase storage
-  await saveFileToStorage(`${filePath}/${randomFileName}.${fileExtension}`, fileBuffer)
-
-  console.debug('successfully saved sticker to firebase storage')
+  console.debug('successfully download sticker file')
+  return { fileBuffer, fileExtension: fileDownloadURL.href.split('.').pop() }
 }
 
 // leave the scene

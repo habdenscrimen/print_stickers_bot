@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid'
 import { Scenes } from 'telegraf'
 import { CustomContext } from '../bot'
 import { scenes } from './scenes'
@@ -9,7 +10,11 @@ startScene.enter(async (ctx) => {
   try {
     console.debug('start scene: enter')
 
-    // check if contact exists in database
+    // clear session data
+    ctx.session.stickerIDs = []
+    ctx.session.deliveryAddress = ''
+
+    // // check if contact exists in database
     const snapshot = await ctx.database.ref(`users/${ctx.from!.id}`).get()
     const contactExists = snapshot.exists()
 

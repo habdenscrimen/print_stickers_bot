@@ -2,6 +2,7 @@ import { Scenes, Telegram } from 'telegraf'
 import { nanoid } from 'nanoid'
 import download from 'download'
 
+import { ExtraReplyMessage } from 'telegraf/typings/telegram-types'
 import { saveFileToStorage } from '../firebase_storage'
 import { CustomContext } from '../bot'
 import { scenes } from './scenes'
@@ -14,8 +15,6 @@ export const selectStickersScene = new Scenes.BaseScene<CustomContext>(
 // enter the scene
 selectStickersScene.enter(async (ctx) => {
   console.debug('select stickers scene: enter')
-
-  // TODO: delete existing sticker set created by the bot
 
   // show "Select stickers" message with "Go back" button
   await ctx.reply(ctx.config.messages.scenes.selectStickers.enter, {
@@ -37,7 +36,23 @@ selectStickersScene.on('sticker', async (ctx) => {
 
     // validate sticker type - animated stickers are not supported
     if (ctx.message.sticker.is_animated || ctx.message.sticker.is_video) {
-      await ctx.reply(ctx.config.messages.animatedStickersNotSupported)
+      const extra: ExtraReplyMessage = {}
+
+      // check if there are valid stickers
+      if (ctx.session.stickerIDs.length !== 0) {
+        extra.reply_markup = {
+          inline_keyboard: [
+            [
+              {
+                text: ctx.config.messages.scenes.selectStickers.finish,
+                callback_data: scenes.CONFIRM_STICKERS,
+              },
+            ],
+          ],
+        }
+      }
+
+      await ctx.reply(ctx.config.messages.animatedStickersNotSupported, extra)
       return
     }
 

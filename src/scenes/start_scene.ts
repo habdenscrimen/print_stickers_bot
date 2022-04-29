@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid'
 import { Scenes } from 'telegraf'
 import { CustomContext } from '../bot'
 import { scenes } from './scenes'
@@ -17,6 +16,11 @@ startScene.enter(async (ctx) => {
     // // check if contact exists in database
     const snapshot = await ctx.database.ref(`users/${ctx.from!.id}`).get()
     const contactExists = snapshot.exists()
+
+    // if contact exists in database, save user id to session
+    if (contactExists) {
+      ctx.session.userID = ctx.from!.id
+    }
 
     await ctx.reply(ctx.config.messages.scenes.start.enter, {
       reply_markup: {

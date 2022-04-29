@@ -23,14 +23,12 @@ interface Order {
 export const saveUserContact = async (
   db: Database,
   userID: number,
-  { username, first_name, last_name, phone_number }: UserContact,
+  userContact: UserContact,
 ) => {
   try {
     console.debug('saving user contact to database')
 
-    await db
-      .ref(`users/${userID}`)
-      .update({ phone_number, username, first_name, last_name })
+    await db.ref(`users/${userID}`).update(userContact)
 
     console.debug('successfully saved user contact to database')
   } catch (error) {

@@ -41,6 +41,7 @@ requestContactScene.enter(async (ctx) => {
     reply_markup: {
       keyboard,
       one_time_keyboard: true,
+      resize_keyboard: true,
     },
   })
 })

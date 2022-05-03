@@ -1,14 +1,7 @@
-// import * as functions from 'firebase-functions'
-// import admin from 'firebase-admin'
-// import { Database } from 'firebase-admin/database'
-// import { App } from 'firebase-admin/app'
-// import GraphicsMagick from 'gm'
-
 import { initFirebase } from './firebase'
 import { getConfirmedOrderIDs } from './database'
-
-// // init gm
-// const gm = GraphicsMagick.subClass({ imageMagick: true })
+import { getOrderFileStreams, uploadPrintLayout } from './storage'
+import { prepareImageForPrint } from './image_magick'
 
 const { db } = initFirebase()
 
@@ -24,37 +17,25 @@ const processImages = async () => {
     7. Update order status to 'print_ready' in Database.
   */
 
+  // get confirmed order ids
   const confirmedOrderIDs = await getConfirmedOrderIDs(db)
-  console.log(confirmedOrderIDs)
+
+  // get file streams for every order
+  const testPromise = confirmedOrderIDs.map(async (orderID) => {
+    const fileStreams = await getOrderFileStreams(orderID)
+
+    // process every image
+    const writeFileStreams = await Promise.all(fileStreams.map(prepareImageForPrint))
+
+    // TODO: combine images into layout
+
+    // upload print layout to storage
+    await Promise.all(
+      writeFileStreams.map((buffer) => uploadPrintLayout(buffer, orderID)),
+    )
+  })
+
+  await Promise.all(testPromise)
 }
 
 processImages()
-
-// export const getOrderFiles = async (app: App, db: Database, orderID: string) => {
-//   const [orderFiles] = await admin.storage().bucket().getFiles({
-//     prefix: orderID,
-//   })
-
-//   // console.log(orderFiles)
-
-//   orderFiles.forEach((file) => {
-//     // console.log(file.name)
-
-//     const fileName = file.name.split('/').pop()
-
-//     console.log(fileName)
-
-//     const stream = file.createReadStream()
-//     // // stream.
-
-//     gm(stream).write(`./test_images/${fileName}`, (err) => {
-//       if (err) {
-//         console.log(`🚨 Error writing file: ${err}`)
-//         return
-//       }
-//       console.log('done')
-//     })
-//   })
-
-//   return orderFiles
-// }

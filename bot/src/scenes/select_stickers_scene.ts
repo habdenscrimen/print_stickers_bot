@@ -104,7 +104,7 @@ selectStickersScene.on('sticker', async (ctx) => {
 
     // save sticker to firebase storage
     await saveFileToStorage(
-      `${ctx.session.databaseOrderID}/${randomFileName}.${fileExtension}`,
+      `raw_images/${ctx.session.databaseOrderID}/${randomFileName}.${fileExtension}`,
       fileBuffer,
     )
 

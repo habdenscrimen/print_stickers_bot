@@ -12,7 +12,8 @@ interface Order {
   status:
     | 'unconfirmed'
     | 'confirmed'
-    | 'processing'
+    | 'print_ready'
+    | 'printing'
     | 'delivery'
     | 'completed'
     | 'cancelled'

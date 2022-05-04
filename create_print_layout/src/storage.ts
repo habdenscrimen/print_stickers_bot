@@ -1,10 +1,8 @@
 import admin from 'firebase-admin'
-import internal from 'stream'
+import getRawBody from 'raw-body'
 
-/** getOrderFileStreams retrieves file streams for specified order */
-export const getOrderFileStreams = async (
-  orderID: string,
-): Promise<internal.Readable[]> => {
+/** getOrderFileBuffers retrieves file streams for specified order */
+export const getOrderFileBuffers = async (orderID: string): Promise<Buffer[]> => {
   try {
     console.info(`ℹ️  getting order file streams from storage`)
 
@@ -16,11 +14,12 @@ export const getOrderFileStreams = async (
         prefix: `raw_images/${orderID}`,
       })
 
-    // get file streams
-    const fileStreams = files.map((file) => file.createReadStream())
+    // get file buffers
+    const fileBuffersPromise = files.map((file) => getRawBody(file.createReadStream()))
+    const fileBuffers = await Promise.all(fileBuffersPromise)
 
     console.info(`ℹ️  successfully got order file streams from storage`)
-    return fileStreams
+    return fileBuffers
   } catch (error) {
     console.error(`failed to get order images: ${error}`)
     return []

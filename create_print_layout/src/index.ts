@@ -1,6 +1,6 @@
 import { initFirebase } from './firebase'
 import { getConfirmedOrderIDs } from './database'
-import { getOrderFileStreams, uploadPrintLayout } from './storage'
+import { getOrderFileBuffers, uploadPrintLayout } from './storage'
 import { prepareImageForPrint } from './image_magick'
 
 const { db } = initFirebase()
@@ -22,17 +22,15 @@ const processImages = async () => {
 
   // get file streams for every order
   const testPromise = confirmedOrderIDs.map(async (orderID) => {
-    const fileStreams = await getOrderFileStreams(orderID)
+    const fileBuffers = await getOrderFileBuffers(orderID)
 
     // process every image
-    const writeFileStreams = await Promise.all(fileStreams.map(prepareImageForPrint))
+    const preparedImages = await Promise.all(fileBuffers.map(prepareImageForPrint))
 
     // TODO: combine images into layout
 
     // upload print layout to storage
-    await Promise.all(
-      writeFileStreams.map((buffer) => uploadPrintLayout(buffer, orderID)),
-    )
+    await Promise.all(preparedImages.map((buffer) => uploadPrintLayout(buffer, orderID)))
   })
 
   await Promise.all(testPromise)

@@ -136,3 +136,4 @@ files/
 functions
 
 .DS_Store
+node_modules

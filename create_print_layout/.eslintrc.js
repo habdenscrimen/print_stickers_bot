@@ -28,6 +28,10 @@ module.exports = {
     'no-console': 0,
     '@typescript-eslint/no-non-null-assertion': 0,
     'no-use-before-define': 0,
+    'import/no-extraneous-dependencies': 0,
+    //
+    'no-restricted-syntax': 0,
+    'guard-for-in': 0,
   },
   env: {
     node: true,

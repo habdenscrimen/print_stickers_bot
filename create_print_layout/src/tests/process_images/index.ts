@@ -19,6 +19,8 @@ const processImage = async (imagePostfix: string) => {
   console.log(`✅ image successfully processed`)
 }
 
-;['1', '2', '3', '4', '5'].forEach((index) => {
-  processImage(index)
-})
+// new Array(14).fill(0).forEach((_, index) => {
+//   processImage(`${index + 1}`)
+// })
+
+processImage(`7`)

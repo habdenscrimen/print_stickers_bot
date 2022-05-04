@@ -58,6 +58,42 @@ const prepareTransparentImageForPrinting = (
   const printingOffset = 40
   const resizeWidth = originalStickerSize + printingOffset + outlineWidth
 
+  // const gm = GM.command('convert')
+  //   // .out('-resize', `${originalStickerSize}x${originalStickerSize}`)
+  //   // resize image
+  //   .out('-background', 'transparent')
+  //   .out('-gravity', 'center')
+  //   .out('-extent', `${resizeWidth}x${resizeWidth}`)
+
+  //   // add an outline
+  //   .out('(')
+  //   .out('-clone', '0')
+  //   .out('-fuzz', '75%')
+  //   .out('-fill', 'none')
+  //   .out('-draw', 'alpha 0,0 floodfill')
+  //   .out('-alpha', 'extract')
+  //   .out('-morphology', 'edgeout')
+
+  //   .out(`disk:${outlineWidth}`, '-negate')
+  //   // // remove background
+  //   // //
+  //   // .out('-transparent', 'white')
+  //   // //
+  //   // // add blur (smoothing)
+  //   // //
+  //   // .out('-blur', '0x0.5', '-level', '50x100%')
+  //   // //
+  //   .out(')')
+
+  //   // compose images (image + outline) into one
+  //   .out('-compose', 'multiply')
+  //   .out('-composite')
+  // // .write('./lol.png', (err) => {
+  // //   if (err) {
+  // //     console.error(`❌  error while preparing image for print`, err)
+  // //   }
+  // // })
+
   const gm = GM.command('convert')
     // .out('-resize', `${originalStickerSize}x${originalStickerSize}`)
     // resize image
@@ -86,7 +122,8 @@ const prepareTransparentImageForPrinting = (
     .out(')')
 
     // compose images (image + outline) into one
-    .out('-compose', 'multiply')
+    // .out('-compose', 'multiply')
+    // .background('transparent')
     .out('-composite')
   // .write('./lol.png', (err) => {
   //   if (err) {

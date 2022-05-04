@@ -4,7 +4,8 @@ import { promisify } from 'util'
 // init ImageMagick
 export const gm = GraphicsMagick.subClass({ imageMagick: true })
 
-export const prepareImageForPrint = async (fileBuffer: Buffer): Promise<Buffer> => {
+/** prepareImageForPrint prepares image for printing */
+export const prepareImageForPrinting = async (fileBuffer: Buffer): Promise<Buffer> => {
   console.info(`ℹ️  preparing image for print`)
 
   // create GM instance from file buffer
@@ -13,8 +14,11 @@ export const prepareImageForPrint = async (fileBuffer: Buffer): Promise<Buffer> 
   // check if image is transparent
   const isTransparent = await checkIfTransparent(GM)
 
+  // prepare image for printing
   if (isTransparent) {
     GM = prepareTransparentImageForPrinting(GM)
+  } else {
+    GM = prepareOpaqueImageForPrinting(GM)
   }
 
   // convert image to Buffer
@@ -45,7 +49,10 @@ const checkIfTransparent = async (GM: GraphicsMagick.State) => {
 }
 
 /** processTransparentImage prepares transparent image for printing */
-const prepareTransparentImageForPrinting = (GM: GraphicsMagick.State) => {
+const prepareTransparentImageForPrinting = (
+  GM: GraphicsMagick.State,
+): GraphicsMagick.State => {
+  // define sizing constants
   const outlineWidth = 4
   const originalStickerSize = 512
   const printingOffset = 40
@@ -86,6 +93,25 @@ const prepareTransparentImageForPrinting = (GM: GraphicsMagick.State) => {
   //     console.error(`❌  error while preparing image for print`, err)
   //   }
   // })
+
+  return gm
+}
+
+/** prepareOpaqueImageForPrinting prepares opaque image for printing */
+const prepareOpaqueImageForPrinting = (
+  GM: GraphicsMagick.State,
+): GraphicsMagick.State => {
+  // define sizing constants
+  const originalStickerSize = 512
+  const printingOffset = 40
+  const resizeWidth = originalStickerSize + printingOffset
+
+  const gm = GM.command('convert')
+    // .out('-resize', `${originalStickerSize}x${originalStickerSize}`)
+    // resize image
+    .out('-background', 'transparent')
+    .out('-gravity', 'center')
+    .out('-extent', `${resizeWidth}x${resizeWidth}`)
 
   return gm
 }

@@ -1,5 +1,6 @@
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import fs from 'fs'
 import files from '../files'
 
 /**
@@ -25,7 +26,30 @@ export const mergeSVGs = async (
       throw new Error(stderr)
     }
 
-    console.info(`✅ successfully merged two SVG fles: ${randomFilePath}`)
+    /* fix merging SVGs */
+
+    // get SVG file as string
+    const preparedImageContent = fs.readFileSync(randomFilePath, 'utf-8')
+
+    // remove `width` and `height` attributes from SVG string
+    const updatedImageContent = preparedImageContent
+      .replace(
+        /<g id="id0:id0" transform="matrix.+></gim,
+        '<g id="id0:id0" transform="translate(4,4)"><',
+      )
+      .replace(
+        /<g id="id1:id1" transform="matrix.+"></gim,
+        '<g id="id1:id1" transform="translate(0,0)"><',
+      )
+      .replace(
+        /version=".+" width=".+" height=".+"/gim,
+        'version="1.1" width="520.0" height="520.0"',
+      )
+
+    // write SVG file without `width` and `height` attributes
+    fs.writeFileSync(randomFilePath, updatedImageContent, 'utf-8')
+
+    console.info(`✅ successfully merged two SVG files: ${randomFilePath}`)
     return randomFilePath
   } catch (error) {
     console.error(`❌ failed to merge SVGs: ${error}`)

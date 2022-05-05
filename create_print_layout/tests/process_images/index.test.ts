@@ -7,13 +7,18 @@ const outputDirectory = `${__dirname}/output`
 
 test.before(() => {
   files.createTempFilesDirectory()
+
+  // remove directory if exists
+  if (fs.existsSync(outputDirectory)) {
+    fs.rmSync(outputDirectory, { recursive: true })
+  }
 })
 
 // test.after(() => {
-//   // remove directory if exists
-//   if (fs.existsSync(outputDirectory)) {
-//     fs.rmSync(outputDirectory, { recursive: true })
-//   }
+// // remove directory if exists
+// if (fs.existsSync(outputDirectory)) {
+//   fs.rmSync(outputDirectory, { recursive: true })
+// }
 // })
 
 // TODO: write a real test for checking the output
@@ -22,6 +27,8 @@ test('should add image outline', async (t) => {
   const sourceImages = new Array(14)
     .fill(0)
     .map((_, index) => fs.readFileSync(`${__dirname}/input/input-${index + 1}.webp`))
+
+  // const sourceImages = [fs.readFileSync(`${__dirname}/input/input-${7}.webp`)]
 
   // process images
   const processedImages = await Promise.all(sourceImages.map(image.prepareForPrinting))

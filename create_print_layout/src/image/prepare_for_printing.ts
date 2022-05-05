@@ -17,7 +17,7 @@ export const prepareForPrinting = async (buffer: Buffer): Promise<Buffer> => {
   try {
     // create vector outline
     // TODO: add white border to outline
-    const outlineFilePath = await createSVGOutline(buffer)
+    const { filePath: outlineFilePath, height } = await createSVGOutline(buffer)
 
     // temporary save raster image to disk for converting it to SVG
     const rasterImageFilePath = files.generateTempFilePath('raster-image', 'png')
@@ -28,7 +28,7 @@ export const prepareForPrinting = async (buffer: Buffer): Promise<Buffer> => {
 
     // merge outline with image
     // TODO: merge margin should be equal to the height of the image
-    const mergedFilePath = await mergeSVGs(imageFilePath, outlineFilePath, 512)
+    const mergedFilePath = await mergeSVGs(imageFilePath, outlineFilePath, height + 4)
 
     // create buffer from merged (ready-to-print) file
     const printReadyFileBuffer = await getRawBody(fs.createReadStream(mergedFilePath))

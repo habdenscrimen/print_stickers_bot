@@ -7,21 +7,32 @@ import files from '../files'
 const gm = GraphicsMagick.subClass({ imageMagick: true })
 
 /** createSVGOutline creates an SVG outline for image. */
-export const createSVGOutline = async (fileBuffer: Buffer): Promise<string> => {
+export const createSVGOutline = async (
+  fileBuffer: Buffer,
+): Promise<{
+  filePath: string
+  width: number
+  height: number
+}> => {
   try {
+    // create GM instance with file buffer
+    const GM = gm(fileBuffer)
+
+    // get image size (width and height)
+    const size = await promisify<{ width: number; height: number }>(GM.size.bind(GM))()
+
     // define sizing constants
     const outlineWidth = 4
-    const originalStickerSize = 512
-    const printingOffset = 5
-    const resizeWidth = originalStickerSize + printingOffset + outlineWidth
+
+    const resizeWidth = outlineWidth + size.width + outlineWidth
+    const resizeHeight = outlineWidth + size.height + outlineWidth
 
     // create an image outline
-    const GM = gm(fileBuffer)
-      .command('convert')
+    GM.command('convert')
       // resize image
       .out('-background', 'transparent')
       .out('-gravity', 'center')
-      .out('-extent', `${resizeWidth}x${resizeWidth}`)
+      .out('-extent', `${resizeWidth}x${resizeHeight}`)
 
       // add an outline
       .out('(')
@@ -52,16 +63,17 @@ export const createSVGOutline = async (fileBuffer: Buffer): Promise<string> => {
     const tempOutlineData = fs.readFileSync(randomFilePath, 'utf-8')
 
     // remove `width` and `height` attributes from SVG string
-    const dataWithUpdatedSize = tempOutlineData.replace(
-      /width=".+" height=".+pt"/gim,
-      'width="516" height="516"',
-    )
+    const dataWithUpdatedSize = tempOutlineData.replace(/width=".+" height=".+pt"/gim, '')
 
     // write SVG file without `width` and `height` attributes
     fs.writeFileSync(randomFilePath, dataWithUpdatedSize, 'utf-8')
 
     console.info(`✅ successfully created SVG outline file: ${randomFilePath}`)
-    return randomFilePath
+    return {
+      filePath: randomFilePath,
+      width: size.width,
+      height: size.height,
+    }
   } catch (error) {
     console.error(`❌ failed to create SVG outline: ${error}`)
     throw error

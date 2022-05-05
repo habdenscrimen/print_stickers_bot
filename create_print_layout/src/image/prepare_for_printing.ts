@@ -5,6 +5,7 @@ import { rasterImageToSVG } from './raster_to_svg'
 import { mergeSVGs } from './merge_svgs'
 import { saveBufferAsPNG } from './buffer_to_png'
 import files from '../files'
+import { config } from '../config'
 
 /**
  * prepareForPrinting prepares image for printing:
@@ -28,7 +29,11 @@ export const prepareForPrinting = async (buffer: Buffer): Promise<Buffer> => {
 
     // merge outline with image
     // TODO: merge margin should be equal to the height of the image
-    const mergedFilePath = await mergeSVGs(imageFilePath, outlineFilePath, height + 4)
+    const mergedFilePath = await mergeSVGs(
+      imageFilePath,
+      outlineFilePath,
+      height + config.outlineWidth,
+    )
 
     // create buffer from merged (ready-to-print) file
     const printReadyFileBuffer = await getRawBody(fs.createReadStream(mergedFilePath))

@@ -28,8 +28,6 @@ test('should add image outline', async (t) => {
     .fill(0)
     .map((_, index) => fs.readFileSync(`${__dirname}/input/input-${index + 1}.webp`))
 
-  // const sourceImages = [fs.readFileSync(`${__dirname}/input/input-${7}.webp`)]
-
   // process images
   const processedImages = await Promise.all(sourceImages.map(image.prepareForPrinting))
 

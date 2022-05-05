@@ -1,6 +1,7 @@
 import { promisify } from 'util'
 import GraphicsMagick from 'gm'
 import fs from 'fs'
+import { config } from '../config'
 import files from '../files'
 
 // init ImageMagick
@@ -21,9 +22,9 @@ export const createSVGOutline = async (
     // get image size (width and height)
     const size = await promisify<{ width: number; height: number }>(GM.size.bind(GM))()
 
-    // define sizing constants
-    const outlineWidth = 4
+    const { outlineWidth } = config
 
+    // define sizing constants
     const resizeWidth = outlineWidth + size.width + outlineWidth
     const resizeHeight = outlineWidth + size.height + outlineWidth
 

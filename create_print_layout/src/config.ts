@@ -19,6 +19,7 @@ export const config = {
   files: {
     tempFilesDirectory: `${process.cwd()}/temp_files`,
   },
+  outlineWidth: 4,
 }
 
 export type Config = typeof config

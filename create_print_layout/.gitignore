@@ -137,3 +137,5 @@ functions
 
 .DS_Store
 node_modules
+
+temp_files

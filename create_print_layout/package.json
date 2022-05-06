@@ -14,7 +14,7 @@
     "firebase:logs": "firebase functions:log",
     "firebase:serve": "npm run build && firebase emulators:start --only functions",
     "firebase:deploy": "npm run build && cp package.json functions/package.json && firebase deploy --only functions",
-    "test": "ava"
+    "test": "time ava"
   },
   "keywords": [],
   "author": "",

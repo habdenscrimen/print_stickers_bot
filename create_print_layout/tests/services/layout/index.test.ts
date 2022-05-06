@@ -2,8 +2,15 @@ import test from 'ava'
 import fs from 'fs'
 import { layoutService } from '../../../src/services'
 import { config } from '../../../src/config'
+import files from '../../../src/files'
+
+test.before(() => {
+  files.createTempFilesDirectory()
+})
 
 test.only('should create layout from processed SVG images', async (t) => {
+  t.timeout(100000)
+
   // read fixtures as buffers
   const processedImages = new Array(14)
     .fill(0)

@@ -22,7 +22,7 @@ test.after(() => {
 })
 
 // TODO: write a real test for checking the output
-test('should add image outline', async (t) => {
+test.skip('should add image outline', async (t) => {
   // read fixtures as buffers
   const sourceImages = new Array(14)
     .fill(0)

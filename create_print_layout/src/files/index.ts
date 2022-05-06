@@ -7,7 +7,7 @@ const deleteFiles = async (filePaths: string[]) => {
   try {
     await Promise.all(filePaths.map((filePath) => promisify(fs.unlink)(filePath)))
 
-    console.info(`✅ successfully deleted files: ${filePaths.join(', ')}`)
+    console.info(`✅ successfully deleted files`)
   } catch (error) {
     console.error(`❌ failed to delete files: ${error}`)
     throw error

@@ -1,7 +1,7 @@
 import test from 'ava'
 import fs from 'fs'
-import files from '../../src/files'
-import { imageService } from '../../src/services'
+import files from '../../../src/files'
+import { imageService } from '../../../src/services'
 
 const outputDirectory = `${__dirname}/output`
 
@@ -14,19 +14,25 @@ test.before(() => {
   }
 })
 
-// test.after(() => {
-// // remove directory if exists
-// if (fs.existsSync(outputDirectory)) {
-//   fs.rmSync(outputDirectory, { recursive: true })
-// }
-// })
+test.after(() => {
+  // remove directory if exists
+  if (fs.existsSync(outputDirectory)) {
+    fs.rmSync(outputDirectory, { recursive: true })
+  }
+})
 
 // TODO: write a real test for checking the output
 test('should add image outline', async (t) => {
+  console.log(process.cwd())
+
   // read fixtures as buffers
   const sourceImages = new Array(14)
     .fill(0)
-    .map((_, index) => fs.readFileSync(`${__dirname}/input/input-${index + 1}.webp`))
+    .map((_, index) =>
+      fs.readFileSync(
+        `${process.cwd()}/tests/fixtures/input_images/input-${index + 1}.webp`,
+      ),
+    )
 
   // process images
   const processedImages = await Promise.all(

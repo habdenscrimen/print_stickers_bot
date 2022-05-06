@@ -23,14 +23,12 @@ test.after(() => {
 
 // TODO: write a real test for checking the output
 test('should add image outline', async (t) => {
-  console.log(process.cwd())
-
   // read fixtures as buffers
   const sourceImages = new Array(14)
     .fill(0)
     .map((_, index) =>
       fs.readFileSync(
-        `${process.cwd()}/tests/fixtures/input_images/input-${index + 1}.webp`,
+        `${process.cwd()}/tests/fixtures/input_images_webp/${index + 1}.webp`,
       ),
     )
 

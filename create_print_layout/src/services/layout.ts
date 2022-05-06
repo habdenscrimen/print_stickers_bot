@@ -1,12 +1,15 @@
 /* eslint no-await-in-loop: 0 */
 
-import { exec } from 'child_process'
 import fs from 'fs'
-
-import { promisify } from 'util'
+import { getSizingInPX, mergeSVGs } from '../layout'
 import { Config } from '../config'
 import files from '../files'
-import { getSizingInPX } from '../layout'
+
+/*
+  TODO:
+  1. Create a border for layout.
+  2. Align every layout row to the left side instead of center.
+*/
 
 /** createPrintLayouts creates print layout(s) from SVG images. */
 const createPrintLayouts = async (
@@ -44,8 +47,6 @@ const createPrintLayouts = async (
   /* merge images into rows */
   const layoutRowPaths: string[] = []
 
-  // console.log(`rows.length: ${rows.length}`)
-
   for (let i = 0; i < rows.length; i += 1) {
     let mergedRowPath = rows[i][0]
 
@@ -72,28 +73,6 @@ const createPrintLayouts = async (
   files.deleteFiles(pathsToDelete)
 
   return []
-}
-
-const asyncExec = promisify(exec)
-
-const mergeSVGs = async (
-  firstSVGPath: string,
-  secondSVGPath: string,
-  margin: number,
-  direction: 'h' | 'v',
-  postfix = '',
-): Promise<string> => {
-  const randomFilePath = files.generateTempFilePath(`merged-image-${postfix}`, 'svg')
-
-  const command = `python3 ${__dirname}/merge_svgs.py --direction=${direction} --margin=${margin} ${firstSVGPath} ${secondSVGPath} > ${randomFilePath}`
-
-  const { stderr } = await asyncExec(command)
-  if (stderr) {
-    console.error(`❌ failed to merge SVG files: ${stderr}`)
-    throw new Error(stderr)
-  }
-
-  return randomFilePath
 }
 
 export const layoutService = {

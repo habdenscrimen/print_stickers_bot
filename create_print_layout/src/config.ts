@@ -20,6 +20,13 @@ export const config = {
     tempFilesDirectory: `${process.cwd()}/temp_files`,
   },
   outlineWidth: 4,
+  // layouts size in mm
+  layouts: {
+    minWidthInMM: 10,
+    maxWidthInMM: 300,
+    minHeightInMM: 10,
+    maxHeightInMM: 420,
+  },
 }
 
 export type Config = typeof config

@@ -1,11 +1,8 @@
 import getRawBody from 'raw-body'
 import fs from 'fs'
-import { createSVGOutline } from './create_svg_outline'
-import { rasterImageToSVG } from './raster_to_svg'
-import { mergeSVGs } from './merge_svgs'
-import { saveBufferAsPNG } from './buffer_to_png'
-import files from '../files'
+import { createSVGOutline, mergeSVGs, rasterImageToSVG, saveBufferAsPNG } from '../image'
 import { config } from '../config'
+import files from '../files'
 
 /**
  * prepareForPrinting prepares image for printing:
@@ -14,7 +11,7 @@ import { config } from '../config'
  * - merges vector outline with vector image
  * - creates and returns buffer from merged (ready-to-print) file (image + outline)
  */
-export const prepareForPrinting = async (buffer: Buffer): Promise<Buffer> => {
+const prepareForPrinting = async (buffer: Buffer): Promise<Buffer> => {
   try {
     // create vector outline
     // TODO: add white border to outline
@@ -52,4 +49,8 @@ export const prepareForPrinting = async (buffer: Buffer): Promise<Buffer> => {
     console.error(`❌ failed to prepare image for printing: ${error}`)
     throw error
   }
+}
+
+export const imageService = {
+  prepareForPrinting,
 }

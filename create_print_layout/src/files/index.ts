@@ -1,6 +1,6 @@
 import { promisify } from 'util'
 import fs from 'fs'
-import { config } from './config'
+import { config } from '../config'
 
 /** deleteFiles deletes files by file path. */
 const deleteFiles = async (filePaths: string[]) => {

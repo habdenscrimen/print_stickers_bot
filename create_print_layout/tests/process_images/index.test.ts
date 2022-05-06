@@ -1,7 +1,7 @@
 import test from 'ava'
 import fs from 'fs'
 import files from '../../src/files'
-import image from '../../src/image'
+import { imageService } from '../../src/services'
 
 const outputDirectory = `${__dirname}/output`
 
@@ -29,7 +29,9 @@ test('should add image outline', async (t) => {
     .map((_, index) => fs.readFileSync(`${__dirname}/input/input-${index + 1}.webp`))
 
   // process images
-  const processedImages = await Promise.all(sourceImages.map(image.prepareForPrinting))
+  const processedImages = await Promise.all(
+    sourceImages.map(imageService.prepareForPrinting),
+  )
 
   // create a new temp files directory
   fs.mkdirSync(outputDirectory)

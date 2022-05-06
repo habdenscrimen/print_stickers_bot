@@ -130,8 +130,6 @@ dist
 .pnp.*
 .vercel
 
-files
-files/
 
 functions
 

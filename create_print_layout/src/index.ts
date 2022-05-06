@@ -1,11 +1,11 @@
 import { Database } from 'firebase-admin/database'
 import getRawBody from 'raw-body'
 
+import { imageService, layoutService } from './services'
 import database from './database'
 import { config, Config } from './config'
 import storage from './storage'
 import firebase from './firebase'
-import image from './image'
 import files from './files'
 
 const { db } = firebase.init()
@@ -28,7 +28,7 @@ const processOrder = async (config: Config, orderID: string) => {
 
     // prepare images for printing
     const printReadyImages = await Promise.all(
-      orderFileBuffers.map(image.prepareForPrinting),
+      orderFileBuffers.map(imageService.prepareForPrinting),
     )
 
     // upload print ready images to storage
@@ -40,6 +40,11 @@ const processOrder = async (config: Config, orderID: string) => {
         ),
       ),
     )
+
+    // create print layouts from order images
+    const orderLayouts = await layoutService.createPrintLayouts(config, printReadyImages)
+
+    // TODO: upload print layouts to storage
   } catch (error) {
     console.error(`❌ failed to process order ${orderID}: ${error}`)
   }

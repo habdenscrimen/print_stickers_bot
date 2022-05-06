@@ -2,7 +2,7 @@
   "compilerOptions": {                        
     "target": "es6",                               
     "module": "commonjs",                           
-    "outDir": "./functions",                             
+    "outDir": "./dist",                             
     "rootDir": "./src",                             
     "strict": true,
     "moduleResolution": "node",
@@ -10,6 +10,7 @@
     "skipLibCheck": true                      
   },
   "exclude":[
-    "./node_modules"
+    "./node_modules",
+    "./tests"
   ]
 }

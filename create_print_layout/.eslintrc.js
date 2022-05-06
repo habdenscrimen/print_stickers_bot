@@ -30,9 +30,14 @@ module.exports = {
     '@typescript-eslint/no-non-null-assertion': 0,
     'no-use-before-define': 0,
     'import/no-extraneous-dependencies': 0,
-    //
     'no-restricted-syntax': 0,
     'guard-for-in': 0,
+    '@typescript-eslint/explicit-function-return-type': [
+      'error',
+      {
+        allowExpressions: false,
+      },
+    ],
   },
   env: {
     node: true,

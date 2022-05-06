@@ -1,10 +1,11 @@
-import { Database } from 'firebase-admin/database'
-import getRawBody from 'raw-body'
+import inquirer from 'inquirer'
 
-import { imageService, layoutService } from './services'
-import database from './database'
-import { config, Config } from './config'
-import storage from './storage'
+import {
+  countPrintReadyImages,
+  createPrintLayouts,
+  processConfirmedOrdersImages,
+} from './commands'
+import { config } from './config'
 import firebase from './firebase'
 import files from './files'
 
@@ -13,55 +14,52 @@ const { db } = firebase.init()
 // create temp files directory
 files.createTempFilesDirectory()
 
-/** processOrder processes order by order id. */
-const processOrder = async (config: Config, orderID: string) => {
-  try {
-    // get order files from storage
-    const orderFiles = await storage.getFiles(
-      `${config.firebase.storage.paths.rawImages}/${orderID}`,
-    )
+enum Commands {
+  COUNT_UNPROCESSED_PRINT_READY_IMAGES = 'Count unprocessed print-ready images',
+  PROCESS_CONFIRMED_ORDERS_IMAGES = 'Process images of confirmed orders',
+  CREATE_PRINT_LAYOUTS = 'Create print layouts',
+  // TODO: implement
+  DOWNLOAD_PRINT_LAYOUTS = 'Download print layouts',
+  EXIT = 'Exit',
+}
 
-    // get buffers for every file
-    const orderFileBuffers = await Promise.all(
-      orderFiles.map((file) => getRawBody(file.createReadStream())),
-    )
+const run = async (): Promise<void> => {
+  const answer: { action: Commands } = await inquirer.prompt([
+    {
+      name: 'action',
+      type: 'list',
+      message: 'What do you want from me?',
+      choices: [
+        Commands.COUNT_UNPROCESSED_PRINT_READY_IMAGES,
+        Commands.PROCESS_CONFIRMED_ORDERS_IMAGES,
+        Commands.CREATE_PRINT_LAYOUTS,
+        Commands.EXIT,
+      ],
+    },
+  ])
 
-    // prepare images for printing
-    const printReadyImages = await Promise.all(
-      orderFileBuffers.map(imageService.prepareForPrinting),
-    )
+  if (answer.action === Commands.COUNT_UNPROCESSED_PRINT_READY_IMAGES) {
+    const count = await countPrintReadyImages(config, db)
 
-    // upload print ready images to storage
-    await Promise.all(
-      printReadyImages.map((buffer, index) =>
-        storage.uploadFileBuffer(
-          buffer,
-          `${config.firebase.storage.paths.printReadyImages}/${orderID}/${index}.svg`,
-        ),
-      ),
-    )
-
-    // create print layouts from order images
-    const orderLayouts = await layoutService.createPrintLayouts(config, printReadyImages)
-
-    // TODO: upload print layouts to storage
-  } catch (error) {
-    console.error(`❌ failed to process order ${orderID}: ${error}`)
+    console.info(`\n🎉 ${count} print-ready images found`)
+    return
   }
+
+  if (answer.action === Commands.PROCESS_CONFIRMED_ORDERS_IMAGES) {
+    await processConfirmedOrdersImages(config, db)
+
+    console.info('\n🎉 successfully processed confirmed orders')
+    return
+  }
+
+  if (answer.action === Commands.CREATE_PRINT_LAYOUTS) {
+    await createPrintLayouts(config, [])
+
+    console.info('\n🎉 successfully created print layouts')
+    return
+  }
+
+  console.info('Exit')
 }
 
-/**
- * processConfirmedOrders processes confirmed orders:
- * prepares images for printing and creates print-ready layouts from them.
- */
-const processConfirmedOrders = async (config: Config, db: Database) => {
-  // get confirmed order ids
-  const confirmedOrderIDs = await database.getConfirmedOrderIDs(db)
-
-  // process every order
-  await Promise.all(confirmedOrderIDs.map((orderID) => processOrder(config, orderID)))
-
-  console.info('✅ ✅ ✅ successfully processed confirmed orders')
-}
-
-processConfirmedOrders(config, db)
+run()

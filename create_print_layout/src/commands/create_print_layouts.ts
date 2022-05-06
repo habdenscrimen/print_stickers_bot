@@ -12,7 +12,7 @@ import files from '../files'
 */
 
 /** createPrintLayouts creates print layout(s) from SVG images. */
-const createPrintLayouts = async (
+export const createPrintLayouts = async (
   config: Config,
   images: Buffer[],
 ): Promise<Buffer[]> => {
@@ -73,8 +73,4 @@ const createPrintLayouts = async (
   files.deleteFiles(pathsToDelete)
 
   return []
-}
-
-export const layoutService = {
-  createPrintLayouts,
 }

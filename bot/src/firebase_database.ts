@@ -7,16 +7,18 @@ interface UserContact {
   last_name?: string
 }
 
+type OrderStatus =
+  | 'unconfirmed'
+  | 'confirmed'
+  | 'print_ready'
+  | 'printing'
+  | 'delivery'
+  | 'completed'
+  | 'cancelled'
+
 interface Order {
   user_id: number
-  status:
-    | 'unconfirmed'
-    | 'confirmed'
-    | 'print_ready'
-    | 'printing'
-    | 'delivery'
-    | 'completed'
-    | 'cancelled'
+  status: OrderStatus
   delivery_address: string
 }
 

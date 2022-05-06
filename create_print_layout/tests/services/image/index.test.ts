@@ -1,7 +1,7 @@
 import test from 'ava'
 import fs from 'fs'
 import files from '../../../src/files'
-import { imageService } from '../../../src/services'
+import { prepareImageForPrinting } from '../../../src/commands'
 
 const outputDirectory = `${__dirname}/output`
 
@@ -22,7 +22,7 @@ test.after(() => {
 })
 
 // TODO: write a real test for checking the output
-test.skip('should add image outline', async (t) => {
+test('should add image outline', async (t) => {
   // read fixtures as buffers
   const sourceImages = new Array(14)
     .fill(0)
@@ -33,9 +33,7 @@ test.skip('should add image outline', async (t) => {
     )
 
   // process images
-  const processedImages = await Promise.all(
-    sourceImages.map(imageService.prepareForPrinting),
-  )
+  const processedImages = await Promise.all(sourceImages.map(prepareImageForPrinting))
 
   // create a new temp files directory
   fs.mkdirSync(outputDirectory)

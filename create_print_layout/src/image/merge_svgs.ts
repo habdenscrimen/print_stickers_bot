@@ -11,7 +11,7 @@ export const mergeSVGs = async (
   firstSVGPath: string,
   secondSVGPath: string,
   mergeMargin: number,
-) => {
+): Promise<string> => {
   try {
     // create random file name
     const randomFilePath = files.generateTempFilePath('prepared-image', 'svg')

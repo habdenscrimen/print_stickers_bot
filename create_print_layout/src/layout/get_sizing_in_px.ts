@@ -1,7 +1,8 @@
 import { Config } from '../config'
+import { LayoutSizing } from '../types'
 
 /** getSizeInPX returns sizing in px according to sizing requirements in mm. */
-export const getSizingInPX = (layoutSizeInMM: Config['layouts']) => {
+export const getSizingInPX = (layoutSizeInMM: Config['layouts']): LayoutSizing => {
   // size in mm
   const horizontalGapInMM = 8
   const stickersInRow = 6

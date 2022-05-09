@@ -6,7 +6,7 @@ import files from '../files'
  * convertRasterImageToVector convers raster image to SVG using `inkscape`.
  * `inkscape` should be installed separately.
  */
-export const rasterImageToSVG = async (rasterImageFilePath: string) => {
+export const rasterImageToSVG = async (rasterImageFilePath: string): Promise<string> => {
   try {
     // create random file name
     const randomFilePath = files.generateTempFilePath('image', 'svg')

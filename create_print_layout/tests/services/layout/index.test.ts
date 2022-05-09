@@ -1,15 +1,18 @@
 import test from 'ava'
 import fs from 'fs'
-import { createPrintLayouts } from '../../../src/commands'
+import { createPrintLayout } from '../../../src/commands'
 import { config } from '../../../src/config'
 import files from '../../../src/files'
+import { getSizingInPX } from '../../../src/layout'
 
 test.before(() => {
   files.createTempFilesDirectory()
 })
 
-test('should create layout from processed SVG images', async (t) => {
+test.only('should create layout from processed SVG images', async (t) => {
   t.timeout(100000)
+
+  const layoutSizing = getSizingInPX(config.layouts)
 
   // read fixtures as buffers
   const processedImages = new Array(14)
@@ -20,8 +23,8 @@ test('should create layout from processed SVG images', async (t) => {
       ),
     )
 
-  // create layouts
-  await createPrintLayouts(config, processedImages)
+  // cre ate layouts
+  await createPrintLayout(processedImages, layoutSizing)
 
   t.pass()
 })

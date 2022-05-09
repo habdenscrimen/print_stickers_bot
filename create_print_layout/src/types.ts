@@ -6,3 +6,9 @@ export type OrderStatus =
   | 'delivery'
   | 'completed'
   | 'cancelled'
+
+export interface LayoutSizing {
+  gap: number
+  avgStickerWidth: number
+  maxLayoutWidth: number
+}

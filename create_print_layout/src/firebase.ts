@@ -8,11 +8,7 @@ export const initFirebase = (config: Config) => {
     databaseURL: config.database.url,
   })
 
-  const db = admin.database(app)
-
   return {
-    app,
-    db,
-    storage: admin.storage(),
+    firebaseApp: app,
   }
 }

@@ -5,7 +5,7 @@ export const newLogger = (options?: LoggerOptions) => {
     ...options,
     level: 'debug',
     transports: [new transports.Console()],
-    format: format.combine(format.colorize({ all: true }), format.simple()),
+    format: format.combine(format.colorize(), format.simple()),
   })
 
   return logger

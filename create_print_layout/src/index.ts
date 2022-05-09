@@ -1,21 +1,26 @@
 import { newContext } from './context'
-import { countUnprocessedImagesCommand } from './commands'
+import { newCommands } from './commands'
 import { promptCommand, CliCommands } from './cli-prompt'
 import { initFirebase } from './firebase'
 import { newConfig } from './config'
 import { newLogger } from './logger'
+import { newDatabase } from './database'
+import { newStorage } from './storage'
 
 const start = async () => {
   const config = newConfig()
   const logger = newLogger()
-  const { db, storage } = initFirebase(config)
-  const context = newContext({ config, db, logger, storage })
+  const { firebaseApp } = initFirebase(config)
+  const database = newDatabase(firebaseApp)
+  const storage = newStorage()
+  const context = newContext({ config, database, logger, storage })
+  const commands = newCommands(context)
 
   const command = await promptCommand()
 
   switch (command) {
     case CliCommands.CountUnprocessedImages:
-      return countUnprocessedImagesCommand(context, [])
+      return commands.CountUnprocessedImages()
 
     default:
       return Promise.resolve()

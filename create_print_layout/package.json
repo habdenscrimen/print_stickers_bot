@@ -9,7 +9,7 @@
     "check:eslint": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "check": "npm run check:format && npm run check:typescript && npm run check:eslint",
     "dev": "ts-node-dev --respawn ./src/index.ts",
-    "start": "ts-node ./src/index.ts",
+    "start": "ts-node ./src/index.ts NODE_NO_WARNINGS=1",
     "build": "rm -rf ./dist && tsc --build",
     "test": "time ava"
   },

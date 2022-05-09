@@ -17,7 +17,7 @@ export const processConfirmedOrdersImages = async (
   db: Database,
 ): Promise<void> => {
   // get confirmed order ids
-  const confirmedOrderIDs = await database.getConfirmedOrderIDs(db)
+  const confirmedOrderIDs = await database.getOrderIDsByStatus(db, ['confirmed'])
 
   // process every order
   await Promise.all(
@@ -26,7 +26,7 @@ export const processConfirmedOrdersImages = async (
       await processOrderImages(config, orderID)
 
       // update order status in database
-      await database.updateOrderStatus(db, orderID, 'print_ready')
+      await database.updateOrder(db, orderID, { status: 'print_ready' })
     }),
   )
 }

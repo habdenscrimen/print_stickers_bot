@@ -28,6 +28,11 @@ const confirmCreatingLayouts = async (): Promise<boolean> => {
   // count print-ready images
   const printReadyImagesCount = await countPrintReadyImages(config, db)
 
+  if (printReadyImagesCount === 0) {
+    console.log('No print-ready images found.')
+    return false
+  }
+
   // ask user to confirm
   const answer: { confirmed_creating_layouts: boolean } = await inquirer.prompt([
     {

@@ -24,7 +24,7 @@ test.only('should create layout from processed SVG images', async (t) => {
     )
 
   // cre ate layouts
-  await createPrintLayout(processedImages, layoutSizing)
+  await createPrintLayout(config, processedImages, layoutSizing)
 
   t.pass()
 })

@@ -12,7 +12,10 @@ export const countPrintReadyImages = async (
     console.info(`ℹ️ counting print-ready images`)
 
     // get confirmed order ids
-    const confirmedOrderIDs = await database.getConfirmedOrderIDs(db)
+    const confirmedOrderIDs = await database.getOrderIDsByStatus(db, [
+      'confirmed',
+      'print_ready',
+    ])
 
     // count print-ready images (from confirmed orders)
     const countByOrder = await Promise.all(

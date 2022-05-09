@@ -12,7 +12,7 @@ export const config = {
       paths: {
         rawImages: 'raw_images',
         printReadyImages: 'print_ready_images',
-        printLayouts: 'print_layouts',
+        printReadyLayouts: 'print_ready_layouts',
       },
     },
   },
@@ -26,6 +26,7 @@ export const config = {
     maxWidthInMM: 300,
     minHeightInMM: 10,
     maxHeightInMM: 420,
+    border: 20,
   },
 }
 

@@ -1,55 +1,62 @@
 import { Database } from 'firebase-admin/database'
-import { OrderStatus } from '../types'
+import { Order, OrderStatus } from '../types'
 
-/** getConfirmedOrderIDs retrieves confirmed order ids from database */
-const getConfirmedOrderIDs = async (db: Database): Promise<string[]> => {
+/** getOrderIDsByStatus retrieves confirmed order ids from database */
+const getOrderIDsByStatus = async (
+  db: Database,
+  statuses: OrderStatus[],
+): Promise<string[]> => {
   try {
     console.info(`ℹ️  getting confirmed orders from database`)
 
-    // get data snapshot
-    const snapshot = await db
-      .ref('orders')
-      .orderByChild('status')
-      .equalTo('confirmed')
-      .get()
+    const orderIDs = await Promise.all(
+      statuses.map(async (status) => {
+        // get data snapshot
+        const snapshot = await db
+          .ref('orders')
+          .orderByChild('status')
+          .equalTo(status)
+          .get()
 
-    // get snapshot value
-    const orders = snapshot.val()
-    if (!orders) {
-      console.info('ℹ️  no confirmed orders found')
-      return []
-    }
+        // get snapshot value
+        const orders = snapshot.val()
+        if (!orders) {
+          console.info('ℹ️  no confirmed orders found')
+          return []
+        }
 
-    // get confirmed order ids from snapshot value
-    const confirmedOrderIDs = Object.keys(orders)
+        // get confirmed order ids from snapshot value
+        return Object.keys(orders)
+      }),
+    )
 
     console.info(`✅ successfully got confirmed orders from database`)
-    return confirmedOrderIDs
+    return orderIDs.flat()
   } catch (error) {
-    console.error(`failed to get confirmed orders: ${error}`)
+    console.error(`❌ failed to get confirmed orders: ${error}`)
     return []
   }
 }
 
 /** getOrderStatus updates order status in database */
-const updateOrderStatus = async (
+const updateOrder = async (
   db: Database,
   orderID: string,
-  status: OrderStatus,
+  order: Partial<Order>,
 ): Promise<void> => {
   try {
-    console.info(`ℹ️  updating order ${orderID} status to ${status}`)
+    console.info(`ℹ️  updating order ${orderID}`)
 
     // update order status
-    await db.ref(`orders/${orderID}`).update({ status })
+    await db.ref(`orders/${orderID}`).update(order)
 
-    console.info(`✅ successfully updated order ${orderID} status to ${status}`)
+    console.info(`✅ successfully updated order ${orderID}`)
   } catch (error) {
-    console.error(`❌ failed to update order ${orderID} status to ${status}: ${error}`)
+    console.error(`❌ failed to update order ${orderID}: ${error}`)
   }
 }
 
 export default {
-  getConfirmedOrderIDs,
-  updateOrderStatus,
+  getOrderIDsByStatus,
+  updateOrder,
 }

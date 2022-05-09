@@ -20,6 +20,7 @@ interface Order {
   user_id: number
   status: OrderStatus
   delivery_address: string
+  layouts_ids: string[]
 }
 
 /** saveUserContact saves user contact to database */

@@ -1,8 +1,11 @@
 import admin from 'firebase-admin'
-import { countFiles } from './count_files'
+import { File } from '@google-cloud/storage'
+import { getFiles } from './get_files'
+import { uploadFile } from './upload_file'
 
 export interface Storage {
-  CountFiles: (path: string) => Promise<number>
+  GetFiles: (path: string) => Promise<File[]>
+  UploadFile: (file: Buffer, path: string) => Promise<void>
 }
 
 export type Handler<HandlerName extends keyof Storage> = (
@@ -14,6 +17,7 @@ export const newStorage = (): Storage => {
   const storage = admin.storage()
 
   return {
-    CountFiles: (args) => countFiles(storage, [args]),
+    GetFiles: (...args) => getFiles(storage, [...args]),
+    UploadFile: (...args) => uploadFile(storage, [...args]),
   }
 }

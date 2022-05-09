@@ -1,10 +1,10 @@
 import { Handler } from '.'
 
-export const countFiles: Handler<'CountFiles'> = async (storage, [path]) => {
+export const getFiles: Handler<'GetFiles'> = async (storage, [path]) => {
   // get files from storage
   const [files] = await storage.bucket().getFiles({
     prefix: path,
   })
 
-  return files.length
+  return files
 }

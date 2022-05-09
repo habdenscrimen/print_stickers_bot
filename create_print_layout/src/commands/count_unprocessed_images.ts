@@ -10,9 +10,11 @@ export const countUnprocessedImagesCommand: Command<'CountUnprocessedImages'> = 
   logger.debug('got order ids', { orderIDs })
 
   // count unprocessed (confirmed) images
-  const countByOrderPromise = orderIDs.map((orderID) => {
+  const countByOrderPromise = orderIDs.map(async (orderID) => {
     const path = `${context.config.storage.paths.rawImages}/${orderID}`
-    return context.storage.CountFiles(path)
+
+    const files = await context.storage.GetFiles(path)
+    return files.length
   })
 
   const countByOrder = await Promise.all(countByOrderPromise)

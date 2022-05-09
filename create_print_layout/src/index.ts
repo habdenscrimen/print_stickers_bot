@@ -22,6 +22,9 @@ const start = async () => {
     case CliCommands.CountUnprocessedImages:
       return commands.CountUnprocessedImages()
 
+    case CliCommands.CreateLayouts:
+      return commands.CreateLayouts()
+
     default:
       return Promise.resolve()
   }

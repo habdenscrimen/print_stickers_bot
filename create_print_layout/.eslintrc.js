@@ -32,12 +32,6 @@ module.exports = {
     'import/no-extraneous-dependencies': 0,
     'no-restricted-syntax': 0,
     'guard-for-in': 0,
-    '@typescript-eslint/explicit-function-return-type': [
-      'error',
-      {
-        allowExpressions: false,
-      },
-    ],
   },
   env: {
     node: true,

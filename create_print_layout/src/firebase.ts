@@ -1,21 +1,18 @@
 import admin from 'firebase-admin'
-import { config } from './config'
+import { Config } from './config'
 
-const init = () => {
-  // init firebase admin
+export const initFirebase = (config: Config) => {
   const app = admin.initializeApp({
     credential: admin.credential.applicationDefault(),
-    storageBucket: config.firebase.storage.bucket,
-    databaseURL: config.firebase.databaseURL,
+    storageBucket: config.storage.bucket,
+    databaseURL: config.database.url,
   })
 
-  // init database
   const db = admin.database(app)
 
-  console.debug('✅ firebase admin app and database initialized')
-  return { app, db }
-}
-
-export default {
-  init,
+  return {
+    app,
+    db,
+    storage: admin.storage(),
+  }
 }

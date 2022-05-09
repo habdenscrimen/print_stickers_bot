@@ -1,7 +1,13 @@
 import getRawBody from 'raw-body'
+import fs from 'fs'
 import { Command } from '.'
+import { Context } from '../context'
+import { Services } from '../services'
 
-export const createLayoutsCommand: Command<'CreateLayouts'> = async (context) => {
+export const createLayoutsCommand: Command<'CreateLayouts'> = async (
+  context,
+  services,
+) => {
   const logger = context.logger.child({ name: 'createLayoutsCommand' })
 
   /*
@@ -19,17 +25,19 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (context) =>
   const processAndUploadImagesPromise = orderIDs.map(async (orderID) => {
     // get order files from storage
     const orderPath = `${context.config.storage.paths.rawImages}/${orderID}`
-    const files = await context.storage.GetFiles(orderPath)
+    const storageFiles = await context.storage.GetFiles(orderPath)
     logger.debug('got order files', { orderID })
 
     // get buffers for every file
-    const filesBuffersPromise = files.map((file) => getRawBody(file.createReadStream()))
-    const filesBuffers = await Promise.all(filesBuffersPromise)
+    const filesPromise = storageFiles.map((file) => getRawBody(file.createReadStream()))
+    const files = await Promise.all(filesPromise)
     logger.debug('got files buffers', { orderID })
 
-    // TODO: implement
     // prepare order images for printing
-    const printReadyImages = await Promise.all(filesBuffers.map(prepareImageForPrinting))
+    const preparedImagesPromise = files.map((file) =>
+      prepareFileForPrint(context, services, file),
+    )
+    const printReadyImages = await Promise.all(preparedImagesPromise)
     logger.debug('prepared images for printing', { orderID })
 
     // upload images to storage
@@ -44,8 +52,38 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (context) =>
   })
 
   const [images] = await Promise.all(processAndUploadImagesPromise)
+  logger.info('processed and uploaded images', { orderIDs })
 }
 
-const prepareImageForPrinting = async (file: Buffer): Promise<Buffer> => {
-  return file
+// TODO: remove temp files
+const prepareFileForPrint = async (
+  context: Context,
+  services: Services,
+  file: Buffer,
+): Promise<Buffer> => {
+  const logger = context.logger.child({ name: 'prepareFileForPrint' })
+
+  // create SVG outline
+  const { filePath: outlineFilePath, originalHeight } =
+    await services.Image.CreateSVGOutline(file)
+  logger.debug('created svg outline', { outlineFilePath })
+
+  // convert raster to SVG
+  const svgFilePath = await services.Image.RasterToSVG(file)
+  logger.debug('converted raster to svg', { svgFilePath })
+
+  // merge SVG outline with SVG image
+  const mergeMargin = originalHeight + context.config.image.outlineWidth
+  const mergedFilePath = await services.Image.MergeSVGs(
+    svgFilePath,
+    outlineFilePath,
+    mergeMargin,
+  )
+  logger.debug('merged svg outline with svg image', { mergedFilePath })
+
+  // get merged file buffer
+  const mergedFileBuffer = await getRawBody(fs.createReadStream(mergedFilePath))
+  logger.debug('got merged file buffer')
+
+  return mergedFileBuffer
 }

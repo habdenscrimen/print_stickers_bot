@@ -1,4 +1,5 @@
 import { Context } from '../context'
+import { Services } from '../services'
 import { countUnprocessedImagesCommand } from './count_unprocessed_images'
 import { createLayoutsCommand } from './create_layouts'
 
@@ -10,12 +11,13 @@ interface Commands {
 
 export type Command<CommandName extends keyof Commands> = (
   context: Context,
+  services: Services,
   args: Parameters<Commands[CommandName]>,
 ) => ReturnType<Commands[CommandName]>
 
-export const newCommands = (context: Context): Commands => {
+export const newCommands = (context: Context, services: Services): Commands => {
   return {
-    CountUnprocessedImages: () => countUnprocessedImagesCommand(context, []),
-    CreateLayouts: () => createLayoutsCommand(context, []),
+    CountUnprocessedImages: () => countUnprocessedImagesCommand(context, services, []),
+    CreateLayouts: () => createLayoutsCommand(context, services, []),
   }
 }

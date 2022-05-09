@@ -6,6 +6,9 @@ import { newConfig } from './config'
 import { newLogger } from './logger'
 import { newDatabase } from './database'
 import { newStorage } from './storage'
+import { Services } from './services'
+import { newFileServices } from './services/files'
+import { newImageServices } from './services/image'
 
 const start = async () => {
   const config = newConfig()
@@ -14,8 +17,20 @@ const start = async () => {
   const database = newDatabase(firebaseApp)
   const storage = newStorage()
   const context = newContext({ config, database, logger, storage })
-  const commands = newCommands(context)
 
+  // init services
+  const fileService = newFileServices(context)
+  const imageService = newImageServices(context, fileService)
+
+  const services: Services = {
+    Image: imageService,
+    File: fileService,
+  }
+
+  // init commands
+  const commands = newCommands(context, services)
+
+  // prompt for command
   const command = await promptCommand()
 
   switch (command) {

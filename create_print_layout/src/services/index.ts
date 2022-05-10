@@ -1,6 +1,7 @@
 export interface Services {
   Image: ImageServices
   File: FileServices
+  Layout: LayoutServices
 }
 
 export interface FileServices {
@@ -16,5 +17,20 @@ export interface ImageServices {
     firstSVGPath: string,
     secondSVGPath: string,
     mergeMargin: number,
+  ) => Promise<string>
+}
+
+export interface LayoutServices {
+  GetSizingInPX: () => {
+    maxImagesPerLayout: number
+    maxImagesPerRow: number
+    maxImagesPerColumn: number
+    gap: number
+  }
+  MergeSVGs: (
+    firstSVGPath: string,
+    secondSVGPath: string,
+    mergeMargin: number,
+    direction: 'h' | 'v',
   ) => Promise<string>
 }

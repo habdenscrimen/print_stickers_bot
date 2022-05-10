@@ -19,7 +19,7 @@ export const createSVGOutline: ImageService<'CreateSVGOutline'> = async (
   logger.debug('got image size', { width: imageSize.width, height: imageSize.height })
 
   // calculate outline size
-  const { outlineWidth } = context.config.image
+  const { outlineWidth } = context.config.imageSizing
   const width = outlineWidth + imageSize.width + outlineWidth
   const height = outlineWidth + imageSize.height + outlineWidth
   logger.debug('calculated outline size', { width, height })

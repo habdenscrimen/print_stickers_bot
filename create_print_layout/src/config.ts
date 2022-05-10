@@ -21,8 +21,13 @@ export const newConfig = () => {
       maxHeightInMM: 420,
       border: 20,
     },
-    image: {
+    imageSizing: {
       outlineWidth: 4,
+      widthInMM: 40,
+      widthInPX: 520,
+      heightInMM: 40,
+      heightInPX: 520,
+      gapInMM: 8,
     },
   }
 

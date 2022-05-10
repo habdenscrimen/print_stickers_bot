@@ -41,7 +41,7 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (
     logger.debug('prepared images for printing', { orderID })
 
     // upload images to storage
-    const uploadFilesPromise = printReadyImages.map((file, index) => {
+    const uploadFilesPromise = printReadyImages.map(({ file }, index) => {
       const path = `${context.config.storage.paths.printReadyImages}/${orderID}/${index}.svg`
       return context.storage.UploadFile(file, path)
     })
@@ -53,6 +53,11 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (
 
   const [images] = await Promise.all(processAndUploadImagesPromise)
   logger.info('processed and uploaded images', { orderIDs })
+
+  // create layouts
+  const imagePaths = images.map(({ filePath }) => filePath)
+  const layouts = await createLayouts(context, services, imagePaths)
+  logger.info('created layouts', { layouts: layouts.filePaths })
 }
 
 // TODO: remove temp files
@@ -60,7 +65,7 @@ const prepareFileForPrint = async (
   context: Context,
   services: Services,
   file: Buffer,
-): Promise<Buffer> => {
+): Promise<{ file: Buffer; filePath: string }> => {
   const logger = context.logger.child({ name: 'prepareFileForPrint' })
 
   // create SVG outline
@@ -73,7 +78,7 @@ const prepareFileForPrint = async (
   logger.debug('converted raster to svg', { svgFilePath })
 
   // merge SVG outline with SVG image
-  const mergeMargin = originalHeight + context.config.image.outlineWidth
+  const mergeMargin = originalHeight + context.config.imageSizing.outlineWidth
   const mergedFilePath = await services.Image.MergeSVGs(
     svgFilePath,
     outlineFilePath,
@@ -85,5 +90,111 @@ const prepareFileForPrint = async (
   const mergedFileBuffer = await getRawBody(fs.createReadStream(mergedFilePath))
   logger.debug('got merged file buffer')
 
-  return mergedFileBuffer
+  return {
+    file: mergedFileBuffer,
+    filePath: mergedFilePath,
+  }
+}
+
+export const createLayouts = async (
+  context: Context,
+  services: Services,
+  imagePaths: string[],
+): Promise<{ files: Buffer[]; filePaths: string[] }> => {
+  const logger = context.logger.child({ name: 'createLayouts' })
+
+  // get sizing in px
+  const sizing = services.Layout.GetSizingInPX()
+  logger.debug('got sizing in px', { sizing })
+
+  // split layout images into chunks
+  const layoutImages = chunkArray3D(
+    imagePaths,
+    sizing.maxImagesPerRow,
+    sizing.maxImagesPerColumn,
+  )
+  logger.debug('chunked layout images', { layoutImages })
+
+  // merge images into layouts
+  const layoutPaths: string[] = []
+
+  for (let i = 0; i < layoutImages.length; i += 1) {
+    let layoutRows = ''
+
+    // merge rows into layout
+    for (let j = 0; j < layoutImages[i].length; j += 1) {
+      let mergedRow = layoutImages[i][j][0]
+
+      // merge row items into row
+      for (let k = 1; k < layoutImages[i][j].length; k += 1) {
+        mergedRow = await services.Layout.MergeSVGs(
+          mergedRow,
+          layoutImages[i][j][k],
+          sizing.gap,
+          'h',
+        )
+      }
+
+      layoutRows = await services.Layout.MergeSVGs(layoutRows, mergedRow, sizing.gap, 'v')
+    }
+
+    layoutPaths.push(layoutRows)
+  }
+  logger.debug('merged layout images', { layoutPaths })
+
+  // get buffer for every layout
+  const filesPromise = layoutPaths.map((filePath) =>
+    getRawBody(fs.createReadStream(filePath)),
+  )
+  const files = await Promise.all(filesPromise)
+  logger.debug('got files buffers')
+
+  return {
+    files,
+    filePaths: layoutPaths,
+  }
+}
+
+// export const createLayouts2 = (layoutImages: string[][][]) => {
+//   // temp
+//   // const mergeSVGs = (one: string, two: string) => {
+//   //   return `${one} ${two}`
+//   // }
+
+//   for (let i = 0; i < layoutImages.length; i += 1) {
+//     let mergedColumn = ''
+
+//     for (let j = 0; j < layoutImages[i].length; j += 1) {
+//       let mergedRow = layoutImages[i][j][0]
+
+//       for (let k = 1; k < layoutImages[i][j].length; k += 1) {
+//         mergedRow = mergeSVGs(mergedRow, layoutImages[i][j][k])
+//       }
+//       mergedColumn = mergeSVGs(mergedColumn, mergedRow)
+//     }
+//   }
+// }
+
+export const chunkArray3D = <T>(arr: T[], width2D: number, height2D: number): T[][][] => {
+  // split array into 2D chunks
+  const chunks2D: T[][] = []
+
+  while (arr.length) {
+    chunks2D.push(arr.splice(0, width2D * height2D))
+  }
+
+  // split 2D chunks into 2D chunks and merge them into 3D chunks
+  const result: T[][][] = []
+
+  for (let i = 0; i < chunks2D.length; i += 1) {
+    const chunk3D: T[][] = []
+
+    while (chunks2D[i].length) {
+      chunk3D.push(chunks2D[i].splice(0, width2D))
+    }
+
+    result.push(chunk3D)
+  }
+
+  return result
 }

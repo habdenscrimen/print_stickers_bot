@@ -9,6 +9,7 @@ import { newStorage } from './storage'
 import { Services } from './services'
 import { newFileServices } from './services/files'
 import { newImageServices } from './services/image'
+import { newLayoutServices } from './services/layout'
 
 const start = async () => {
   const config = newConfig()
@@ -19,12 +20,14 @@ const start = async () => {
   const context = newContext({ config, database, logger, storage })
 
   // init services
-  const fileService = newFileServices(context)
-  const imageService = newImageServices(context, fileService)
+  const fileServices = newFileServices(context)
+  const imageServices = newImageServices(context, fileServices)
+  const layoutServices = newLayoutServices(context, fileServices)
 
   const services: Services = {
-    Image: imageService,
-    File: fileService,
+    Image: imageServices,
+    File: fileServices,
+    Layout: layoutServices,
   }
 
   // init commands

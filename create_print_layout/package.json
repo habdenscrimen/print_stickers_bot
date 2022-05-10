@@ -54,7 +54,7 @@
   },
   "ava": {
     "files": [
-      "tests/**/*test.ts"
+      "src/**/*test.ts"
     ],
     "extensions": [
       "ts"

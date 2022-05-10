@@ -32,6 +32,9 @@ module.exports = {
     'import/no-extraneous-dependencies': 0,
     'no-restricted-syntax': 0,
     'guard-for-in': 0,
+    'no-await-in-loop': 0,
+    'ava/use-test': 0,
+    'no-param-reassign': 0,
   },
   env: {
     node: true,

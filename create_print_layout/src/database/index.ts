@@ -1,62 +1,23 @@
-import { Database } from 'firebase-admin/database'
-import { Order, OrderStatus } from '../types'
+import admin from 'firebase-admin'
+import { Order, OrderStatus } from '../domain'
+import { getOrderIDsByStatus } from './get_order_ids_by_status'
+import { updateOrder } from './update_order'
 
-/** getOrderIDsByStatus retrieves confirmed order ids from database */
-const getOrderIDsByStatus = async (
-  db: Database,
-  statuses: OrderStatus[],
-): Promise<string[]> => {
-  try {
-    console.info(`ℹ️  getting confirmed orders from database`)
-
-    const orderIDs = await Promise.all(
-      statuses.map(async (status) => {
-        // get data snapshot
-        const snapshot = await db
-          .ref('orders')
-          .orderByChild('status')
-          .equalTo(status)
-          .get()
-
-        // get snapshot value
-        const orders = snapshot.val()
-        if (!orders) {
-          console.info('ℹ️  no confirmed orders found')
-          return []
-        }
-
-        // get confirmed order ids from snapshot value
-        return Object.keys(orders)
-      }),
-    )
-
-    console.info(`✅ successfully got confirmed orders from database`)
-    return orderIDs.flat()
-  } catch (error) {
-    console.error(`❌ failed to get confirmed orders: ${error}`)
-    return []
-  }
+export interface Database {
+  GetOrderIDsByStatus: (statuses: OrderStatus[]) => Promise<string[]>
+  UpdateOrder: (orderID: string, order: Partial<Order>) => Promise<void>
 }
 
-/** getOrderStatus updates order status in database */
-const updateOrder = async (
-  db: Database,
-  orderID: string,
-  order: Partial<Order>,
-): Promise<void> => {
-  try {
-    console.info(`ℹ️  updating order ${orderID}`)
+export type Handler<HandlerName extends keyof Database> = (
+  database: admin.database.Database,
+  args: Parameters<Database[HandlerName]>,
+) => ReturnType<Database[HandlerName]>
 
-    // update order status
-    await db.ref(`orders/${orderID}`).update(order)
+export const newDatabase = (firebaseApp: admin.app.App): Database => {
+  const db = admin.database(firebaseApp)
 
-    console.info(`✅ successfully updated order ${orderID}`)
-  } catch (error) {
-    console.error(`❌ failed to update order ${orderID}: ${error}`)
+  return {
+    GetOrderIDsByStatus: (...args) => getOrderIDsByStatus(db, [...args]),
+    UpdateOrder: (...args) => updateOrder(db, [...args]),
   }
-}
-
-export default {
-  getOrderIDsByStatus,
-  updateOrder,
 }

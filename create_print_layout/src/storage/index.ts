@@ -1,60 +1,23 @@
 import admin from 'firebase-admin'
+import { File } from '@google-cloud/storage'
+import { getFiles } from './get_files'
+import { uploadFile } from './upload_file'
 
-/** getFiles gets files for specified path. */
-/* eslint-disable-next-line */
-const getFiles = async (path: string) => {
-  try {
-    console.info(`ℹ️  getting order file streams from storage`)
-
-    // get files from storage
-    const [files] = await admin.storage().bucket().getFiles({
-      prefix: path,
-    })
-
-    console.info(`✅ successfully got files from storage`)
-    return files
-  } catch (error) {
-    console.error(`❌ failed to get order images: ${error}`)
-    return []
-  }
+export interface Storage {
+  GetFiles: (path: string) => Promise<File[]>
+  UploadFile: (file: Buffer, path: string) => Promise<void>
 }
 
-/** uploadFileBuffer uploads file buffer to Storage */
-const uploadFileBuffer = async (fileBuffer: Buffer, path: string): Promise<void> => {
-  try {
-    console.info(`ℹ️ uploading file buffer to storage`)
+export type Handler<HandlerName extends keyof Storage> = (
+  database: admin.storage.Storage,
+  args: Parameters<Storage[HandlerName]>,
+) => ReturnType<Storage[HandlerName]>
 
-    // TODO: fix file format
-    const file = admin.storage().bucket().file(path)
+export const newStorage = (): Storage => {
+  const storage = admin.storage()
 
-    await file.save(fileBuffer)
-
-    console.info(`✅ successfully uploaded file buffer to storage`)
-  } catch (error) {
-    console.error(`❌ failed to upload file buffer to storage: ${error}`)
+  return {
+    GetFiles: (...args) => getFiles(storage, [...args]),
+    UploadFile: (...args) => uploadFile(storage, [...args]),
   }
-}
-
-/** countFiles counts files by path. */
-const countFiles = async (path: string): Promise<number> => {
-  try {
-    console.info(`ℹ️ counting files in storage`)
-
-    // get files from storage
-    const [files] = await admin.storage().bucket().getFiles({
-      prefix: path,
-    })
-
-    console.info(`✅ successfully counted files in storage`)
-    return files.length
-  } catch (error) {
-    console.error(`❌ failed to count files in storage: ${error}`)
-    return 0
-  }
-}
-
-export default {
-  getFiles,
-  countFiles,
-  uploadFileBuffer,
 }

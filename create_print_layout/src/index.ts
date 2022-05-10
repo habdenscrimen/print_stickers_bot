@@ -1,92 +1,51 @@
-import inquirer from 'inquirer'
+import { newContext } from './context'
+import { newCommands } from './commands'
+import { promptCommand, CliCommands } from './cli-prompt'
+import { initFirebase } from './firebase'
+import { newConfig } from './config'
+import { newLogger } from './logger'
+import { newDatabase } from './database'
+import { newStorage } from './storage'
+import { Services } from './services'
+import { newFileServices } from './services/files'
+import { newImageServices } from './services/image'
+import { newLayoutServices } from './services/layout'
 
-import {
-  countPrintReadyImages,
-  createPrintLayoutsCommand,
-  processConfirmedOrdersImages,
-} from './commands'
-import { config } from './config'
-import firebase from './firebase'
-import files from './files'
+const start = async () => {
+  const config = newConfig()
+  const logger = newLogger()
+  const { firebaseApp } = initFirebase(config)
+  const database = newDatabase(firebaseApp)
+  const storage = newStorage()
+  const context = newContext({ config, database, logger, storage })
 
-const { db } = firebase.init()
+  // init services
+  const fileServices = newFileServices(context)
+  const imageServices = newImageServices(context, fileServices)
+  const layoutServices = newLayoutServices(context, fileServices)
 
-// create temp files directory
-files.createTempFilesDirectory()
+  const services: Services = {
+    Image: imageServices,
+    File: fileServices,
+    Layout: layoutServices,
+  }
 
-enum Commands {
-  COUNT_UNPROCESSED_PRINT_READY_IMAGES = 'Count unprocessed print-ready images',
-  PROCESS_CONFIRMED_ORDERS_IMAGES = 'Process images of confirmed orders',
-  CREATE_PRINT_LAYOUTS = 'Create print layouts',
-  EXIT = 'Exit',
-  // TODO: implement
-  DOWNLOAD_PRINT_LAYOUTS = 'Download print layouts',
+  // init commands
+  const commands = newCommands(context, services)
+
+  // prompt for command
+  const command = await promptCommand()
+
+  switch (command) {
+    case CliCommands.CountUnprocessedImages:
+      return commands.CountUnprocessedImages()
+
+    case CliCommands.CreateLayouts:
+      return commands.CreateLayouts()
+
+    default:
+      return Promise.resolve()
+  }
 }
 
-/* confirmCreatingLayouts counts print-ready images and asks user to confirm creating layouts. */
-const confirmCreatingLayouts = async (): Promise<boolean> => {
-  // count print-ready images
-  const printReadyImagesCount = await countPrintReadyImages(config, db)
-
-  if (printReadyImagesCount === 0) {
-    console.log('No print-ready images found.')
-    return false
-  }
-
-  // ask user to confirm
-  const answer: { confirmed_creating_layouts: boolean } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'confirmed_creating_layouts',
-      message: `\nThere are ${printReadyImagesCount} print-ready images. Do you want to create print layouts from them?`,
-    },
-  ])
-
-  return answer.confirmed_creating_layouts
-}
-
-const run = async (): Promise<void> => {
-  const answer: { action: Commands } = await inquirer.prompt([
-    {
-      name: 'action',
-      type: 'list',
-      message: 'Select an action',
-      choices: [
-        Commands.COUNT_UNPROCESSED_PRINT_READY_IMAGES,
-        Commands.PROCESS_CONFIRMED_ORDERS_IMAGES,
-        Commands.CREATE_PRINT_LAYOUTS,
-        Commands.EXIT,
-      ],
-    },
-  ])
-
-  if (answer.action === Commands.COUNT_UNPROCESSED_PRINT_READY_IMAGES) {
-    const count = await countPrintReadyImages(config, db)
-
-    console.info(`\n🎉 ${count} print-ready images found`)
-    return
-  }
-
-  if (answer.action === Commands.PROCESS_CONFIRMED_ORDERS_IMAGES) {
-    await processConfirmedOrdersImages(config, db)
-
-    console.info('\n🎉 successfully processed confirmed orders')
-    return
-  }
-
-  if (answer.action === Commands.CREATE_PRINT_LAYOUTS) {
-    const confirmed = await confirmCreatingLayouts()
-
-    if (!confirmed) {
-      console.info('\nSkipped')
-      return
-    }
-
-    await createPrintLayoutsCommand(config, db)
-    console.info('\n🎉 successfully created print layouts')
-  }
-
-  console.info('\nExit')
-}
-
-run()
+start()

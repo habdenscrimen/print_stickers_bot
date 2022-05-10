@@ -1,7 +1,8 @@
-import { getSizingInPX } from './get_sizing_in_px'
-import { mergeSVGs } from './merge_svgs'
-import { Context } from '../../context'
 import { FileServices, LayoutServices } from '..'
+import { Context } from '../../context'
+import { getSizingInPX } from './get_sizing_in_px'
+import { addSVGBorder } from './add_svg_border'
+import { mergeSVGs } from './merge_svgs'
 
 export type LayoutService<HandlerName extends keyof LayoutServices> = (
   context: Context,
@@ -16,5 +17,6 @@ export const newLayoutServices = (
   return {
     GetSizingInPX: (...args) => getSizingInPX(context, fileServices, [...args]),
     MergeSVGs: (...args) => mergeSVGs(context, fileServices, [...args]),
+    AddSVGBorder: (...args) => addSVGBorder(context, fileServices, [...args]),
   }
 }

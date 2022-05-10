@@ -18,7 +18,7 @@ export const mergeSVGs: LayoutService<'MergeSVGs'> = async (
 
   const { stderr } = await promisify(exec)(command)
   if (stderr) {
-    console.error(`❌ failed to merge SVG files: ${stderr}`)
+    logger.error('failed to merge SVGs', { stderr })
     throw new Error(stderr)
   }
 

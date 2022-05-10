@@ -33,4 +33,5 @@ export interface LayoutServices {
     mergeMargin: number,
     direction: 'h' | 'v',
   ) => Promise<string>
+  AddSVGBorder: (filePath: string) => void
 }

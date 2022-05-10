@@ -142,6 +142,11 @@ export const createLayouts = async (
   }
   logger.debug('merged layout images', { layoutPaths })
 
+  // add border to layouts
+  layoutPaths.forEach((layoutPath) => {
+    services.Layout.AddSVGBorder(layoutPath)
+  })
+
   // get buffer for every layout
   const filesPromise = layoutPaths.map((filePath) =>
     getRawBody(fs.createReadStream(filePath)),
@@ -154,26 +159,6 @@ export const createLayouts = async (
     filePaths: layoutPaths,
   }
 }
-
-// export const createLayouts2 = (layoutImages: string[][][]) => {
-//   // temp
-//   // const mergeSVGs = (one: string, two: string) => {
-//   //   return `${one} ${two}`
-//   // }
-
-//   for (let i = 0; i < layoutImages.length; i += 1) {
-//     let mergedColumn = ''
-
-//     for (let j = 0; j < layoutImages[i].length; j += 1) {
-//       let mergedRow = layoutImages[i][j][0]
-
-//       for (let k = 1; k < layoutImages[i][j].length; k += 1) {
-//         mergedRow = mergeSVGs(mergedRow, layoutImages[i][j][k])
-//       }
-//       mergedColumn = mergeSVGs(mergedColumn, mergedRow)
-//     }
-//   }
-// }
 
 export const chunkArray3D = <T>(arr: T[], width2D: number, height2D: number): T[][][] => {
   // split array into 2D chunks

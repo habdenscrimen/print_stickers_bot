@@ -37,3 +37,23 @@
 // // ]
 
 // createLayouts2(imagePaths)
+
+// export const createLayouts2 = (layoutImages: string[][][]) => {
+//   // temp
+//   // const mergeSVGs = (one: string, two: string) => {
+//   //   return `${one} ${two}`
+//   // }
+
+//   for (let i = 0; i < layoutImages.length; i += 1) {
+//     let mergedColumn = ''
+
+//     for (let j = 0; j < layoutImages[i].length; j += 1) {
+//       let mergedRow = layoutImages[i][j][0]
+
+//       for (let k = 1; k < layoutImages[i][j].length; k += 1) {
+//         mergedRow = mergeSVGs(mergedRow, layoutImages[i][j][k])
+//       }
+//       mergedColumn = mergeSVGs(mergedColumn, mergedRow)
+//     }
+//   }
+// }

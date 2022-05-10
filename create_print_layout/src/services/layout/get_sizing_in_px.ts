@@ -5,6 +5,7 @@ export const getSizingInPX: LayoutService<'GetSizingInPX'> = (context) => {
     layoutSizing: {
       maxHeightInMM: maxLayoutHeightInMM,
       maxWidthInMM: maxLayoutWidthInMM,
+      borderWidthInPX,
     },
     imageSizing: {
       widthInMM: imageWidthInMM,
@@ -22,10 +23,12 @@ export const getSizingInPX: LayoutService<'GetSizingInPX'> = (context) => {
 
   // calculate max images per layout
   const maxImagesPerRow = Math.floor(
-    (maxLayoutWidthInPX - imageGapInMM) / (imageWidthInPX + imageGapInPX),
+    (maxLayoutWidthInPX - imageGapInMM - borderWidthInPX * 2) /
+      (imageWidthInPX + imageGapInPX),
   )
   const maxImagesPerColumn = Math.floor(
-    (maxLayoutHeightInPX - imageGapInMM) / (imageHeightInPX + imageGapInPX),
+    (maxLayoutHeightInPX - imageGapInMM - borderWidthInPX * 2) /
+      (imageHeightInPX + imageGapInPX),
   )
   const maxImagesPerLayout = maxImagesPerRow * maxImagesPerColumn
 

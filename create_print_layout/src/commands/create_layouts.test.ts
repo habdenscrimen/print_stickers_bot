@@ -1,4 +1,5 @@
 import avaTest, { TestFn } from 'ava'
+import fs from 'fs'
 import { newConfig } from '../config'
 import { Context, newContext } from '../context'
 import { newDatabase } from '../database'
@@ -9,7 +10,7 @@ import { newFileServices } from '../services/files'
 import { newImageServices } from '../services/image'
 import { newLayoutServices } from '../services/layout'
 import { newStorage } from '../storage'
-import { createLayouts } from './create_layouts'
+import { createLayouts, prepareFileForPrint } from './create_layouts'
 
 const test = avaTest as TestFn<{
   context: Context
@@ -39,6 +40,12 @@ test.before((t) => {
   t.context = { context, services }
 })
 
+test.after((t) => {
+  // delete temp files
+  t.context.services.File.DeleteTempFileDirectory()
+})
+
+// TODO: write automatic tests for checking layouts
 test('should create layouts', async (t) => {
   const { context, services } = t.context
 
@@ -47,6 +54,24 @@ test('should create layouts', async (t) => {
     .map((_, i) => `${__dirname}/__test__/svg_images/${i + 1}.svg`)
 
   const layouts = await createLayouts(context, services, svgImages)
+
+  t.pass()
+})
+
+// TODO: write automatic tests for checking images
+test('should prepare image for printing', async (t) => {
+  const { context, services } = t.context
+
+  const webpImagePaths = new Array(14)
+    .fill(0)
+    .map((_, i) => `${__dirname}/__test__/webp_images/${i + 1}.webp`)
+
+  const webpImages = webpImagePaths.map((path) => fs.readFileSync(path))
+
+  const preparedImages = webpImages.map((image) =>
+    prepareFileForPrint(context, services, image),
+  )
+  await Promise.all(preparedImages)
 
   t.pass()
 })

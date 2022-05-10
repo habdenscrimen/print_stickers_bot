@@ -1,25 +1,25 @@
 import getRawBody from 'raw-body'
+import { nanoid } from 'nanoid'
 import fs from 'fs'
-import { Command } from '.'
-import { Context } from '../context'
 import { Services } from '../services'
+import { Context } from '../context'
+import { Command } from '.'
 
+// TODO: add error handling
 export const createLayoutsCommand: Command<'CreateLayouts'> = async (
   context,
   services,
 ) => {
   const logger = context.logger.child({ name: 'createLayoutsCommand' })
 
-  /*
-    TODO:
-    1. Prepare every image for printing and upload it to the storage.
-    2. Create layouts from ready-to-print images and upload them to the storage.
-    3. Update order status to 'layout_ready' and set layout_ids as IDs of the newly created layouts.
-  */
-
   // get confirmed order ids
   const orderIDs = await context.db.GetOrderIDsByStatus(['confirmed'])
   logger.debug('got confirmed order ids', { orderIDs })
+
+  if (orderIDs.length === 0) {
+    logger.info('✅ no confirmed orders found')
+    return
+  }
 
   // process and upload images for every order
   const processAndUploadImagesPromise = orderIDs.map(async (orderID) => {
@@ -59,21 +59,39 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (
   const layouts = await createLayouts(context, services, imagePaths)
   logger.info('created layouts', { layouts: layouts.filePaths })
 
+  // save current date to constant to use it for saving layouts locally and in storage
+  const now = new Date()
+
   // move layouts to local layouts directory
-  const randomLayoutsDirectory = `${
-    context.config.localFiles.layoutsDirectory
-  }/${new Date()}`
+  const randomLayoutsDirectory = `${context.config.localFiles.layoutsDirectory}/${now}`
   services.File.MoveFiles(layouts.filePaths, randomLayoutsDirectory)
   logger.info('moved layouts to local directory')
 
   // upload layouts to storage
+  const uploadLayoutsPromise = layouts.files.map(async (file) => {
+    const layoutID = nanoid()
+
+    const { printReadyLayouts } = context.config.storage.paths
+    const path = `${printReadyLayouts}/${now}/${layoutID}.svg`
+
+    await context.storage.UploadFile(file, path)
+    return layoutID
+  })
+  const layoutIDs = await Promise.all(uploadLayoutsPromise)
+  logger.info('uploaded layouts to storage', { layoutIDs })
+
+  // update orders in database
+  const updateOrdersPromise = orderIDs.map((orderID) =>
+    context.db.UpdateOrder(orderID, { layouts_ids: layoutIDs, status: 'layout_ready' }),
+  )
+  await Promise.all(updateOrdersPromise)
+  logger.info('updated orders in database', { orderIDs })
 
   // delete temp files
   services.File.DeleteTempFileDirectory()
 }
 
-// TODO: remove temp files
-const prepareFileForPrint = async (
+export const prepareFileForPrint = async (
   context: Context,
   services: Services,
   file: Buffer,
@@ -158,6 +176,7 @@ export const createLayouts = async (
   layoutPaths.forEach((layoutPath) => {
     services.Layout.AddSVGBorder(layoutPath)
   })
+  logger.debug('added border to layouts')
 
   // get buffer for every layout
   const filesPromise = layoutPaths.map((filePath) =>

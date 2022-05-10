@@ -53,7 +53,7 @@ test('should create layouts', async (t) => {
     .fill(0)
     .map((_, i) => `${__dirname}/__test__/svg_images/${i + 1}.svg`)
 
-  const layouts = await createLayouts(context, services, svgImages)
+  await createLayouts(context, services, svgImages)
 
   t.pass()
 })

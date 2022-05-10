@@ -5,7 +5,9 @@ export interface Services {
 }
 
 export interface FileServices {
-  NewTempFilePath: (extension: string) => string
+  NewTempFileDirectory: (extension: string) => string
+  MoveFiles: (sourcePaths: string[], destinationPath: string) => void
+  DeleteTempFileDirectory: () => void
 }
 
 export interface ImageServices {

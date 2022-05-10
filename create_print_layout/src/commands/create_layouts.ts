@@ -58,6 +58,18 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (
   const imagePaths = images.map(({ filePath }) => filePath)
   const layouts = await createLayouts(context, services, imagePaths)
   logger.info('created layouts', { layouts: layouts.filePaths })
+
+  // move layouts to local layouts directory
+  const randomLayoutsDirectory = `${
+    context.config.localFiles.layoutsDirectory
+  }/${new Date()}`
+  services.File.MoveFiles(layouts.filePaths, randomLayoutsDirectory)
+  logger.info('moved layouts to local directory')
+
+  // upload layouts to storage
+
+  // delete temp files
+  services.File.DeleteTempFileDirectory()
 }
 
 // TODO: remove temp files

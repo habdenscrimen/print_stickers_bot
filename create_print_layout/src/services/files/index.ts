@@ -1,6 +1,9 @@
+import fs from 'fs'
 import { Context } from '../../context'
-import { newTempFilePath } from './new_temp_file_path'
 import { FileServices } from '..'
+import { newTempFileDirectory } from './new_temp_file_directory'
+import { deleteTempFileDirectory } from './delete_temp_file_directory'
+import { moveFiles } from './move_files'
 
 export type FileService<HandlerName extends keyof FileServices> = (
   context: Context,
@@ -8,7 +11,22 @@ export type FileService<HandlerName extends keyof FileServices> = (
 ) => ReturnType<FileServices[HandlerName]>
 
 export const newFileServices = (context: Context): FileServices => {
+  // create or clear directory for temp files
+  createOrClearTempFilesDirectory(context.config.localFiles.tempDirectory)
+
   return {
-    NewTempFilePath: (...args) => newTempFilePath(context, [...args]),
+    NewTempFileDirectory: (...args) => newTempFileDirectory(context, [...args]),
+    MoveFiles: (...args) => moveFiles(context, [...args]),
+    DeleteTempFileDirectory: (...args) => deleteTempFileDirectory(context, [...args]),
   }
+}
+
+const createOrClearTempFilesDirectory = (directoryPath: string) => {
+  // remove directory if exists
+  if (fs.existsSync(directoryPath)) {
+    fs.rmSync(directoryPath, { recursive: true })
+  }
+
+  // create a new temp files directory
+  fs.mkdirSync(directoryPath)
 }

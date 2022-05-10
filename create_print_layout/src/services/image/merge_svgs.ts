@@ -14,7 +14,7 @@ export const mergeSVGs: ImageService<'MergeSVGs'> = async (
   const logger = context.logger.child({ name: 'mergeSVGs' })
 
   // create a path for the merged SVG
-  const mergedFilePath = fileServices.NewTempFilePath('svg')
+  const mergedFilePath = fileServices.NewTempFileDirectory('svg')
   logger.debug('merged file path', { mergedFilePath })
 
   // merge SVGs using Python script

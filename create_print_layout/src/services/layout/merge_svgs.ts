@@ -10,7 +10,7 @@ export const mergeSVGs: LayoutService<'MergeSVGs'> = async (
   const logger = context.logger.child({ name: 'mergeSVGs' })
 
   // generate a random file path
-  const mergedFilePath = fileServices.NewTempFilePath('svg')
+  const mergedFilePath = fileServices.NewTempFileDirectory('svg')
   logger.debug('generated random file path', { mergedFilePath })
 
   // merge SVGs using the Python script

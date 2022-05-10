@@ -1,5 +1,8 @@
 import { FileService } from '.'
 
-export const newTempFilePath: FileService<'NewTempFilePath'> = (context, [extension]) => {
+export const newTempFileDirectory: FileService<'NewTempFileDirectory'> = (
+  context,
+  [extension],
+) => {
   return `${context.config.localFiles.tempDirectory}/${Math.random()}.${extension}`
 }

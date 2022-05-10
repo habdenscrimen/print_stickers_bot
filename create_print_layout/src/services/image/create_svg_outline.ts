@@ -47,7 +47,7 @@ export const createSVGOutline: ImageService<'CreateSVGOutline'> = async (
     .out('-composite')
 
   // write outline to temp file
-  const outlineFilePath = fileServices.NewTempFilePath('svg')
+  const outlineFilePath = fileServices.NewTempFileDirectory('svg')
   await promisify<string>(GM.write.bind(GM))(outlineFilePath)
   logger.debug('created outline', { path: outlineFilePath })
 

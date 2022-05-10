@@ -13,6 +13,7 @@ export const newConfig = () => {
     },
     localFiles: {
       tempDirectory: `${process.cwd()}/temp_files`,
+      layoutsDirectory: `/Users/slava/Documents/Stickers/Layouts`,
     },
     layoutSizing: {
       minWidthInMM: 10,

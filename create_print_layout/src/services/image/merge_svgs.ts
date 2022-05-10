@@ -1,10 +1,7 @@
-import GraphicsMagick from 'gm'
 import { promisify } from 'util'
 import fs from 'fs'
 import { exec } from 'child_process'
 import { ImageService } from '.'
-
-const gm = GraphicsMagick.subClass({ imageMagick: true })
 
 export const mergeSVGs: ImageService<'MergeSVGs'> = async (
   context,

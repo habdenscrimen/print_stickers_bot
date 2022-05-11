@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { Bot, webhookCallback, session } from 'grammy'
+import { Bot, webhookCallback, lazySession } from 'grammy'
 import * as functions from 'firebase-functions'
 import { CustomContext, Routes, SessionData } from './types'
 import { requestContactRouter, mainMenuRouter } from './routers'
@@ -14,13 +14,13 @@ const initBot = () => {
   const config = newConfig()
   const { firebaseApp } = initFirebase(config)
   const database = newDatabase(firebaseApp)
-  const storageAdapter = newStorageAdapter(firebaseApp, config)
+  const storageAdapter = newStorageAdapter<SessionData>(firebaseApp, config)
 
   // init bot
   const bot = new Bot<CustomContext>(process.env.TOKEN!)
 
   bot.use(
-    session({
+    lazySession({
       storage: storageAdapter,
       initial: (): SessionData => ({
         route: Routes.MainMenu,
@@ -37,6 +37,8 @@ const initBot = () => {
 
   // use composers
   bot.use(composer)
+
+  bot.catch(console.error)
 
   return bot
 }

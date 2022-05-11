@@ -1,4 +1,4 @@
-import type { Context, SessionFlavor } from 'grammy'
+import type { Context, LazySessionFlavor } from 'grammy'
 
 export enum Routes {
   Idle = 'idle',
@@ -13,4 +13,4 @@ export interface SessionData {
   route: Routes
 }
 
-export type CustomContext = Context & SessionFlavor<SessionData>
+export type CustomContext = Context & LazySessionFlavor<SessionData>

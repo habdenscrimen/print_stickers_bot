@@ -8,7 +8,9 @@ composer.command('help', async (ctx) => {
 })
 
 composer.command('request_contact', async (ctx) => {
-  ctx.session.route = Routes.RequestContact
+  const session = await ctx.session
+  session.route = Routes.RequestContact
+
   await ctx.reply('Перекидую тебе на роут для запиту контакту.')
 })
 

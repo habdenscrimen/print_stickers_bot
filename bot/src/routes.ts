@@ -1,5 +1,3 @@
-import type { Context, LazySessionFlavor } from 'grammy'
-
 export enum Routes {
   Idle = 'idle',
   MainMenu = 'main_menu',
@@ -8,9 +6,3 @@ export enum Routes {
   ConfirmStickers = 'confirm_stickers',
   Delivery = 'delivery',
 }
-
-export interface SessionData {
-  route: Routes
-}
-
-export type CustomContext = Context & LazySessionFlavor<SessionData>

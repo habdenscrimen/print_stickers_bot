@@ -1,8 +1,8 @@
 import { Router } from '@grammyjs/router'
+import { CustomContext } from '../context'
 import { mainMenu } from '../menus'
-import { CustomContext, Routes } from '../types'
+import { Routes } from '../routes'
 
-// const router = new Router<CustomContext>((ctx) => ctx.session.route)
 const router = new Router<CustomContext>(async (ctx) => {
   const session = await ctx.session
   return session.route

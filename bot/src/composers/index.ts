@@ -1,5 +1,6 @@
 import { Composer } from 'grammy'
-import { CustomContext, Routes } from '../types'
+import { CustomContext } from '../context'
+import { Routes } from '../routes'
 
 const composer = new Composer<CustomContext>()
 

@@ -1,5 +1,6 @@
 import { Menu } from '@grammyjs/menu'
-import { CustomContext, Routes } from '../types'
+import { CustomContext } from '../context'
+import { Routes } from '../routes'
 
 export const mainMenu = new Menu<CustomContext>('main_menu')
   .text('Надати контакт', async (ctx) => {

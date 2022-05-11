@@ -1,20 +1,48 @@
-// import * as functions from 'firebase-functions'
-import { createBot } from './bot'
-import { config } from './config'
-import { initFirebaseAdmin } from './firebase_storage'
+import 'dotenv/config'
+import { Bot, webhookCallback, session } from 'grammy'
+import * as functions from 'firebase-functions'
+import { CustomContext, Routes, SessionData } from './types'
+import { requestContactRouter, mainMenuRouter } from './routers'
+import { composer } from './composers'
+import { mainMenu } from './menus'
+import { initFirebase } from './firebase'
+import { newConfig } from './config'
+import { newDatabase, newStorageAdapter } from './database'
 
-// initialize firebase app
-const { db } = initFirebaseAdmin()
+const initBot = () => {
+  // init services
+  const config = newConfig()
+  const { firebaseApp } = initFirebase(config)
+  const database = newDatabase(firebaseApp)
+  const storageAdapter = newStorageAdapter(firebaseApp, config)
 
-// create telegram bot
-const bot = createBot(config, db)
+  // init bot
+  const bot = new Bot<CustomContext>(process.env.TOKEN!)
 
-// launch telegram bot
-bot.launch().then(() => console.log('🚀 Bot started!'))
+  bot.use(
+    session({
+      storage: storageAdapter,
+      initial: (): SessionData => ({
+        route: Routes.MainMenu,
+      }),
+    }),
+  )
 
-// run `botFunction` firebase function that
-// export const botFunction = functions
-//   .region(config.firebase.functionsRegion)
-//   .https.onRequest((request, response) => {
-//     bot.handleUpdate(request.body, response)
-//   })
+  // use menus
+  bot.use(mainMenu)
+
+  // use routers
+  bot.use(requestContactRouter)
+  bot.use(mainMenuRouter)
+
+  // use composers
+  bot.use(composer)
+
+  return bot
+}
+
+const bot = initBot()
+
+export const botFunction = functions
+  .region(process.env.FIREBASE_FUNCTIONS_REGION!)
+  .https.onRequest(webhookCallback(bot))

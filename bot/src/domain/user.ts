@@ -4,5 +4,5 @@ export interface User {
   phone_number: string
   first_name: string
   last_name: string | undefined
-  sticker_packs: string[] | undefined
+  telegram_sticker_sets: string[] | undefined
 }

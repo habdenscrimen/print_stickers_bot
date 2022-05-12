@@ -1,7 +1,7 @@
 import { Router } from '@grammyjs/router'
-import { CustomContext } from '../context'
-import { selectStickersMenuDone } from '../menus'
-import { Routes } from '../routes'
+import { CustomContext } from '../../context'
+import { menuDone } from './menus'
+import { Routes } from '../../routes'
 
 export const selectStickersRouter = new Router<CustomContext>(async (ctx) => {
   const session = await ctx.session
@@ -48,7 +48,7 @@ selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
       const showDoneButton = Object.keys(session.stickers).length > 0
 
       await ctx.reply(`Цей стікер уже додано, пропускаю \nПродовжуй надсилати стікери`, {
-        reply_markup: showDoneButton ? selectStickersMenuDone : undefined,
+        reply_markup: showDoneButton ? menuDone : undefined,
       })
       logger.debug('received duplicate sticker', { stickerFileID })
       return
@@ -57,15 +57,14 @@ selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
     // add sticker id to session
     session.stickers[stickerID] = stickerFileID
     await ctx.reply(`Отримав ✅ \nПродовжуй надсилати стікери`, {
-      reply_markup: selectStickersMenuDone,
+      reply_markup: menuDone,
     })
     logger.debug('received new sticker', { stickerFileID })
   } catch (error) {
     logger.error('failed to select stickers', { error })
-    throw error
   }
 })
 
-selectStickersRouter.otherwise(async (ctx) => {
-  await ctx.reply('Надішли стікер')
-})
+// selectStickersRouter.otherwise(async (ctx) => {
+//   await ctx.reply('Надішли стікер')
+// })

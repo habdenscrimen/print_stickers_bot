@@ -13,6 +13,7 @@ type StickerFileID = string
 export interface SessionData {
   route: Routes
   stickers: Record<StickerID, StickerFileID> | undefined
+  stickerSetName: string | undefined
 }
 
 interface CustomContextOptions {

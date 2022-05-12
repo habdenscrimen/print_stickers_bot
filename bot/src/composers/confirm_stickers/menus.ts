@@ -1,6 +1,6 @@
 import { Menu } from '@grammyjs/menu'
-import { CustomContext } from '../context'
-import { Routes } from '../routes'
+import { CustomContext } from '../../context'
+import { Routes } from '../../routes'
 
 export const mainMenu = new Menu<CustomContext>('main_menu')
   .text('Обрати стікери', async (ctx) => {

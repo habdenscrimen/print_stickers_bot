@@ -1,21 +1,21 @@
 import { customAlphabet } from 'nanoid'
-import { alphanumeric } from 'nanoid-dictionary'
+import { lowercase } from 'nanoid-dictionary'
 import { TelegramStickersService } from '.'
 
 export const createStickerSet: TelegramStickersService<'CreateStickerSet'> = async ([
   ctx,
   stickerFileIDs,
 ]) => {
-  const logger = ctx.logger.child({ name: 'createStickerPack' })
-  logger.debug({ stickerFileIDs })
+  const logger = ctx.logger.child({ name: 'createStickerSet' })
+  logger.debug({ stickerFileIDs: JSON.stringify(stickerFileIDs) })
 
   try {
     // generate random sticker pack name
-    const prefix = customAlphabet(alphanumeric, 10)()
+    const prefix = customAlphabet(lowercase, 20)()
     const stickerSetName = `${prefix}_by_print_stickers_ua_bot`
 
     const { id: userID } = ctx.from!
-    const userStickerPacks = ctx.user?.sticker_packs ?? []
+    const userStickerPacks = ctx.user?.telegram_sticker_sets ?? []
 
     // create sticker pack with 1st sticker
     await ctx.api.createNewStickerSet(
@@ -25,7 +25,7 @@ export const createStickerSet: TelegramStickersService<'CreateStickerSet'> = asy
       '😆',
       { png_sticker: stickerFileIDs[0] },
     )
-    logger.debug('created sticker pack', { stickerSetName })
+    logger.debug('created sticker set', { stickerSetName })
 
     // check if sticker set has 1 sticker
     if (stickerFileIDs.length === 1) {
@@ -40,11 +40,11 @@ export const createStickerSet: TelegramStickersService<'CreateStickerSet'> = asy
       }),
     )
     await Promise.all(addStickersToPackPromise)
-    logger.debug('added stickers to pack', { stickerSetName })
+    logger.debug('added stickers to set', { stickerSetName })
 
     return stickerSetName
   } catch (error) {
-    logger.error('failed to create sticker pack', { error })
+    logger.error('failed to create sticker set', { error })
     throw error
   }
 }

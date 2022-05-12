@@ -1,5 +1,6 @@
 import { TelegramStickersServices } from '..'
 import { createStickerSet } from './create_sticker_set'
+import { deleteStickerSet } from './delete_sticker_set'
 
 export type TelegramStickersService<HandlerName extends keyof TelegramStickersServices> =
   (
@@ -9,5 +10,6 @@ export type TelegramStickersService<HandlerName extends keyof TelegramStickersSe
 export const newTelegramStickersServices = (): TelegramStickersServices => {
   return {
     CreateStickerSet: (...args) => createStickerSet(args),
+    DeleteStickerSet: (...args) => deleteStickerSet(args),
   }
 }

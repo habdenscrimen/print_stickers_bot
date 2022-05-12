@@ -1,7 +1,7 @@
 import { Router } from '@grammyjs/router'
-import { CustomContext } from '../context'
-import { Routes } from '../routes'
-import { mainMenu } from '../menus'
+import { CustomContext } from '../../context'
+import { Routes } from '../../routes'
+import { mainMenu } from './menus'
 
 export const mainMenuRouter = new Router<CustomContext>(async (ctx) => {
   const session = await ctx.session

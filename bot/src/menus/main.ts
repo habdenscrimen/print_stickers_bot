@@ -3,10 +3,12 @@ import { CustomContext } from '../context'
 import { Routes } from '../routes'
 
 export const mainMenu = new Menu<CustomContext>('main_menu')
-  .text('Надати контакт', async (ctx) => {
+  .text('Обрати стікери', async (ctx) => {
     const session = await ctx.session
-    session.route = Routes.RequestContact
+    session.route = Routes.SelectStickers
 
-    ctx.menu.close()
+    await ctx.reply(`Супер! Надішли мені потрібні стікери`)
   })
-  .text('FAQ', (ctx) => ctx.reply('Перекидую тебе на роут для FAQ.'))
+  .text('FAQ', async (ctx) => {
+    await ctx.reply('Ти нажав на FAQ')
+  })

@@ -1,2 +1,2 @@
-export * from './request_contact'
-export * from './main_menu'
+export { selectStickersRouter } from './select_stickers'
+export { mainMenuRouter } from './main_menu'

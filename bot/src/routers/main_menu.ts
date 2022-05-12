@@ -1,18 +1,18 @@
 import { Router } from '@grammyjs/router'
 import { CustomContext } from '../context'
-import { mainMenu } from '../menus'
 import { Routes } from '../routes'
+import { mainMenu } from '../menus'
 
-const router = new Router<CustomContext>(async (ctx) => {
+export const mainMenuRouter = new Router<CustomContext>(async (ctx) => {
   const session = await ctx.session
   return session.route
 })
 
-router.route(Routes.MainMenu, async (ctx) => {
-  await ctx.reply(`Привіт, ти у головному меню.`, { reply_markup: mainMenu })
+mainMenuRouter.route(Routes.MainMenu, async (ctx) => {
+  const logger = ctx.logger.child({ name: Routes.MainMenu })
+  logger.debug('entered route')
 
-  const session = await ctx.session
-  session.route = Routes.RequestContact
+  await ctx.reply(`Надішли мені стікери, які хочеш роздрукувати, а далі я сам`, {
+    reply_markup: mainMenu,
+  })
 })
-
-export { router as mainMenuRouter }

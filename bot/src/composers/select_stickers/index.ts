@@ -35,6 +35,14 @@ selectStickersComposer.callbackQuery(
     await ctx.database.UpdateUser(ctx.from.id, updatedUser)
     logger.debug('saved sticker set to user in database', { updatedUser })
 
+    // ask user to enter delivery address
+    const price =
+      Object.keys(session.stickers!).length * ctx.config.stickerPriceUAH - 0.01
+
+    await ctx.reply(
+      `Дякую, сума замовлення (не враховуючи доставку): ${price} грн \nНапиши дані для доставки стікерів Новою Поштою (імʼя, номер телефону, місто і номер відділення/поштомату) 📤`,
+    )
+
     // remove client loading animation
     await ctx.answerCallbackQuery()
   },

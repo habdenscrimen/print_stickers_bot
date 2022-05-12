@@ -12,6 +12,7 @@ export const newConfig = () => {
         printReadyLayouts: 'print_ready_layouts',
       },
     },
+    stickerPriceUAH: 10,
   }
 
   return config

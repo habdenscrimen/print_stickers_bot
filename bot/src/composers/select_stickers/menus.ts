@@ -16,6 +16,7 @@ export const menuDone = new Menu<CustomContext>('select_stickers_menu_done').tex
     try {
       // get session
       const session = await ctx.session
+      // FIXME: without this line it does not redirect to `selectStickersComposer.callbackQuery`, and I don't know why
       session.route = Routes.ConfirmStickers
       logger.debug('got session', { session })
 

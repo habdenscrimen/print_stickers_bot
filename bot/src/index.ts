@@ -9,11 +9,7 @@ import { CustomContext, SessionData } from './context'
 import { Routes } from './routes'
 import { newTelegramStickersServices } from './services/telegram_stickers'
 import { Services } from './services'
-import {
-  confirmStickersComposer,
-  mainMenuComposer,
-  selectStickersComposer,
-} from './composers'
+import { deliveryComposer, mainMenuComposer, selectStickersComposer } from './composers'
 
 const initBot = () => {
   // init logger, config, database, storage adapter
@@ -65,7 +61,7 @@ const initBot = () => {
   // use composers
   bot.use(mainMenuComposer)
   bot.use(selectStickersComposer)
-  bot.use(confirmStickersComposer)
+  bot.use(deliveryComposer)
 
   bot.catch(console.error)
   return bot

@@ -4,6 +4,7 @@ import { selectStickersRouter } from './router'
 import { menuDone, MenuDoneCallbackQueries } from './menus'
 import { Routes } from '../../routes'
 import { mainMenu } from '../main_menu/menus'
+import { User } from '../../domain'
 
 export const selectStickersComposer = new Composer<CustomContext>()
 
@@ -27,11 +28,17 @@ selectStickersComposer.callbackQuery(
     session.route = Routes.Delivery
     logger.debug('set route to delivery')
 
-    // save sticker set to user in database
-    const userStickerSets = ctx.user?.telegram_sticker_sets ?? []
-    const updatedUserStickerSets = [...userStickerSets, session.stickerSetName!]
-    const updatedUser = { ...ctx.user, telegram_sticker_sets: updatedUserStickerSets }
+    const user = await ctx.database.GetUser(ctx.from.id)
 
+    const updatedUser: Partial<User> = {
+      ...user,
+      telegram_sticker_sets: [
+        ...(user?.telegram_sticker_sets || []),
+        session.stickerSetName!,
+      ],
+    }
+
+    // save sticker set to user in database
     await ctx.database.UpdateUser(ctx.from.id, updatedUser)
     logger.debug('saved sticker set to user in database', { updatedUser })
 

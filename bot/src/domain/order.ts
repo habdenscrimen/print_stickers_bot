@@ -13,4 +13,5 @@ export interface Order {
   delivery_address: string
   sticker_file_ids: string[]
   layouts_ids?: string[]
+  stickerSetName?: string
 }

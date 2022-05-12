@@ -15,13 +15,13 @@ export const createStickerSet: TelegramStickersService<'CreateStickerSet'> = asy
     const stickerSetName = `${prefix}_by_print_stickers_ua_bot`
 
     const { id: userID } = ctx.from!
-    const userStickerPacks = ctx.user?.telegram_sticker_sets ?? []
+    const user = await ctx.database.GetUser(userID)
 
     // create sticker pack with 1st sticker
     await ctx.api.createNewStickerSet(
       userID,
       stickerSetName,
-      `Мої стікери #${(userStickerPacks?.length || 0) + 1}`,
+      `Мої стікери #${(user?.telegram_sticker_sets?.length || 0) + 1}`,
       '😆',
       { png_sticker: stickerFileIDs[0] },
     )

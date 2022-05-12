@@ -5,7 +5,6 @@ import { Database } from './database'
 import { Config } from './config'
 import { Routes } from './routes'
 import { Services } from './services'
-import { User } from './domain'
 
 type StickerID = string
 type StickerFileID = string
@@ -14,6 +13,7 @@ export interface SessionData {
   route: Routes
   stickers: Record<StickerID, StickerFileID> | undefined
   stickerSetName: string | undefined
+  stickerSets: string[] | undefined
 }
 
 interface CustomContextOptions {
@@ -21,7 +21,6 @@ interface CustomContextOptions {
   logger: Logger
   config: Config
   services: Services
-  user: User | undefined
 }
 
 export type CustomContext = Context &

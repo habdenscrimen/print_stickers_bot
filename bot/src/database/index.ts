@@ -3,9 +3,11 @@ import { StorageAdapter } from 'grammy'
 import { Config } from '../config'
 import { Order, User } from '../domain'
 import { createOrder } from './create_order'
+import { getUser } from './get_user'
 import { updateUser } from './update_user'
 
 export interface Database {
+  GetUser: (userID: number) => Promise<User | undefined>
   UpdateUser: (userID: number, user: Partial<User>) => Promise<void>
   CreateOrder: (order: Order) => Promise<string>
 }
@@ -19,6 +21,7 @@ export const newDatabase = (firebaseApp: admin.app.App): Database => {
   const db = admin.database(firebaseApp)
 
   return {
+    GetUser: (...args) => getUser(db, [...args]),
     UpdateUser: (...args) => updateUser(db, [...args]),
     CreateOrder: (...args) => createOrder(db, [...args]),
   }

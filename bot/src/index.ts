@@ -41,6 +41,7 @@ const initBot = () => {
         route: Routes.MainMenu,
         stickers: {},
         stickerSetName: '',
+        stickerSets: [],
       }),
     }),
   )
@@ -52,8 +53,6 @@ const initBot = () => {
     ctx.config = config
     ctx.logger = logger
     ctx.services = services
-
-    // TODO: get user object and save it to ctx
 
     return next()
   })

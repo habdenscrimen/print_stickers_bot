@@ -1,5 +1,4 @@
 export type OrderStatus =
-  | 'unconfirmed'
   | 'confirmed'
   | 'layout_ready'
   | 'printing'

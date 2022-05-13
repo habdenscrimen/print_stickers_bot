@@ -1,20 +1,73 @@
-// import * as functions from 'firebase-functions'
-import { createBot } from './bot'
-import { config } from './config'
-import { initFirebaseAdmin } from './firebase_storage'
+import 'dotenv/config'
+import { Bot, webhookCallback, lazySession } from 'grammy'
+import * as functions from 'firebase-functions'
+import { initFirebase } from './firebase'
+import { newConfig } from './config'
+import { newDatabase, newStorageAdapter } from './database'
+import { newLogger } from './logger'
+import { CustomContext, SessionData } from './context'
+import { Routes } from './routes'
+import { newTelegramStickersServices } from './services/telegram_stickers'
+import { Services } from './services'
+import { deliveryComposer, mainMenuComposer, selectStickersComposer } from './composers'
 
-// initialize firebase app
-const { db } = initFirebaseAdmin()
+const initBot = () => {
+  // init logger, config, database, storage adapter
+  const logger = newLogger()
+  const config = newConfig()
+  const { firebaseApp } = initFirebase(config)
+  const database = newDatabase(firebaseApp)
+  const storageAdapter = newStorageAdapter<SessionData>(firebaseApp, config)
 
-// create telegram bot
-const bot = createBot(config, db)
+  // init services
+  const telegramStickersService = newTelegramStickersServices()
 
-// launch telegram bot
-bot.launch().then(() => console.log('🚀 Bot started!'))
+  const services: Services = {
+    TelegramStickers: telegramStickersService,
+  }
 
-// run `botFunction` firebase function that
-// export const botFunction = functions
-//   .region(config.firebase.functionsRegion)
-//   .https.onRequest((request, response) => {
-//     bot.handleUpdate(request.body, response)
-//   })
+  // init bot
+  const bot = new Bot<CustomContext>(process.env.TOKEN!, {
+    client: {
+      canUseWebhookReply: (method) => method !== 'getStickerSet',
+    },
+  })
+
+  // configure session
+  bot.use(
+    lazySession({
+      storage: storageAdapter,
+      initial: (): SessionData => ({
+        route: Routes.MainMenu,
+        stickers: {},
+        stickerSetName: '',
+        stickerSets: [],
+      }),
+    }),
+  )
+
+  // TODO: add data once, not on every update
+  // add data to context
+  bot.use((ctx, next) => {
+    ctx.database = database
+    ctx.config = config
+    ctx.logger = logger
+    ctx.services = services
+
+    return next()
+  })
+
+  // use composers
+  bot.use(mainMenuComposer)
+  bot.use(selectStickersComposer)
+  bot.use(deliveryComposer)
+
+  bot.catch(console.error)
+  return bot
+}
+
+const bot = initBot()
+
+export const botFunction = functions
+  .region(process.env.FIREBASE_FUNCTIONS_REGION!)
+  .https.onRequest(webhookCallback(bot))

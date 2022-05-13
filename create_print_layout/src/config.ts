@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 export const newConfig = () => {
   const config = {
     storage: {
@@ -26,6 +28,9 @@ export const newConfig = () => {
       heightInMM: 40,
       heightInPX: 520,
       gapInMM: 8,
+    },
+    telegram: {
+      botToken: process.env.BOT_TOKEN!,
     },
   }
 

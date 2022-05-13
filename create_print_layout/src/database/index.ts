@@ -3,10 +3,14 @@ import { getFirestore } from 'firebase-admin/firestore'
 import { Order, OrderStatus } from '../domain'
 import { getOrderIDsByStatus } from './get_order_ids_by_status'
 import { updateOrder } from './update_order'
+import { getConfirmedOrderFileIDs } from './get_confirmed_order_file_ids'
+import { getOrderTelegramFileIDs } from './get_order_telegram_file_ids'
 
 export interface Database {
   GetOrderIDsByStatus: (statuses: OrderStatus[]) => Promise<string[]>
+  GetConfirmedOrderFileIDs: () => Promise<string[]>
   UpdateOrder: (orderID: string, order: Partial<Order>) => Promise<void>
+  GetOrderTelegramFileIDs: (orderID: string) => Promise<string[]>
 }
 
 export type Handler<HandlerName extends keyof Database> = (
@@ -28,5 +32,7 @@ export const newDatabase = (): Database => {
   return {
     GetOrderIDsByStatus: (...args) => getOrderIDsByStatus(db, [...args]),
     UpdateOrder: (...args) => updateOrder(db, [...args]),
+    GetConfirmedOrderFileIDs: (...args) => getConfirmedOrderFileIDs(db, [...args]),
+    GetOrderTelegramFileIDs: (...args) => getOrderTelegramFileIDs(db, [...args]),
   }
 }

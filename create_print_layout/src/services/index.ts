@@ -2,6 +2,11 @@ export interface Services {
   Image: ImageServices
   File: FileServices
   Layout: LayoutServices
+  Telegram: TelegramServices
+}
+
+export interface TelegramServices {
+  GetFileBuffer: (fileID: string) => Promise<Buffer>
 }
 
 export interface FileServices {

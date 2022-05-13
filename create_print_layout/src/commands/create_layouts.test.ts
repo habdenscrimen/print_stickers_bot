@@ -9,6 +9,7 @@ import { Services } from '../services'
 import { newFileServices } from '../services/files'
 import { newImageServices } from '../services/image'
 import { newLayoutServices } from '../services/layout'
+import { newTelegramServices } from '../services/telegram'
 import { newStorage } from '../storage'
 import { createLayouts, prepareFileForPrint } from './create_layouts'
 
@@ -30,11 +31,13 @@ test.before((t) => {
   const fileServices = newFileServices(context)
   const imageServices = newImageServices(context, fileServices)
   const layoutServices = newLayoutServices(context, fileServices)
+  const telegramServices = newTelegramServices(context)
 
   const services: Services = {
     Image: imageServices,
     File: fileServices,
     Layout: layoutServices,
+    Telegram: telegramServices,
   }
 
   t.context = { context, services }

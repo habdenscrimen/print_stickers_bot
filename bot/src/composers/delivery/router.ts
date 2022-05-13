@@ -25,8 +25,11 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
       await ctx.reply(`Дякую 👌`, { reply_markup: { remove_keyboard: true } })
 
       // save user contact to database
+      const user = await ctx.database.GetUser(ctx.from!.id)
+
       const { first_name, last_name, phone_number } = ctx.message.contact
       await ctx.database.UpdateUser(ctx.from!.id, {
+        ...user,
         first_name,
         last_name,
         phone_number,
@@ -61,9 +64,9 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
     const orderID = await ctx.database.CreateOrder({
       delivery_address: deliveryAddress,
       status: 'confirmed',
-      sticker_file_ids: Object.values(session.stickers!),
+      telegram_sticker_file_ids: Object.values(session.stickers!),
       user_id: ctx.from!.id,
-      stickerSetName: session.stickerSetName!,
+      telegram_sticker_set_name: session.stickerSetName!,
     })
     logger.debug('created order in database', { orderID })
 

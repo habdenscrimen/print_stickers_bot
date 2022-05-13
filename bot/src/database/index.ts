@@ -1,10 +1,11 @@
 import admin from 'firebase-admin'
+import { getFirestore } from 'firebase-admin/firestore'
 import { StorageAdapter } from 'grammy'
-import { Config } from '../config'
 import { Order, User } from '../domain'
 import { createOrder } from './create_order'
 import { getUser } from './get_user'
 import { updateUser } from './update_user'
+import { Config } from '../config'
 
 export interface Database {
   GetUser: (userID: number) => Promise<User | undefined>
@@ -13,12 +14,12 @@ export interface Database {
 }
 
 export type Handler<HandlerName extends keyof Database> = (
-  database: admin.database.Database,
+  database: admin.firestore.Firestore,
   args: Parameters<Database[HandlerName]>,
 ) => ReturnType<Database[HandlerName]>
 
-export const newDatabase = (firebaseApp: admin.app.App): Database => {
-  const db = admin.database(firebaseApp)
+export const newDatabase = (): Database => {
+  const db = getFirestore()
 
   return {
     GetUser: (...args) => getUser(db, [...args]),
@@ -27,25 +28,21 @@ export const newDatabase = (firebaseApp: admin.app.App): Database => {
   }
 }
 
-export const newStorageAdapter = <T>(
-  firebaseApp: admin.app.App,
-  config: Config,
-): StorageAdapter<T> => {
-  const db = admin.database(firebaseApp)
+export const newStorageAdapter = <T>(config: Config): StorageAdapter<T> => {
+  const db = getFirestore()
+
+  const collection = db.collection(config.database.sessionStorageKey)
 
   return {
     read: async (key: string) => {
-      const snapshot = await db
-        .ref(`${config.database.sessionStorageKey}/${key}`)
-        .once('value')
-
-      return snapshot.val() === null ? undefined : (snapshot.val() as T)
+      const snapshot = await collection.doc(key).get()
+      return snapshot.data() as T | undefined
     },
     write: async (key: string, value: T) => {
-      return db.ref(`${config.database.sessionStorageKey}/${key}`).set(value)
+      await collection.doc(key).set(value)
     },
     delete: async (key: string) => {
-      return db.ref(`${config.database.sessionStorageKey}/${key}`).remove()
+      await collection.doc(key).delete()
     },
   }
 }

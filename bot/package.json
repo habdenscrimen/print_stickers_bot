@@ -11,7 +11,7 @@
     "start": "npm run firebase:serve",
     "build": "rm -rf ./functions && tsc --build && cp package.json functions/package.json && cp .env functions/.env",
     "firebase:logs": "firebase functions:log",
-    "firebase:serve": "npm run build && firebase emulators:start --only functions,database",
+    "firebase:serve": "npm run build && firebase emulators:start --only functions,firestore",
     "firebase:deploy": "npm run build && firebase deploy --only functions"
   },
   "repository": {

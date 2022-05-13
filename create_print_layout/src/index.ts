@@ -14,8 +14,8 @@ import { newLayoutServices } from './services/layout'
 const start = async () => {
   const config = newConfig()
   const logger = newLogger()
-  const { firebaseApp } = initFirebase(config)
-  const database = newDatabase(firebaseApp)
+  initFirebase(config)
+  const database = newDatabase()
   const storage = newStorage()
   const context = newContext({ config, database, logger, storage })
 

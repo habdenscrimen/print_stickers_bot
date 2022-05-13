@@ -1,8 +1,5 @@
 export const newConfig = () => {
   const config = {
-    database: {
-      url: `https://print-stickers-default-rtdb.europe-west1.firebasedatabase.app/`,
-    },
     storage: {
       bucket: `gs://print-stickers.appspot.com`,
       paths: {

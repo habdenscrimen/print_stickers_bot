@@ -10,7 +10,7 @@ export interface Order {
   user_id: number
   status: OrderStatus
   delivery_address: string
-  sticker_file_ids: string[]
+  telegram_sticker_file_ids: string[]
   layouts_ids?: string[]
-  stickerSetName?: string
+  telegram_sticker_set_name?: string
 }

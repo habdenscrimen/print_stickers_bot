@@ -1,4 +1,5 @@
 export interface User {
+  telegram_user_id: number
   username: string
   phone_number: string
   first_name: string

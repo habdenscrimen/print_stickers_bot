@@ -1,7 +1,6 @@
 export const newConfig = () => {
   const config = {
     database: {
-      url: `https://print-stickers-default-rtdb.europe-west1.firebasedatabase.app/`,
       sessionStorageKey: 'bot_session',
     },
     storage: {

@@ -5,7 +5,6 @@ export const initFirebase = (config: Config) => {
   const app = admin.initializeApp({
     credential: admin.credential.applicationDefault(),
     storageBucket: config.storage.bucket,
-    databaseURL: config.database.url,
   })
 
   return {

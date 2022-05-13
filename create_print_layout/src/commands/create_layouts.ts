@@ -23,15 +23,16 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (
 
   // process and upload images for every order
   const processAndUploadImagesPromise = orderIDs.map(async (orderID) => {
-    // get order files from storage
-    const orderPath = `${context.config.storage.paths.rawImages}/${orderID}`
-    const storageFiles = await context.storage.GetFiles(orderPath)
-    logger.debug('got order files', { orderID })
+    // get order file ids
+    const orderTelegramFileIDs = await context.db.GetOrderTelegramFileIDs(orderID)
+    logger.debug('got order telegram file ids', { orderID, orderTelegramFileIDs })
 
-    // get buffers for every file
-    const filesPromise = storageFiles.map((file) => getRawBody(file.createReadStream()))
-    const files = await Promise.all(filesPromise)
-    logger.debug('got files buffers', { orderID })
+    // get order files from telegram
+    const telegramFilesPromise = orderTelegramFileIDs.map((fileID) =>
+      services.Telegram.GetFileBuffer(fileID),
+    )
+    const files = await Promise.all(telegramFilesPromise)
+    logger.debug('got order files', { orderID })
 
     // prepare order images for printing
     const preparedImagesPromise = files.map((file) =>

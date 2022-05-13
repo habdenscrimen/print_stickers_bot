@@ -1,5 +1,19 @@
 {
   "functions": {
     "runtime": "nodejs16"
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "ui": {
+      "enabled": true
+    },
+    "storage": {
+      "port": 9199
+    }
   }
 }

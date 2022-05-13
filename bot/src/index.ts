@@ -15,9 +15,9 @@ const initBot = () => {
   // init logger, config, database, storage adapter
   const logger = newLogger()
   const config = newConfig()
-  const { firebaseApp } = initFirebase(config)
-  const database = newDatabase(firebaseApp)
-  const storageAdapter = newStorageAdapter<SessionData>(firebaseApp, config)
+  initFirebase(config)
+  const database = newDatabase()
+  const storageAdapter = newStorageAdapter<SessionData>(config)
 
   // init services
   const telegramStickersService = newTelegramStickersServices()

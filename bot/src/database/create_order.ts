@@ -6,7 +6,7 @@ export const createOrder: Handler<'CreateOrder'> = async (db, [order]) => {
   try {
     const orderID = customAlphabet(lowercase, 20)()
 
-    await db.ref(`orders/${orderID}`).set(order)
+    await db.collection('orders').doc(orderID).set(order)
 
     return orderID
   } catch (error) {

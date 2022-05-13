@@ -1,8 +1,7 @@
+import 'dotenv/config'
+
 export const newConfig = () => {
   const config = {
-    database: {
-      url: `https://print-stickers-default-rtdb.europe-west1.firebasedatabase.app/`,
-    },
     storage: {
       bucket: `gs://print-stickers.appspot.com`,
       paths: {
@@ -29,6 +28,9 @@ export const newConfig = () => {
       heightInMM: 40,
       heightInPX: 520,
       gapInMM: 8,
+    },
+    telegram: {
+      botToken: process.env.BOT_TOKEN!,
     },
   }
 

@@ -1,7 +1,6 @@
 export type OrderStatus =
   | 'unconfirmed'
   | 'confirmed'
-  // | 'print_ready'
   | 'layout_ready'
   | 'printing'
   | 'delivery'
@@ -12,5 +11,7 @@ export interface Order {
   user_id: number
   status: OrderStatus
   delivery_address: string
-  layouts_ids: string[]
+  sticker_file_ids: string[]
+  layouts_ids?: string[]
+  stickerSetName?: string
 }

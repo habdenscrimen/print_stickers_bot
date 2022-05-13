@@ -19,12 +19,9 @@ export interface ImageServices {
   CreateSVGOutline: (
     file: Buffer,
   ) => Promise<{ filePath: string; originalHeight: number; originalWidth: number }>
+  AddRasterWhiteOutline: (file: Buffer) => Promise<Buffer>
   RasterToSVG: (file: Buffer) => Promise<string>
-  MergeSVGs: (
-    firstSVGPath: string,
-    secondSVGPath: string,
-    mergeMargin: number,
-  ) => Promise<string>
+  MergeSVGs: (firstSVGPath: string, secondSVGPath: string) => Promise<string>
 }
 
 export interface LayoutServices {

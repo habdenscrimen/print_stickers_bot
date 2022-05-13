@@ -99,22 +99,21 @@ export const prepareFileForPrint = async (
 ): Promise<{ file: Buffer; filePath: string }> => {
   const logger = context.logger.child({ name: 'prepareFileForPrint' })
 
+  // add raster white outline
+  const rasterWithWhiteOutline = await services.Image.AddRasterWhiteOutline(file)
+  logger.debug('added raster white outline')
+
   // create SVG outline
-  const { filePath: outlineFilePath, originalHeight } =
-    await services.Image.CreateSVGOutline(file)
+  const { filePath: outlineFilePath } = await services.Image.CreateSVGOutline(
+    rasterWithWhiteOutline,
+  )
   logger.debug('created svg outline', { outlineFilePath })
 
   // convert raster to SVG
-  const svgFilePath = await services.Image.RasterToSVG(file)
+  const svgFilePath = await services.Image.RasterToSVG(rasterWithWhiteOutline)
   logger.debug('converted raster to svg', { svgFilePath })
 
-  // merge SVG outline with SVG image
-  const mergeMargin = originalHeight + context.config.imageSizing.outlineWidth
-  const mergedFilePath = await services.Image.MergeSVGs(
-    svgFilePath,
-    outlineFilePath,
-    mergeMargin,
-  )
+  const mergedFilePath = await services.Image.MergeSVGs(svgFilePath, outlineFilePath)
   logger.debug('merged svg outline with svg image', { mergedFilePath })
 
   // get merged file buffer

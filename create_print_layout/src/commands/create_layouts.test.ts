@@ -43,20 +43,25 @@ test.before((t) => {
   t.context = { context, services }
 })
 
-test.after((t) => {
-  // delete temp files
-  t.context.services.File.DeleteTempFileDirectory()
-})
+// test.after((t) => {
+//   // delete temp files
+//   t.context.services.File.DeleteTempFileDirectory()
+// })
 
 // TODO: write automatic tests for checking layouts
 test('should create layouts', async (t) => {
   const { context, services } = t.context
 
-  const svgImages = new Array(58)
+  const svgImages = new Array(14)
     .fill(0)
     .map((_, i) => `${__dirname}/__test__/svg_images/${i + 1}.svg`)
 
-  await createLayouts(context, services, svgImages)
+  const files = await createLayouts(context, services, svgImages)
+
+  files.filePaths.forEach((filePath) => {
+    const randomLayoutsDirectory = `${context.config.localFiles.tempDirectory}/test_layouts`
+    services.File.MoveFiles([filePath], randomLayoutsDirectory)
+  })
 
   t.pass()
 })
@@ -74,7 +79,12 @@ test('should prepare image for printing', async (t) => {
   const preparedImages = webpImages.map((image) =>
     prepareFileForPrint(context, services, image),
   )
-  await Promise.all(preparedImages)
+  const files = await Promise.all(preparedImages)
+
+  files.forEach((file) => {
+    const randomLayoutsDirectory = `${context.config.localFiles.tempDirectory}/test_images`
+    services.File.MoveFiles([file.filePath], randomLayoutsDirectory)
+  })
 
   t.pass()
 })

@@ -6,7 +6,7 @@ import { ImageService } from '.'
 export const mergeSVGs: ImageService<'MergeSVGs'> = async (
   context,
   fileServices,
-  [firstSVGPath, secondSVGPath, mergeMargin],
+  [firstSVGPath, secondSVGPath],
 ) => {
   const logger = context.logger.child({ name: 'mergeSVGs' })
 
@@ -15,16 +15,18 @@ export const mergeSVGs: ImageService<'MergeSVGs'> = async (
   logger.debug('merged file path', { mergedFilePath })
 
   // merge SVGs using Python script
-  const command = `python3 ${__dirname}/merge_svgs.py --margin=-${mergeMargin} ${firstSVGPath} ${secondSVGPath} > ${mergedFilePath}`
+  const command = `python3 ${__dirname}/merge_svgs.py ${firstSVGPath} ${secondSVGPath} > ${mergedFilePath}`
 
   const { stderr } = await promisify(exec)(command)
   if (stderr) {
     logger.error('failed to merge SVG files', { stderr })
     throw new Error(stderr)
   }
-  logger.debug('merged two SVG files', { mergedFilePath })
+  logger.debug('merged two SVG files', { mergedFilePath, command })
 
   const mergedSVGContent = fs.readFileSync(mergedFilePath, 'utf-8')
+
+  const { heightInPX, widthInPX } = context.config.imageSizing
 
   // fix merging SVGs
   const updatedSVGContent = mergedSVGContent
@@ -38,7 +40,7 @@ export const mergeSVGs: ImageService<'MergeSVGs'> = async (
     )
     .replace(
       /version=".+" width=".+" height=".+"/gim,
-      'version="1.1" width="520.0" height="520.0"',
+      `version="1.1" width="${widthInPX}" height="${heightInPX}"`,
     )
 
   // update SVG file on disk

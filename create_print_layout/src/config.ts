@@ -24,9 +24,9 @@ export const newConfig = () => {
     imageSizing: {
       outlineWidth: 4,
       widthInMM: 40,
-      widthInPX: 520,
+      widthInPX: 550,
       heightInMM: 40,
-      heightInPX: 520,
+      heightInPX: 550,
       gapInMM: 8,
     },
     telegram: {

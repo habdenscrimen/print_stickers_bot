@@ -4,6 +4,7 @@ import fs from 'fs'
 import { Services } from '../services'
 import { Context } from '../context'
 import { Command } from '.'
+import { OrderEvent } from '../domain'
 
 // TODO: add error handling
 export const createLayoutsCommand: Command<'CreateLayouts'> = async (
@@ -24,7 +25,8 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (
   // process and upload images for every order
   const processAndUploadImagesPromise = orderIDs.map(async (orderID) => {
     // get order file ids
-    const orderTelegramFileIDs = await context.db.GetOrderTelegramFileIDs(orderID)
+    const order = await context.db.GetOrder(orderID)
+    const orderTelegramFileIDs = order.telegram_sticker_file_ids
     logger.debug('got order telegram file ids', { orderID, orderTelegramFileIDs })
 
     // get order files from telegram
@@ -82,9 +84,19 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (
   logger.info('uploaded layouts to storage', { layoutIDs })
 
   // update orders in database
-  const updateOrdersPromise = orderIDs.map((orderID) =>
-    context.db.UpdateOrder(orderID, { layouts_ids: layoutIDs, status: 'layout_ready' }),
-  )
+  const updateOrdersPromise = orderIDs.map(async (orderID) => {
+    // get order events
+    const { events } = await context.db.GetOrder(orderID)
+
+    // add `layout_ready` event to order
+    const layoutReadyOrderEvent = { layout_ready: new Date().toISOString() } as OrderEvent
+
+    await context.db.UpdateOrder(orderID, {
+      layouts_ids: layoutIDs,
+      status: 'layout_ready',
+      events: [...events, layoutReadyOrderEvent],
+    })
+  })
   await Promise.all(updateOrdersPromise)
   logger.info('updated orders in database', { orderIDs })
 

@@ -12,6 +12,7 @@ export const newConfig = () => {
       },
     },
     stickerPriceUAH: 10,
+    deliveryCostUAH: 41,
   }
 
   return config

@@ -9,7 +9,7 @@ export interface Storage {
 }
 
 export type Handler<HandlerName extends keyof Storage> = (
-  database: admin.storage.Storage,
+  stoage: admin.storage.Storage,
   args: Parameters<Storage[HandlerName]>,
 ) => ReturnType<Storage[HandlerName]>
 

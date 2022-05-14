@@ -67,6 +67,8 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
       telegram_sticker_file_ids: Object.values(session.stickers!),
       user_id: ctx.from!.id,
       telegram_sticker_set_name: session.stickerSetName!,
+      delivery_cost: ctx.config.deliveryCostUAH,
+      stickers_cost: Object.keys(session.stickers!).length * ctx.config.stickerPriceUAH,
     })
     logger.debug('created order in database', { orderID })
 

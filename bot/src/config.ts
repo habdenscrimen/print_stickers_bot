@@ -13,6 +13,9 @@ export const newConfig = () => {
     },
     stickerPriceUAH: 10,
     deliveryCostUAH: 41,
+    telegram: {
+      adminNotificationsChatID: -615170844,
+    },
   }
 
   return config

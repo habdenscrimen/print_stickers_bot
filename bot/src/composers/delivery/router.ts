@@ -76,7 +76,7 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
     logger.debug('created order in database', { orderID })
 
     // send notification about new order
-    await ctx.services.TelegramStickers.SendAdminNotification(ctx, 'new_order', {
+    await ctx.services.Telegram.SendAdminNotification(ctx, 'new_order', {
       stickersCost,
     })
 

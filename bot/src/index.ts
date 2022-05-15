@@ -7,7 +7,7 @@ import { newDatabase, newStorageAdapter } from './database'
 import { newLogger } from './logger'
 import { CustomContext, SessionData } from './context'
 import { Routes } from './routes'
-import { newTelegramStickersServices } from './services/telegram_stickers'
+import { newTelegramServices } from './services/telegram_stickers'
 import { Services } from './services'
 import { deliveryComposer, mainMenuComposer, selectStickersComposer } from './composers'
 
@@ -20,10 +20,10 @@ const initBot = () => {
   const storageAdapter = newStorageAdapter<SessionData>(config)
 
   // init services
-  const telegramStickersService = newTelegramStickersServices()
+  const telegramStickersService = newTelegramServices()
 
   const services: Services = {
-    TelegramStickers: telegramStickersService,
+    Telegram: telegramStickersService,
   }
 
   // init bot

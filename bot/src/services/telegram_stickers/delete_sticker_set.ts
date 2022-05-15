@@ -1,6 +1,6 @@
-import { TelegramStickersService } from '.'
+import { TelegramService } from '.'
 
-export const deleteStickerSet: TelegramStickersService<'DeleteStickerSet'> = async ([
+export const deleteStickerSet: TelegramService<'DeleteStickerSet'> = async ([
   ctx,
   stickerSetName,
 ]) => {

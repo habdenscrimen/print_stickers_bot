@@ -1,14 +1,13 @@
-import { TelegramStickersServices } from '..'
+import { TelegramServices } from '..'
 import { createStickerSet } from './create_sticker_set'
 import { deleteStickerSet } from './delete_sticker_set'
 import { sendAdminNotification } from './send_admin_notification'
 
-export type TelegramStickersService<HandlerName extends keyof TelegramStickersServices> =
-  (
-    args: Parameters<TelegramStickersServices[HandlerName]>,
-  ) => ReturnType<TelegramStickersServices[HandlerName]>
+export type TelegramService<HandlerName extends keyof TelegramServices> = (
+  args: Parameters<TelegramServices[HandlerName]>,
+) => ReturnType<TelegramServices[HandlerName]>
 
-export const newTelegramStickersServices = (): TelegramStickersServices => {
+export const newTelegramServices = (): TelegramServices => {
   return {
     CreateStickerSet: (...args) => createStickerSet(args),
     DeleteStickerSet: (...args) => deleteStickerSet(args),

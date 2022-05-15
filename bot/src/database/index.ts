@@ -7,12 +7,14 @@ import { getUser } from './get_user'
 import { updateUser } from './update_user'
 import { Config } from '../config'
 import { addOrderEvent } from './add_order_event'
+import { getActiveUserOrders } from './get_active_user_orders'
 
 export interface Database {
   GetUser: (userID: number) => Promise<User | undefined>
   UpdateUser: (userID: number, user: Partial<User>) => Promise<void>
   CreateOrder: (order: Omit<Order, 'created_at' | 'events'>) => Promise<string>
   AddOrderEvent: (orderID: string, eventType: OrderEventType) => Promise<void>
+  GetActiveUserOrders: (userID: number) => Promise<Order[]>
 }
 
 export type Handler<HandlerName extends keyof Database> = (
@@ -28,6 +30,7 @@ export const newDatabase = (): Database => {
     UpdateUser: (...args) => updateUser(db, [...args]),
     CreateOrder: (...args) => createOrder(db, [...args]),
     AddOrderEvent: (...args) => addOrderEvent(db, [...args]),
+    GetActiveUserOrders: (...args) => getActiveUserOrders(db, [...args]),
   }
 }
 

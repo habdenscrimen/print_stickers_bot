@@ -1,4 +1,4 @@
-import { TelegramStickersService } from '.'
+import { TelegramService } from '.'
 import { SendAdminNotificationPayloads } from '..'
 
 const createNotificationMessage = <T extends keyof SendAdminNotificationPayloads>(
@@ -13,9 +13,11 @@ const createNotificationMessage = <T extends keyof SendAdminNotificationPayloads
   }
 }
 
-export const sendAdminNotification: TelegramStickersService<
-  'SendAdminNotification'
-> = async ([ctx, event, payload]) => {
+export const sendAdminNotification: TelegramService<'SendAdminNotification'> = async ([
+  ctx,
+  event,
+  payload,
+]) => {
   const logger = ctx.logger.child({ name: 'sendAdminNotification' })
   logger.debug({ event, payload })
 

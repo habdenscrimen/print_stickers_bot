@@ -21,7 +21,7 @@ export const menuDone = new Menu<CustomContext>('select_stickers_menu_done').tex
       logger.debug('got session', { session })
 
       // create sticker pack
-      const stickerSetName = await ctx.services.TelegramStickers.CreateStickerSet(
+      const stickerSetName = await ctx.services.Telegram.CreateStickerSet(
         ctx,
         Object.values(session.stickers!),
       )

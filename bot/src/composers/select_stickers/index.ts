@@ -67,7 +67,7 @@ selectStickersComposer.callbackQuery(MenuDoneCallbackQueries.Cancel, async (ctx)
   logger.debug('set route to main menu')
 
   // delete sticker set
-  await ctx.services.TelegramStickers.DeleteStickerSet(ctx, session.stickerSetName!)
+  await ctx.services.Telegram.DeleteStickerSet(ctx, session.stickerSetName!)
   logger.debug('sticker set successfully deleted')
 
   // clear stickers from session

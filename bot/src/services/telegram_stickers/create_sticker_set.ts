@@ -1,8 +1,8 @@
 import { customAlphabet } from 'nanoid'
 import { lowercase } from 'nanoid-dictionary'
-import { TelegramStickersService } from '.'
+import { TelegramService } from '.'
 
-export const createStickerSet: TelegramStickersService<'CreateStickerSet'> = async ([
+export const createStickerSet: TelegramService<'CreateStickerSet'> = async ([
   ctx,
   stickerFileIDs,
 ]) => {

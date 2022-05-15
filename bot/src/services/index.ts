@@ -1,7 +1,7 @@
 import { CustomContext } from '../context'
 
 export interface Services {
-  TelegramStickers: TelegramStickersServices
+  Telegram: TelegramServices
 }
 
 export interface SendAdminNotificationPayloads {
@@ -10,7 +10,7 @@ export interface SendAdminNotificationPayloads {
   }
 }
 
-export interface TelegramStickersServices {
+export interface TelegramServices {
   CreateStickerSet: (ctx: CustomContext, stickerFileIDs: string[]) => Promise<string>
   DeleteStickerSet: (ctx: CustomContext, stickerSetName: string) => Promise<void>
   SendAdminNotification: <T extends keyof SendAdminNotificationPayloads>(

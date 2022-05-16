@@ -2,11 +2,14 @@ import { Router } from '@grammyjs/router'
 import { CustomContext } from '../../context'
 import { menuDone } from './menus'
 import { Routes } from '../../routes'
+import { texts } from '../texts'
 
 export const selectStickersRouter = new Router<CustomContext>(async (ctx) => {
   const session = await ctx.session
   return session.route
 })
+
+const text = texts.routes.selectStickers
 
 selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
   const logger = ctx.logger.child({ name: Routes.SelectStickers })
@@ -37,14 +40,11 @@ selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
     if (ctx.message.sticker.is_animated || ctx.message.sticker.is_video) {
       const showDoneButton = Object.keys(session.stickers).length > 0
 
-      await ctx.reply(
-        `Наразі анімовані стікери не підтримуються 😔 \nПродовжуй надсилати стікери`,
-        {
-          reply_markup: showDoneButton ? menuDone : undefined,
-          deleteInFuture: true,
-          deletePrevBotMessages: true,
-        },
-      )
+      await ctx.reply(text.animatedStickerNotSupported, {
+        reply_markup: showDoneButton ? menuDone : undefined,
+        deleteInFuture: true,
+        deletePrevBotMessages: true,
+      })
 
       logger.debug('received animated sticker', { message: ctx.message })
       return
@@ -58,7 +58,7 @@ selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
     if (session.stickers[stickerID]) {
       const showDoneButton = Object.keys(session.stickers).length > 0
 
-      await ctx.reply(`Цей стікер уже додано, пропускаю \nПродовжуй надсилати стікери`, {
+      await ctx.reply(text.alreadyAddedSticker, {
         reply_markup: showDoneButton ? menuDone : undefined,
         deleteInFuture: true,
         deletePrevBotMessages: true,
@@ -71,7 +71,7 @@ selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
     // add sticker id to session
     session.stickers[stickerID] = stickerFileID
 
-    await ctx.reply(`Отримав ✅ \nПродовжуй надсилати стікери`, {
+    await ctx.reply(text.stickerReceived, {
       reply_markup: menuDone,
       deleteInFuture: true,
       deletePrevBotMessages: true,

@@ -12,6 +12,8 @@ mainMenuRouter.route(Routes.MainMenu, async (ctx) => {
   const logger = ctx.logger.child({ name: Routes.MainMenu })
   logger.debug('entered route')
 
+  // TODO: investigate when this is called
+
   await ctx.reply(`Надішли мені стікери, які хочеш роздрукувати, а далі я сам`, {
     reply_markup: mainMenu,
   })

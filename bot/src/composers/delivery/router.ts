@@ -3,11 +3,14 @@ import { Keyboard } from 'grammy'
 import { CustomContext } from '../../context'
 import { Routes } from '../../routes'
 import { mainMenu } from '../main_menu/menus'
+import { texts } from '../texts'
 
 export const deliveryRouter = new Router<CustomContext>(async (ctx) => {
   const session = await ctx.session
   return session.route
 })
+
+const text = texts.routes.delivery
 
 deliveryRouter.route(Routes.Delivery, async (ctx) => {
   const logger = ctx.logger.child({ name: Routes.Delivery })
@@ -44,7 +47,7 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
       // redirect to main menu
       session.route = Routes.MainMenu
 
-      await ctx.reply(`Прийняв замовлення, очікуй відправки протягом тижня ✌️`, {
+      await ctx.reply(text.orderConfirmed, {
         reply_markup: mainMenu,
         deleteInFuture: true,
         deletePrevBotMessages: true,
@@ -93,7 +96,7 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
 
       const requestContactKeyboard = new Keyboard().requestContact('Надати номер')
 
-      await ctx.reply(`Мені потрібен твій номер телефону`, {
+      await ctx.reply(text.askPhoneNumber, {
         reply_markup: requestContactKeyboard,
         deleteInFuture: true,
         deletePrevBotMessages: true,
@@ -109,7 +112,7 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
     // redirect to main menu
     session.route = Routes.MainMenu
 
-    await ctx.reply(`Прийняв замовлення, очікуй відправки протягом тижня ✌️`, {
+    await ctx.reply(text.orderConfirmed, {
       reply_markup: mainMenu,
       deleteInFuture: true,
       deletePrevBotMessages: true,

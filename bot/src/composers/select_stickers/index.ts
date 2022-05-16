@@ -5,6 +5,7 @@ import { menuDone, MenuDoneCallbackQueries } from './menus'
 import { Routes } from '../../routes'
 import { mainMenu } from '../main_menu/menus'
 import { User } from '../../domain'
+import { texts } from '../texts'
 
 export const selectStickersComposer = new Composer<CustomContext>()
 
@@ -13,6 +14,8 @@ selectStickersComposer.use(menuDone)
 
 // use routers
 selectStickersComposer.use(selectStickersRouter)
+
+const text = texts.routes.selectStickers
 
 // define callback queries
 selectStickersComposer.callbackQuery(
@@ -46,10 +49,10 @@ selectStickersComposer.callbackQuery(
     const price =
       Object.keys(session.stickers!).length * ctx.config.stickerPriceUAH - 0.01
 
-    await ctx.reply(
-      `Дякую, сума замовлення (не враховуючи доставку): ${price} грн \nНапиши дані для доставки стікерів Новою Поштою (імʼя, номер телефону, місто і номер відділення/поштомату) 📤`,
-      { deleteInFuture: true, deletePrevBotMessages: true },
-    )
+    await ctx.reply(text.confirmationMessage(price), {
+      deleteInFuture: true,
+      deletePrevBotMessages: true,
+    })
 
     // remove client loading animation
     await ctx.answerCallbackQuery()
@@ -80,7 +83,7 @@ selectStickersComposer.callbackQuery(MenuDoneCallbackQueries.Cancel, async (ctx)
   // because `jump` to another composer after changing route is performed after user action only (pressing button, entering text, etc.)
   //
   // go back to main menu
-  await ctx.reply(`Окей, повертаємось 👌`, {
+  await ctx.reply(text.cancelOrder, {
     reply_markup: mainMenu,
     deleteInFuture: true,
     deletePrevBotMessages: true,

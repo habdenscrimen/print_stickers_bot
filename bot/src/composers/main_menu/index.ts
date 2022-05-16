@@ -2,6 +2,7 @@ import { Composer } from 'grammy'
 import { CustomContext } from '../../context'
 import { mainMenuRouter } from './router'
 import { mainMenu } from './menus'
+import { texts } from '../texts'
 
 export const mainMenuComposer = new Composer<CustomContext>()
 
@@ -10,7 +11,7 @@ mainMenuComposer.use(mainMenu)
 
 // define commands
 mainMenuComposer.command('start', async (ctx) => {
-  await ctx.reply(`Привіт!\nНадішли мені стікери, які хочеш роздрукувати, а далі я сам`, {
+  await ctx.reply(texts.greetingWithMenu, {
     reply_markup: mainMenu,
     deleteInFuture: true,
   })

@@ -2,14 +2,17 @@ import { Menu } from '@grammyjs/menu'
 import { InlineKeyboard } from 'grammy'
 import { CustomContext } from '../../context'
 import { Routes } from '../../routes'
+import { texts } from '../texts'
 
 export enum MenuDoneCallbackQueries {
   ConfirmStickers = 'confirm_stickers',
   Cancel = 'cancel',
 }
 
+const text = texts.menus.selectStickers
+
 export const menuDone = new Menu<CustomContext>('select_stickers_menu_done').text(
-  'Це все',
+  text.finishSelectingStickers,
   async (ctx) => {
     const logger = ctx.logger.child({ name: 'selectStickersMenuDone' })
 
@@ -32,15 +35,15 @@ export const menuDone = new Menu<CustomContext>('select_stickers_menu_done').tex
 
       // create keyboard with a link to sticker set
       const keyboardWithLinkToStickerSet = new InlineKeyboard()
-        .url('Твої стікери', `https://t.me/addstickers/${stickerSetName}`)
+        .url(text.linkToStickerSet, `https://t.me/addstickers/${stickerSetName}`)
         .row()
-        .text('Все супер, підтверджую', MenuDoneCallbackQueries.ConfirmStickers)
+        .text(text.confirmStickers, MenuDoneCallbackQueries.ConfirmStickers)
         .row()
-        .text('Я помилився, давай спочатку', MenuDoneCallbackQueries.Cancel)
+        .text(text.notConfirmedStickerSet, MenuDoneCallbackQueries.Cancel)
         .row()
 
       // ask user to confirm stickers
-      await ctx.reply(`Я зібрав усі стікери у пак — перевір, чи все в порядку 😎`, {
+      await ctx.reply(text.stickerSetCreated, {
         reply_markup: keyboardWithLinkToStickerSet,
         deleteInFuture: true,
         deletePrevBotMessages: true,

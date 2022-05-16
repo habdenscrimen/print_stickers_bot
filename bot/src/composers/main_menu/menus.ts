@@ -2,6 +2,7 @@ import { Menu } from '@grammyjs/menu'
 import { CustomContext } from '../../context'
 import { Order, OrderStatus } from '../../domain'
 import { Routes } from '../../routes'
+import { withDeleteMessage } from '../../hof'
 
 const orderStatuses: Record<OrderStatus, string> = {
   confirmed: `✅ Замовлення прийнято`,
@@ -34,7 +35,11 @@ export const mainMenu = new Menu<CustomContext>('main_menu')
     const session = await ctx.session
     session.route = Routes.SelectStickers
 
-    await ctx.reply(`Супер! Надішли мені потрібні стікери`)
+    await withDeleteMessage(
+      ctx,
+      (ctx) => ctx.reply(`Супер! Надішли мені потрібні стікери`),
+      false,
+    )
   })
   .row()
   .text('Мої замовлення', async (ctx) => {
@@ -48,7 +53,10 @@ export const mainMenu = new Menu<CustomContext>('main_menu')
 
       // check if user has any orders
       if (userOrders.length === 0) {
-        await ctx.reply('Поки у тебе немає активних замовлень')
+        // delete previous bot's message and reply with no orders message
+        await withDeleteMessage(ctx, (ctx) =>
+          ctx.reply('Поки у тебе немає активних замовлень', { reply_markup: mainMenu }),
+        )
         logger.debug('user has no orders', { userID })
         return
       }
@@ -60,8 +68,10 @@ export const mainMenu = new Menu<CustomContext>('main_menu')
       // send message
       await ctx.reply(message, { parse_mode: 'Markdown' })
 
-      // show main menu
-      await ctx.reply('Повертаємось у меню', { reply_markup: mainMenu })
+      // delete previous bot's message and show main menu
+      await withDeleteMessage(ctx, (ctx) =>
+        ctx.reply('Повертаємось у меню', { reply_markup: mainMenu }),
+      )
     } catch (error) {
       logger.error('failed to send user orders info', { error })
     }

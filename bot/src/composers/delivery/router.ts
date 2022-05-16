@@ -1,6 +1,7 @@
 import { Router } from '@grammyjs/router'
 import { Keyboard } from 'grammy'
 import { CustomContext } from '../../context'
+import { withDeleteMessage } from '../../hof'
 import { Routes } from '../../routes'
 import { mainMenu } from '../main_menu/menus'
 
@@ -22,7 +23,6 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
     if (ctx.message?.contact) {
       // remove keyboard with `Request contact` button
       logger.debug('contact is sent')
-      await ctx.reply(`Дякую 👌`, { reply_markup: { remove_keyboard: true } })
 
       // save user contact to database
       const user = await ctx.database.GetUser(ctx.from!.id)
@@ -44,9 +44,12 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
 
       // redirect to main menu
       session.route = Routes.MainMenu
-      await ctx.reply(`Прийняв замовлення, очікуй відправки протягом тижня ✌️`, {
-        reply_markup: mainMenu,
-      })
+
+      await withDeleteMessage(ctx, (ctx) =>
+        ctx.reply(`Прийняв замовлення, очікуй відправки протягом тижня ✌️`, {
+          reply_markup: mainMenu,
+        }),
+      )
       return
     }
 
@@ -90,9 +93,11 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
 
       const requestContactKeyboard = new Keyboard().requestContact('Надати номер')
 
-      await ctx.reply(`Мені потрібен твій номер телефону`, {
-        reply_markup: requestContactKeyboard,
-      })
+      await withDeleteMessage(ctx, (ctx) =>
+        ctx.reply(`Мені потрібен твій номер телефону`, {
+          reply_markup: requestContactKeyboard,
+        }),
+      )
       return
     }
 
@@ -103,9 +108,11 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
 
     // redirect to main menu
     session.route = Routes.MainMenu
-    await ctx.reply(`Прийняв замовлення, очікуй відправки протягом тижня ✌️`, {
-      reply_markup: mainMenu,
-    })
+    await withDeleteMessage(ctx, (ctx) =>
+      ctx.reply(`Прийняв замовлення, очікуй відправки протягом тижня ✌️`, {
+        reply_markup: mainMenu,
+      }),
+    )
   } catch (error) {
     logger.error('error', { error })
   }

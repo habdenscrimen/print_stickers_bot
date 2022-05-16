@@ -1,6 +1,7 @@
 import { Menu } from '@grammyjs/menu'
 import { InlineKeyboard } from 'grammy'
 import { CustomContext } from '../../context'
+import { withDeleteMessage } from '../../hof'
 import { Routes } from '../../routes'
 
 export enum MenuDoneCallbackQueries {
@@ -40,9 +41,11 @@ export const menuDone = new Menu<CustomContext>('select_stickers_menu_done').tex
         .row()
 
       // ask user to confirm stickers
-      await ctx.reply(`Я зібрав усі стікери у пак — перевір, чи все в порядку 😎`, {
-        reply_markup: keyboardWithLinkToStickerSet,
-      })
+      await withDeleteMessage(ctx, (ctx) =>
+        ctx.reply(`Я зібрав усі стікери у пак — перевір, чи все в порядку 😎`, {
+          reply_markup: keyboardWithLinkToStickerSet,
+        }),
+      )
     } catch (error) {
       logger.error('failed to process menu done', { error })
     }

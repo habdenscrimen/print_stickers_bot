@@ -7,7 +7,7 @@ import { newDatabase, newStorageAdapter } from './database'
 import { newLogger } from './logger'
 import { CustomContext, SessionData } from './context'
 import { Routes } from './routes'
-import { newTelegramServices } from './services/telegram_stickers'
+import { newTelegramServices } from './services/telegram'
 import { Services } from './services'
 import { deliveryComposer, mainMenuComposer, selectStickersComposer } from './composers'
 
@@ -29,7 +29,8 @@ const initBot = () => {
   // init bot
   const bot = new Bot<CustomContext>(process.env.TOKEN!, {
     client: {
-      canUseWebhookReply: (method) => method !== 'getStickerSet',
+      canUseWebhookReply: (method) =>
+        method !== 'getStickerSet' && method !== 'sendMessage',
     },
   })
 

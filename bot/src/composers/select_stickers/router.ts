@@ -2,6 +2,7 @@ import { Router } from '@grammyjs/router'
 import { CustomContext } from '../../context'
 import { menuDone } from './menus'
 import { Routes } from '../../routes'
+import { withDeleteMessage } from '../../hof'
 
 export const selectStickersRouter = new Router<CustomContext>(async (ctx) => {
   const session = await ctx.session
@@ -16,17 +17,8 @@ selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
 
     // check if user sent sticker
     if (!ctx.message?.sticker) {
-      await ctx.reply(`Це не стікер`)
+      await withDeleteMessage(ctx, (ctx) => ctx.reply(`Це не стікер`))
       logger.debug('received no sticker', { message: ctx.message })
-      return
-    }
-
-    // check if sticker is not animated
-    if (ctx.message.sticker.is_animated || ctx.message.sticker.is_video) {
-      await ctx.reply(
-        `Наразі анімовані стікери не підтримуються 😔 \nПродовжуй надсилати стікери`,
-      )
-      logger.debug('received animated sticker', { message: ctx.message })
       return
     }
 
@@ -39,6 +31,20 @@ selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
       session.stickers = {}
     }
 
+    // check if sticker is not animated
+    if (ctx.message.sticker.is_animated || ctx.message.sticker.is_video) {
+      const showDoneButton = Object.keys(session.stickers).length > 0
+
+      await withDeleteMessage(ctx, (ctx) =>
+        ctx.reply(
+          `Наразі анімовані стікери не підтримуються 😔 \nПродовжуй надсилати стікери`,
+          { reply_markup: showDoneButton ? menuDone : undefined },
+        ),
+      )
+      logger.debug('received animated sticker', { message: ctx.message })
+      return
+    }
+
     // check if sticker is already added
     const stickerFileID = ctx.message.sticker.file_id
     const stickerID = ctx.message.sticker.file_unique_id
@@ -47,24 +53,25 @@ selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
     if (session.stickers[stickerID]) {
       const showDoneButton = Object.keys(session.stickers).length > 0
 
-      await ctx.reply(`Цей стікер уже додано, пропускаю \nПродовжуй надсилати стікери`, {
-        reply_markup: showDoneButton ? menuDone : undefined,
-      })
+      await withDeleteMessage(ctx, (ctx) =>
+        ctx.reply(`Цей стікер уже додано, пропускаю \nПродовжуй надсилати стікери`, {
+          reply_markup: showDoneButton ? menuDone : undefined,
+        }),
+      )
       logger.debug('received duplicate sticker', { stickerFileID })
       return
     }
 
     // add sticker id to session
     session.stickers[stickerID] = stickerFileID
-    await ctx.reply(`Отримав ✅ \nПродовжуй надсилати стікери`, {
-      reply_markup: menuDone,
-    })
+
+    await withDeleteMessage(ctx, (ctx) =>
+      ctx.reply(`Отримав ✅ \nПродовжуй надсилати стікери`, {
+        reply_markup: menuDone,
+      }),
+    )
     logger.debug('received new sticker', { stickerFileID })
   } catch (error) {
     logger.error('failed to select stickers', { error })
   }
 })
-
-// selectStickersRouter.otherwise(async (ctx) => {
-//   await ctx.reply('Надішли стікер')
-// })

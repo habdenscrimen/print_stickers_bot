@@ -10,6 +10,7 @@ import { Routes } from './routes'
 import { newTelegramServices } from './services/telegram'
 import { Services } from './services'
 import { deliveryComposer, mainMenuComposer, selectStickersComposer } from './composers'
+import { deleteMessagesTransformer } from './transformers'
 
 const initBot = () => {
   // init logger, config, database, storage adapter
@@ -46,6 +47,9 @@ const initBot = () => {
       }),
     }),
   )
+
+  // use transformers
+  bot.api.config.use(deleteMessagesTransformer(bot.api))
 
   // TODO: add data once, not on every update
   // add data to context

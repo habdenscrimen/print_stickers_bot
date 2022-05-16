@@ -1,5 +1,7 @@
 import { Logger } from 'winston'
 import { Context, LazySessionFlavor } from 'grammy'
+import { Message } from 'grammy/out/platform.node'
+import { AbortSignal } from 'grammy/out/shim.node'
 import { Database } from './database'
 // import { Storage } from './storage'
 import { Config } from './config'
@@ -23,6 +25,19 @@ interface CustomContextOptions {
   services: Services
 }
 
-export type CustomContext = Context &
+type OtherWithDeletingOptions = Parameters<Context['reply']>['1'] & {
+  deleteInFuture?: boolean
+  deletePrevBotMessages?: boolean
+}
+
+interface CustomContextFlavor extends Context {
+  reply: (
+    text: string,
+    other?: OtherWithDeletingOptions,
+    signal?: AbortSignal,
+  ) => Promise<Message.TextMessage>
+}
+
+export type CustomContext = CustomContextFlavor &
   LazySessionFlavor<SessionData> &
   CustomContextOptions

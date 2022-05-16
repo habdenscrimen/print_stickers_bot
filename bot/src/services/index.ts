@@ -19,15 +19,4 @@ export interface TelegramServices {
     event: T,
     payload: SendAdminNotificationPayloads[T],
   ) => Promise<void>
-  AddMessagesToDelete: (messageIDs: number[]) => void
-  DeleteMessages: (
-    ctx: CustomContext,
-    chatID: number,
-    // funcParallelWithDeletion?: (ctx: CustomContext) => Promise<any>,
-    replyParallelWithDeletion?: {
-      // func: (ctx: CustomContext) => Promise<any>
-      func: (ctx: CustomContext) => ReturnType<CustomContext['reply']>
-      addMessageToDelete: boolean
-    },
-  ) => Promise<void>
 }

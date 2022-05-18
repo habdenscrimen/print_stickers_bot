@@ -52,6 +52,13 @@ const confirmDoneMenu = new Menu<CustomContext>('confirm_done_menu').text(
       session.route = Routes.ConfirmStickers
       logger.debug('got session', { session })
 
+      // TODO: show loader
+      // show loader only if the time of creating sticker set is more than 2 seconds
+      await ctx.reply(`Секунду...`, {
+        deleteInFuture: true,
+        deletePrevBotMessages: true,
+      })
+
       // create sticker pack
       const stickerSetName = await ctx.services.Telegram.CreateStickerSet(
         ctx,

@@ -11,6 +11,7 @@ import { newTelegramServices } from './services/telegram'
 import { Services } from './services'
 import { deliveryComposer, mainMenuComposer, selectStickersComposer } from './composers'
 import { deleteMessagesTransformer } from './transformers'
+import { newOrdersServices } from './services/orders'
 
 const initBot = () => {
   // init logger, config, database, storage adapter
@@ -22,9 +23,11 @@ const initBot = () => {
 
   // init services
   const telegramStickersService = newTelegramServices()
+  const ordersServices = newOrdersServices()
 
   const services: Services = {
     Telegram: telegramStickersService,
+    Orders: ordersServices,
   }
 
   // init bot

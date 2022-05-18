@@ -6,6 +6,7 @@ import { Routes } from '../../routes'
 import { mainMenu } from '../main_menu/menus'
 import { User } from '../../domain'
 import { texts } from '../texts'
+import { OrderPriceLevel } from '../../services'
 
 export const selectStickersComposer = new Composer<CustomContext>()
 
@@ -46,13 +47,21 @@ selectStickersComposer.callbackQuery(
     logger.debug('saved sticker set to user in database', { updatedUser })
 
     // ask user to enter delivery address
-    const price =
-      Object.keys(session.stickers!).length * ctx.config.stickerPriceUAH - 0.01
+    const stickersCount = Object.keys(session.stickers!).length
+    const orderPrice = ctx.services.Orders.CalculateOrderPrice(ctx, stickersCount)
 
-    await ctx.reply(text.confirmationMessage(price), {
-      deleteInFuture: true,
-      deletePrevBotMessages: true,
-    })
+    await ctx.reply(
+      text.confirmationMessage({
+        deliveryPrice: ctx.config.priceUAH.delivery,
+        isDeliveryFree: orderPrice.orderPriceLevel === OrderPriceLevel.free_delivery,
+        stickersPrice: orderPrice.stickersPrice,
+        totalPrice: orderPrice.totalPrice,
+      }),
+      {
+        deleteInFuture: true,
+        deletePrevBotMessages: true,
+      },
+    )
 
     // remove client loading animation
     await ctx.answerCallbackQuery()

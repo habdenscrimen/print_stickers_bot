@@ -36,9 +36,11 @@ selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
       session.stickers = {}
     }
 
+    const stickersCount = Object.keys(session.stickers).length
+
     // check if sticker is not animated
     if (ctx.message.sticker.is_animated || ctx.message.sticker.is_video) {
-      const showDoneButton = Object.keys(session.stickers).length > 0
+      const showDoneButton = stickersCount > 0
 
       await ctx.reply(text.animatedStickerNotSupported, {
         reply_markup: showDoneButton ? menuDone : undefined,
@@ -56,7 +58,7 @@ selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
 
     // check if sticker is already added
     if (session.stickers[stickerID]) {
-      const showDoneButton = Object.keys(session.stickers).length > 0
+      const showDoneButton = stickersCount > 0
 
       await ctx.reply(text.alreadyAddedSticker, {
         reply_markup: showDoneButton ? menuDone : undefined,
@@ -71,7 +73,7 @@ selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
     // add sticker id to session
     session.stickers[stickerID] = stickerFileID
 
-    await ctx.reply(text.stickerReceived, {
+    await ctx.reply(text.stickerReceived(stickersCount + 1), {
       reply_markup: menuDone,
       deleteInFuture: true,
       deletePrevBotMessages: true,

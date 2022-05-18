@@ -28,8 +28,9 @@ export const mainMenu = new Menu<CustomContext>('main_menu')
     const session = await ctx.session
     session.route = Routes.SelectStickers
 
-    await ctx.reply(text.sendStickersAction, {
+    await ctx.reply(text.sendStickersAction(ctx.config.freeDeliveryAfterStickersCount), {
       deletePrevBotMessages: true,
+      parse_mode: 'Markdown',
     })
   })
   .row()

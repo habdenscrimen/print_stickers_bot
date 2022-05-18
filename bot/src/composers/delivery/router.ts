@@ -66,8 +66,8 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
     const deliveryAddress = ctx.message.text
     logger.debug('got delivery address', { deliveryAddress })
 
-    const stickersCost =
-      Object.keys(session.stickers!).length * ctx.config.stickerPriceUAH
+    const stickersCount = Object.keys(session.stickers!).length
+    const orderPrice = ctx.services.Orders.CalculateOrderPrice(ctx, stickersCount)
 
     // create order in database
     const orderID = await ctx.database.CreateOrder({
@@ -76,14 +76,14 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
       telegram_sticker_file_ids: Object.values(session.stickers!),
       user_id: ctx.from!.id,
       telegram_sticker_set_name: session.stickerSetName!,
-      delivery_cost: ctx.config.deliveryCostUAH,
-      stickers_cost: stickersCost,
+      delivery_cost: ctx.config.priceUAH.delivery,
+      stickers_cost: orderPrice.stickersPrice,
     })
     logger.debug('created order in database', { orderID })
 
     // send notification about new order
     await ctx.services.Telegram.SendAdminNotification(ctx, 'new_order', {
-      stickersCost,
+      stickersCost: orderPrice.stickersPrice,
     })
 
     // get user from database

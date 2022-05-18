@@ -13,6 +13,7 @@ mainMenuComposer.use(mainMenu)
 mainMenuComposer.command('start', async (ctx) => {
   await ctx.reply(texts.greetingWithMenu, {
     reply_markup: mainMenu,
+    parse_mode: 'Markdown',
     deleteInFuture: true,
   })
 })

@@ -11,8 +11,13 @@ export const newConfig = () => {
         printReadyLayouts: 'print_ready_layouts',
       },
     },
-    stickerPriceUAH: 10,
-    deliveryCostUAH: 41,
+    priceUAH: {
+      delivery: 41,
+      stickerUnder6: 18,
+      stickerUnder10: 16,
+      stickerAfter10: 14,
+    },
+    freeDeliveryAfterStickersCount: 25,
     telegram: {
       adminNotificationsChatID: -615170844,
     },

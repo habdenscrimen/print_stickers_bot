@@ -1,4 +1,5 @@
 export type OrderStatus =
+  | 'pending_prepayment'
   | 'confirmed'
   | 'layout_ready'
   | 'printing'
@@ -6,15 +7,7 @@ export type OrderStatus =
   | 'completed'
   | 'cancelled'
 
-export type OrderEventType =
-  | 'confirmed'
-  | 'layout_ready'
-  | 'printing'
-  | 'delivery'
-  | 'completed'
-  | 'cancelled'
-
-export type OrderEvent = Record<OrderEventType, string>
+export type OrderEvent = Record<OrderStatus, string>
 
 export interface Order {
   user_id: number
@@ -35,6 +28,9 @@ export interface Order {
 
   // events
   events: OrderEvent[]
+
+  // referral
+  by_referral_of_user_id?: number
 
   // timestamps
   created_at: string

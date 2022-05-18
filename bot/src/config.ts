@@ -21,6 +21,9 @@ export const newConfig = () => {
     telegram: {
       adminNotificationsChatID: -615170844,
     },
+    referral: {
+      freeStickerForInvitedUser: 3,
+    },
   }
 
   return config

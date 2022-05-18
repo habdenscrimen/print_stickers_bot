@@ -16,6 +16,7 @@ export interface SessionData {
   stickers: Record<StickerID, StickerFileID> | undefined
   stickerSetName: string | undefined
   stickerSets: string[] | undefined
+  invitedByUserID: number | undefined
 }
 
 interface CustomContextOptions {

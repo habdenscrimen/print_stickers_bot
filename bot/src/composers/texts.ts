@@ -2,6 +2,7 @@ import { OrderStatus } from '../domain'
 import { OrderPriceLevel } from '../services'
 
 const orderStatuses: Record<OrderStatus, string> = {
+  pending_prepayment: '⏳ Очікує передоплати',
   confirmed: `✅ Замовлення прийнято`,
   layout_ready: `🖨 Виготовлення`,
   printing: `🖨 Виготовлення`,
@@ -12,7 +13,13 @@ const orderStatuses: Record<OrderStatus, string> = {
 
 export const texts = {
   orderStatuses,
-  greetingWithMenu: `Привіт!\nНадішли мені стікери, які хочеш роздрукувати, а далі я сам 🚀`,
+  greetingWithMenu: (invitedByName?: string) => {
+    const invitedMessage = invitedByName
+      ? `Тебе запросив ${invitedByName}. Як тільки ти зробиш перше замовлення, ви обидва отримаєте по 3 безкоштовних стікера 🔥\n\n`
+      : ''
+
+    return `Привіт!\n${invitedMessage}Надішли мені стікери, які хочеш роздрукувати, а далі я сам 🚀`
+  },
   menus: {
     main: {
       chooseStickers: `Обрати стікери`,

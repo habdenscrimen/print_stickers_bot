@@ -32,19 +32,13 @@ selectStickersComposer.callbackQuery(
     session.route = Routes.Delivery
     logger.debug('set route to delivery')
 
-    const user = await ctx.database.GetUser(ctx.from.id)
-
-    const updatedUser: Partial<User> = {
-      ...user,
-      telegram_sticker_sets: [
-        ...(user?.telegram_sticker_sets || []),
-        session.stickerSetName!,
-      ],
-    }
-
     // save sticker set to user in database
-    await ctx.database.UpdateUser(ctx.from.id, updatedUser)
-    logger.debug('saved sticker set to user in database', { updatedUser })
+    await ctx.database.UpdateUser(
+      ctx.from.id,
+      {},
+      { newTelegramStickerSet: session.stickerSetName! },
+    )
+    logger.debug('saved sticker set to user in database')
 
     // ask user to enter delivery address
     const stickersCount = Object.keys(session.stickers!).length

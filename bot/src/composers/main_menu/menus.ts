@@ -60,11 +60,9 @@ export const mainMenu = new Menu<CustomContext>('main_menu')
       logger.debug('sending user orders message', { message })
 
       // send message
-      await ctx.reply(message, { parse_mode: 'Markdown' })
-
-      // delete previous bot's message and show main menu
-      await ctx.reply(text.ordersListGoBackToMenu, {
+      await ctx.reply(message, {
         reply_markup: mainMenu,
+        parse_mode: 'Markdown',
         deleteInFuture: true,
         deletePrevBotMessages: true,
       })

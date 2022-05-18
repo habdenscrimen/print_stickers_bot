@@ -47,7 +47,7 @@ const initBot = () => {
         stickers: {},
         stickerSetName: '',
         stickerSets: [],
-        invitedByUserID: undefined,
+        invitedByTelegramUserID: undefined,
       }),
     }),
   )

@@ -15,7 +15,7 @@ export const createStickerSet: TelegramService<'CreateStickerSet'> = async ([
     const stickerSetName = `${prefix}_by_print_stickers_ua_bot`
 
     const { id: userID } = ctx.from!
-    const user = await ctx.database.GetUser(userID)
+    const user = await ctx.database.GetUserByID(userID)
 
     // create sticker pack with 1st sticker
     await ctx.api.createNewStickerSet(

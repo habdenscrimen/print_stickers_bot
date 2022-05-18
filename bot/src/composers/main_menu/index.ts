@@ -21,14 +21,24 @@ mainMenuComposer.command('start', async (ctx) => {
 
     // check if there's user with such referral code and
     // user is not started bot using their own referral link
-    if (user && user.id !== ctx.from!.id) {
+    if (user && user.telegram_user_id !== ctx.from!.id) {
       // save referral code to session
       const session = await ctx.session
-      session.invitedByUserID = user.id
+      session.invitedByTelegramUserID = user.telegram_user_id
 
       // set user name to show it to user
       invitedByName = `${user.first_name}${user.last_name ? ` ${user.last_name}` : ''}`
     }
+  }
+
+  // create user in database if it doesn't exist
+  const user = await ctx.database.GetUserByID(ctx.from!.id)
+  if (!user) {
+    await ctx.database.CreateUser(ctx.from!.id, {
+      username: ctx.from?.username,
+      first_name: ctx.from?.first_name,
+      last_name: ctx.from?.last_name,
+    })
   }
 
   await ctx.reply(texts.greetingWithMenu(invitedByName), {

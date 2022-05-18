@@ -27,18 +27,14 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
       // remove keyboard with `Request contact` button
       logger.debug('contact is sent')
 
-      // save user contact to database
-      const user = await ctx.database.GetUser(ctx.from!.id)
-
       const { first_name, last_name, phone_number } = ctx.message.contact
       await ctx.database.UpdateUser(ctx.from!.id, {
-        ...user,
         first_name,
         last_name,
         phone_number,
         username: ctx.from?.username,
       })
-      logger.debug('contact is saved')
+      logger.debug('contact is saved', { first_name, last_name, phone_number })
 
       // clear stickers from session
       session.stickers = {}
@@ -85,49 +81,32 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
       telegram_sticker_set_name: session.stickerSetName!,
       delivery_cost: deliveryCost,
       stickers_cost: orderPrice.stickersPrice,
-      by_referral_of_user_id: session.invitedByUserID,
+      by_referral_of_user_id: session.invitedByTelegramUserID,
     })
     logger.debug('created order in database', { orderID })
 
     // check if session has invited by user id
-    if (session.invitedByUserID) {
-      // get invited by user
-      const invitedByUser = await ctx.database.GetUser(session.invitedByUserID)
-      logger.debug('got invited by user', { invitedByUser })
-
-      // calculate free stickers count
-      const freeStickersCount =
-        (invitedByUser?.free_stickers_count || 0) +
-        ctx.config.referral.freeStickerForInvitedUser
-
-      // add current user id to the list of users (friends) who were invited by user
-      const freeStickerForInvitedUserIDs = [
-        ...(invitedByUser?.free_stickers_for_invited_user_ids || []),
-        ctx.from!.id,
-      ]
+    if (session.invitedByTelegramUserID) {
+      const { freeStickerForInvitedUser } = ctx.config.referral
 
       // update invited by user stickers count and invited user ids
-      await ctx.database.UpdateUser(session.invitedByUserID, {
-        ...invitedByUser,
-        free_stickers_count: freeStickersCount,
-        free_stickers_for_invited_user_ids: freeStickerForInvitedUserIDs,
-      })
-      logger.debug('updated invited by user', { id: invitedByUser!.id })
-
-      // get current user
-      const currentUser = await ctx.database.GetUser(ctx.from!.id)
-      logger.debug('got current user', { currentUser })
-
-      // calculate current user's stickers count
-      const currentUserFreeStickersCount =
-        (currentUser?.free_stickers_count || 0) +
-        ctx.config.referral.freeStickerForInvitedUser
+      await ctx.database.UpdateUser(
+        session.invitedByTelegramUserID,
+        {},
+        {
+          incrementFreeStickers: freeStickerForInvitedUser,
+          newInvitedUserID: ctx.from!.id,
+        },
+      )
+      logger.debug('updated invited by user', { id: session.invitedByTelegramUserID })
 
       // update current user's free stickers count
-      await ctx.database.UpdateUser(ctx.from!.id, {
-        ...currentUser,
-        free_stickers_count: currentUserFreeStickersCount,
-      })
+      await ctx.database.UpdateUser(
+        ctx.from!.id,
+        {},
+        { incrementFreeStickers: freeStickerForInvitedUser },
+      )
+      logger.debug(`updated current user's free stickers count`, { id: ctx.from!.id })
     }
 
     // send notification about new order
@@ -136,7 +115,7 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
     })
 
     // get user from database
-    const user = await ctx.database.GetUser(ctx.from!.id)
+    const user = await ctx.database.GetUserByID(ctx.from!.id)
     logger.debug('got user from database', { user })
 
     // if user not found, request contact info and save user to database
@@ -156,7 +135,7 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
     // clear stickers from session
     session.stickers = {}
     session.stickerSetName = ''
-    session.invitedByUserID = undefined
+    session.invitedByTelegramUserID = undefined
     logger.debug('cleared stickers from session')
 
     // redirect to main menu

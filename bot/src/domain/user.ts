@@ -1,9 +1,10 @@
 export interface User {
-  id: number
+  // id: number
+  telegram_user_id: number
 
   // personal info
-  username: string
-  phone_number: string
+  username?: string
+  phone_number?: string
   first_name: string
   last_name?: string
 

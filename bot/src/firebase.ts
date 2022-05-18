@@ -7,6 +7,8 @@ export const initFirebase = (config: Config) => {
     storageBucket: config.storage.bucket,
   })
 
+  app.firestore().settings({ ignoreUndefinedProperties: true })
+
   return {
     firebaseApp: app,
   }

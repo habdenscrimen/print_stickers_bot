@@ -4,6 +4,19 @@ import { CustomContext } from '../context'
 export interface Services {
   Telegram: TelegramServices
   Orders: OrdersServices
+  User: UserServices
+  Notifications: NotificationsServices
+}
+
+export interface SendTelegramUserNotificationPayloads {
+  new_order_by_your_referral: {
+    userID: number
+    invitedUserID: number
+  }
+  you_registered_by_referral: {
+    userChatID: number
+    invitedByUserID: number
+  }
 }
 
 export interface SendAdminNotificationPayloads {
@@ -12,14 +25,30 @@ export interface SendAdminNotificationPayloads {
   }
 }
 
-export interface TelegramServices {
-  CreateStickerSet: (ctx: CustomContext, stickerFileIDs: string[]) => Promise<string>
-  DeleteStickerSet: (ctx: CustomContext, stickerSetName: string) => Promise<void>
+export interface NotificationsServices {
   SendAdminNotification: <T extends keyof SendAdminNotificationPayloads>(
     ctx: CustomContext,
     event: T,
     payload: SendAdminNotificationPayloads[T],
   ) => Promise<void>
+  SendTelegramUserNotification: <T extends keyof SendTelegramUserNotificationPayloads>(
+    ctx: CustomContext,
+    event: T,
+    payload: SendTelegramUserNotificationPayloads[T],
+  ) => Promise<void>
+}
+
+export interface UserServices {
+  AddFreeStickersForOrderByReferralCode: (
+    ctx: CustomContext,
+    currentUserID: number,
+    invitedByUserID: number,
+  ) => Promise<void>
+}
+
+export interface TelegramServices {
+  CreateStickerSet: (ctx: CustomContext, stickerFileIDs: string[]) => Promise<string>
+  DeleteStickerSet: (ctx: CustomContext, stickerSetName: string) => Promise<void>
 }
 
 export enum OrderPriceLevel {

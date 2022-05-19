@@ -1,6 +1,6 @@
 export interface User {
-  // id: number
   telegram_user_id: number
+  telegram_chat_id: number
 
   // personal info
   username?: string

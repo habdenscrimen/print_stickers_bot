@@ -1,6 +1,7 @@
 import { Router } from '@grammyjs/router'
 import { Keyboard } from 'grammy'
 import { CustomContext } from '../../context'
+import { OrderStatus } from '../../domain'
 import { Routes } from '../../routes'
 import { OrderPriceLevel } from '../../services'
 import { mainMenu } from '../main_menu/menus'
@@ -72,10 +73,13 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
         ? 0
         : ctx.config.priceUAH.delivery
 
+    // TODO: check if we can confirm order by default
+    const orderStatus: OrderStatus = 'confirmed'
+
     // create order in database
     const orderID = await ctx.database.CreateOrder({
       delivery_address: deliveryAddress,
-      status: 'confirmed',
+      status: orderStatus,
       telegram_sticker_file_ids: Object.values(session.stickers!),
       user_id: ctx.from!.id,
       telegram_sticker_set_name: session.stickerSetName!,
@@ -86,31 +90,38 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
     logger.debug('created order in database', { orderID })
 
     // check if session has invited by user id
-    if (session.invitedByTelegramUserID) {
-      const { freeStickerForInvitedUser } = ctx.config.referral
-
-      // update invited by user stickers count and invited user ids
-      await ctx.database.UpdateUser(
-        session.invitedByTelegramUserID,
-        {},
-        {
-          incrementFreeStickers: freeStickerForInvitedUser,
-          newInvitedUserID: ctx.from!.id,
-        },
-      )
-      logger.debug('updated invited by user', { id: session.invitedByTelegramUserID })
-
-      // update current user's free stickers count
-      await ctx.database.UpdateUser(
+    if (session.invitedByTelegramUserID && orderStatus === 'confirmed') {
+      // add free stickers for order by referral code
+      await ctx.services.User.AddFreeStickersForOrderByReferralCode(
+        ctx,
         ctx.from!.id,
-        {},
-        { incrementFreeStickers: freeStickerForInvitedUser },
+        session.invitedByTelegramUserID,
       )
-      logger.debug(`updated current user's free stickers count`, { id: ctx.from!.id })
+      logger.debug('added free stickers for order by referral code', { orderID })
+
+      // send notifications to current user and the one who invited him
+      await Promise.all([
+        ctx.services.Notifications.SendTelegramUserNotification(
+          ctx,
+          'you_registered_by_referral',
+          {
+            invitedByUserID: session.invitedByTelegramUserID,
+            userChatID: ctx.chat!.id,
+          },
+        ),
+        ctx.services.Notifications.SendTelegramUserNotification(
+          ctx,
+          'new_order_by_your_referral',
+          {
+            userID: session.invitedByTelegramUserID,
+            invitedUserID: ctx.chat!.id,
+          },
+        ),
+      ])
     }
 
     // send notification about new order
-    await ctx.services.Telegram.SendAdminNotification(ctx, 'new_order', {
+    await ctx.services.Notifications.SendAdminNotification(ctx, 'new_order', {
       stickersCost: orderPrice.stickersPrice,
     })
 

@@ -23,7 +23,7 @@ const createShowOrdersMessage = (orders: Order[]): string => {
 
 const text = texts.menus.main
 
-export const mainMenu = new Menu<CustomContext>('main_menu')
+export const mainMenu: Menu<CustomContext> = new Menu<CustomContext>('main_menu')
   .text(text.chooseStickers, async (ctx) => {
     const session = await ctx.session
     session.route = Routes.SelectStickers
@@ -33,6 +33,18 @@ export const mainMenu = new Menu<CustomContext>('main_menu')
       parse_mode: 'Markdown',
     })
   })
+  .row()
+  .text(text.referralLinkButton, async (ctx) => {
+    const session = await ctx.session
+
+    return ctx.reply(text.referralLink(session.user!.referral_code), {
+      parse_mode: 'Markdown',
+      reply_markup: mainMenu,
+      deleteInFuture: true,
+      deletePrevBotMessages: true,
+    })
+  })
+  .text(text.settingsButton)
   .row()
   .text(text.myOrders, async (ctx) => {
     const logger = ctx.logger.child({ name: 'mainMenu - My Orders' })
@@ -61,8 +73,8 @@ export const mainMenu = new Menu<CustomContext>('main_menu')
 
       // send message
       await ctx.reply(message, {
-        reply_markup: mainMenu,
         parse_mode: 'Markdown',
+        reply_markup: mainMenu,
         deleteInFuture: true,
         deletePrevBotMessages: true,
       })

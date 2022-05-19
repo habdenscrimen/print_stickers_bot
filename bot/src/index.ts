@@ -48,6 +48,7 @@ const initBot = () => {
         stickerSetName: '',
         stickerSets: [],
         invitedByTelegramUserID: undefined,
+        user: undefined,
       }),
     }),
   )

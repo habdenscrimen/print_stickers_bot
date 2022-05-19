@@ -3,6 +3,7 @@ import { CustomContext } from '../../context'
 import { mainMenuRouter } from './router'
 import { mainMenu } from './menus'
 import { texts } from '../texts'
+import { User } from '../../domain'
 
 export const mainMenuComposer = new Composer<CustomContext>()
 
@@ -11,6 +12,8 @@ mainMenuComposer.use(mainMenu)
 
 // define commands
 mainMenuComposer.command('start', async (ctx) => {
+  const logger = ctx.logger.child({ name: 'mainMenu: start' })
+
   let invitedByName: string | undefined
 
   // check for referral code
@@ -21,6 +24,10 @@ mainMenuComposer.command('start', async (ctx) => {
       ctx.database.GetUserByID(ctx.from!.id),
       ctx.database.GetUserByData({ referral_code: referralCode }),
     ])
+    logger.debug("got current user and referral code's owner", {
+      currentUser,
+      invitedByUser,
+    })
 
     // check that referral code's owner exist and
     // current user is not exist and
@@ -41,6 +48,14 @@ mainMenuComposer.command('start', async (ctx) => {
         last_name: ctx.from?.last_name,
         invited_by_user_id: invitedByUser.telegram_user_id,
       })
+      logger.debug('created current user in database')
+
+      // get the newly created user
+      const newUser = (await ctx.database.GetUserByID(ctx.from!.id)) as User
+      logger.debug('got the newly created user', { newUser })
+
+      session.user = newUser
+      logger.debug('set current user to session')
 
       // set user name to show it to user
       invitedByName = `${invitedByUser.first_name}${

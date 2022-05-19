@@ -7,6 +7,7 @@ import { Database } from './database'
 import { Config } from './config'
 import { Routes } from './routes'
 import { Services } from './services'
+import { User } from './domain'
 
 type StickerID = string
 type StickerFileID = string
@@ -17,6 +18,7 @@ export interface SessionData {
   stickerSetName: string | undefined
   stickerSets: string[] | undefined
   invitedByTelegramUserID: number | undefined
+  user: User | undefined
 }
 
 interface CustomContextOptions {

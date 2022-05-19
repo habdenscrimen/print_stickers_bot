@@ -18,6 +18,9 @@ export interface Order {
   telegram_sticker_set_name?: string
   invited_by_user_id?: number
 
+  // status
+  paid?: boolean
+
   // cost
   delivery_cost: number
   stickers_cost: number

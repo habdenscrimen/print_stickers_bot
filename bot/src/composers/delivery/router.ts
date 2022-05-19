@@ -73,8 +73,11 @@ deliveryRouter.route(Routes.Delivery, async (ctx) => {
         ? 0
         : ctx.config.priceUAH.delivery
 
-    // TODO: check if we can confirm order by default
-    const orderStatus: OrderStatus = 'confirmed'
+    // check if the order can be confirmed by default
+    const orderStatus: OrderStatus =
+      orderPrice.stickersPrice > ctx.config.maxOrderPriceAllowedWithoutPrepayment
+        ? 'pending_prepayment'
+        : 'confirmed'
 
     // create order in database
     const orderID = await ctx.database.CreateOrder({

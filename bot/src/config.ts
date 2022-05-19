@@ -24,6 +24,7 @@ export const newConfig = () => {
     referral: {
       freeStickerForInvitedUser: 3,
     },
+    maxOrderPriceAllowedWithoutPrepayment: 500,
   }
 
   return config

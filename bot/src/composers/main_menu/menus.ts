@@ -38,17 +38,21 @@ export const mainMenu: Menu<CustomContext> = new Menu<CustomContext>('main_menu'
     try {
       const session = await ctx.session
 
-      return ctx.reply(text.referralLink(session.user!.referral_code), {
-        parse_mode: 'Markdown',
-        reply_markup: mainMenu,
-        deleteInFuture: true,
-        deletePrevBotMessages: true,
-      })
+      const freeStickersCount = session.user?.free_stickers_count || 0
+
+      return ctx.reply(
+        text.referralLink(session.user!.referral_code, freeStickersCount),
+        {
+          parse_mode: 'Markdown',
+          reply_markup: mainMenu,
+          deleteInFuture: true,
+          deletePrevBotMessages: true,
+        },
+      )
     } catch (error) {
       throw new Error(`failed to send referral link message: ${error}`)
     }
   })
-  .text(text.settingsButton)
   .row()
   .text(text.myOrders, async (ctx) => {
     const logger = ctx.logger.child({ name: 'mainMenu - My Orders' })

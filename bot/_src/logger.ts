@@ -8,5 +8,8 @@ export const newLogger = (options?: LoggerOptions) => {
     format: format.combine(format.colorize(), format.simple()),
   })
 
+  const asd = 12
+  logger.debug(`asd`, { asd })
+
   return logger
 }

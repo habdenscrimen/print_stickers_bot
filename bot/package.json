@@ -10,7 +10,7 @@
     "check": "npm run check:format && npm run check:typescript && npm run check:eslint",
     "dev": "npm run firebase:dev",
     "start": "npm run firebase:start",
-    "build": "rm -rf ./functions && tsc --build && cp package.json functions/package.json && cp .env functions/.env",
+    "build": "rm -rf ./functions && tsc --build && cp package.json functions/cmd/package.json && cp .env functions/cmd/.env",
     "firebase:logs": "firebase functions:log",
     "firebase:dev": "npm run build && firebase emulators:start --only functions,firestore,storage",
     "firebase:start": "npm run build && firebase emulators:start --only functions",
@@ -38,6 +38,7 @@
     "grammy": "^1.8.3",
     "nanoid": "^3.3.3",
     "nanoid-dictionary": "^4.3.0",
+    "pino": "^7.11.0",
     "telegraf": "^4.7.0",
     "typegram": "^3.9.0",
     "winston": "^3.7.2"

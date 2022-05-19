@@ -23,7 +23,7 @@ const createShowOrdersMessage = (orders: Order[]): string => {
 
 const text = texts.menus.main
 
-export const mainMenu = new Menu<CustomContext>('main_menu')
+export const mainMenu: Menu<CustomContext> = new Menu<CustomContext>('main_menu')
   .text(text.chooseStickers, async (ctx) => {
     const session = await ctx.session
     session.route = Routes.SelectStickers
@@ -32,6 +32,26 @@ export const mainMenu = new Menu<CustomContext>('main_menu')
       deletePrevBotMessages: true,
       parse_mode: 'Markdown',
     })
+  })
+  .row()
+  .text(text.referralLinkButton, async (ctx) => {
+    try {
+      const session = await ctx.session
+
+      const freeStickersCount = session.user?.free_stickers_count || 0
+
+      return ctx.reply(
+        text.referralLink(session.user!.referral_code, freeStickersCount),
+        {
+          parse_mode: 'Markdown',
+          reply_markup: mainMenu,
+          deleteInFuture: true,
+          deletePrevBotMessages: true,
+        },
+      )
+    } catch (error) {
+      throw new Error(`failed to send referral link message: ${error}`)
+    }
   })
   .row()
   .text(text.myOrders, async (ctx) => {
@@ -60,10 +80,8 @@ export const mainMenu = new Menu<CustomContext>('main_menu')
       logger.debug('sending user orders message', { message })
 
       // send message
-      await ctx.reply(message, { parse_mode: 'Markdown' })
-
-      // delete previous bot's message and show main menu
-      await ctx.reply(text.ordersListGoBackToMenu, {
+      await ctx.reply(message, {
+        parse_mode: 'Markdown',
         reply_markup: mainMenu,
         deleteInFuture: true,
         deletePrevBotMessages: true,

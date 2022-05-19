@@ -1,4 +1,4 @@
-import { TelegramService } from '.'
+import { NotificationService } from '.'
 import { SendAdminNotificationPayloads } from '..'
 
 const createNotificationMessage = <T extends keyof SendAdminNotificationPayloads>(
@@ -13,11 +13,9 @@ const createNotificationMessage = <T extends keyof SendAdminNotificationPayloads
   }
 }
 
-export const sendAdminNotification: TelegramService<'SendAdminNotification'> = async ([
-  ctx,
-  event,
-  payload,
-]) => {
+export const sendAdminNotification: NotificationService<
+  'SendAdminNotification'
+> = async ([ctx, event, payload]) => {
   const logger = ctx.logger.child({ name: 'sendAdminNotification' })
   logger.debug({ event, payload })
 
@@ -32,7 +30,7 @@ export const sendAdminNotification: TelegramService<'SendAdminNotification'> = a
     })
     logger.debug('sent admin notification')
   } catch (error) {
-    logger.error('failed to create admin notification', { error })
+    logger.error('failed to send admin notification', { error })
     throw error
   }
 }

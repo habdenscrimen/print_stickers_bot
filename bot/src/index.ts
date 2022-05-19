@@ -12,6 +12,8 @@ import { Services } from './services'
 import { deliveryComposer, mainMenuComposer, selectStickersComposer } from './composers'
 import { deleteMessagesTransformer } from './transformers'
 import { newOrdersServices } from './services/orders'
+import { newUserServices } from './services/users'
+import { newNotificationsServices } from './services/notifications'
 
 const initBot = () => {
   // init logger, config, database, storage adapter
@@ -24,10 +26,14 @@ const initBot = () => {
   // init services
   const telegramStickersService = newTelegramServices()
   const ordersServices = newOrdersServices()
+  const userServices = newUserServices()
+  const notificationServices = newNotificationsServices()
 
   const services: Services = {
     Telegram: telegramStickersService,
     Orders: ordersServices,
+    User: userServices,
+    Notifications: notificationServices,
   }
 
   // init bot
@@ -47,6 +53,8 @@ const initBot = () => {
         stickers: {},
         stickerSetName: '',
         stickerSets: [],
+        invitedByTelegramUserID: undefined,
+        user: undefined,
       }),
     }),
   )

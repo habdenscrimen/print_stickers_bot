@@ -1,5 +1,5 @@
 import { FieldValue } from 'firebase-admin/firestore'
-import { customAlphabet, nanoid } from 'nanoid'
+import { customAlphabet } from 'nanoid'
 import { lowercase } from 'nanoid-dictionary'
 import { Handler } from '.'
 import { User } from '../domain'

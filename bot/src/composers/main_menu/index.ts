@@ -16,29 +16,37 @@ mainMenuComposer.command('start', async (ctx) => {
   // check for referral code
   const referralCode = ctx.match
   if (referralCode) {
-    // get user with such referral code
-    const user = await ctx.database.GetUserByData({ referral_code: referralCode })
+    // get current user and referral code's owner
+    const [currentUser, invitedByUser] = await Promise.all([
+      ctx.database.GetUserByID(ctx.from!.id),
+      ctx.database.GetUserByData({ referral_code: referralCode }),
+    ])
 
-    // check if there's user with such referral code and
-    // user is not started bot using their own referral link
-    if (user && user.telegram_user_id !== ctx.from!.id) {
+    // check that referral code's owner exist and
+    // current user is not exist and
+    // current user is not referral code's owner
+    if (
+      invitedByUser &&
+      !currentUser &&
+      invitedByUser.telegram_user_id !== ctx.from!.id
+    ) {
       // save referral code to session
       const session = await ctx.session
-      session.invitedByTelegramUserID = user.telegram_user_id
+      session.invitedByTelegramUserID = invitedByUser.telegram_user_id
+
+      // create current user in database
+      await ctx.database.CreateUser(ctx.from!.id, {
+        username: ctx.from?.username,
+        first_name: ctx.from?.first_name,
+        last_name: ctx.from?.last_name,
+        invited_by_user_id: invitedByUser.telegram_user_id,
+      })
 
       // set user name to show it to user
-      invitedByName = `${user.first_name}${user.last_name ? ` ${user.last_name}` : ''}`
+      invitedByName = `${invitedByUser.first_name}${
+        invitedByUser.last_name ? ` ${invitedByUser.last_name}` : ''
+      }`
     }
-  }
-
-  // create user in database if it doesn't exist
-  const user = await ctx.database.GetUserByID(ctx.from!.id)
-  if (!user) {
-    await ctx.database.CreateUser(ctx.from!.id, {
-      username: ctx.from?.username,
-      first_name: ctx.from?.first_name,
-      last_name: ctx.from?.last_name,
-    })
   }
 
   await ctx.reply(texts.greetingWithMenu(invitedByName), {

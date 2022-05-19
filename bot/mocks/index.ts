@@ -19,7 +19,7 @@ const mockUsers = async () => {
       .collection('users')
       .doc(userID.toString())
       .set({
-        id: userID,
+        telegram_user_id: userID,
         first_name: faker.name.firstName(),
         last_name: faker.name.lastName(),
         phone_number: faker.phone.phoneNumber(),

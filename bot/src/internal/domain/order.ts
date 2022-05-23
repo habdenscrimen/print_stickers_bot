@@ -1,5 +1,5 @@
 export type OrderStatus =
-  | 'pending_prepayment'
+  | 'payment_pending'
   | 'confirmed'
   | 'layout_ready'
   | 'printing'
@@ -16,7 +16,7 @@ export interface Order {
   telegram_sticker_file_ids: string[]
   layouts_ids?: string[]
   telegram_sticker_set_name?: string
-  invited_by_user_id?: number
+  // invited_by_user_id?: number
 
   // status
   paid?: boolean

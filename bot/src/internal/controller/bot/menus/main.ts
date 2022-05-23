@@ -93,8 +93,8 @@ async function myOrdersButton(ctx: Ctx) {
   }
 
   const orderStatuses: Record<OrderStatus, string> = {
-    pending_prepayment: '⏳ Очікує передоплати',
-    confirmed: `✅ Замовлення прийнято`,
+    payment_pending: '⏳ Очікує оплати',
+    confirmed: `✅ Замовлення сплачено`,
     layout_ready: `🖨 Виготовлення`,
     printing: `🖨 Виготовлення`,
     delivery: `🚚 Доставка`,

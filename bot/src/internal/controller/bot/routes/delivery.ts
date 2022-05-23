@@ -2,6 +2,7 @@ import { Keyboard } from 'grammy'
 import { RouteHandler, Routes } from '.'
 import { goLike } from '../../../../pkg/function_exec'
 import { mainMenu } from '../menus/main'
+import { selectPaymentMethod } from '../menus/select_payment_method'
 
 export const delivery: RouteHandler = (nextRoute) => async (ctx) => {
   let logger = ctx.logger.child({ name: 'delivery-route', user_id: ctx.from!.id })
@@ -72,8 +73,51 @@ export const delivery: RouteHandler = (nextRoute) => async (ctx) => {
   // change route to payment
   session.route = Routes.Payment
 
+  // get order price
+  const [orderPrice, getPriceErr] = await ctx.services.Orders.CalculateOrderPrice(
+    ctx,
+    Object.keys(session.order.stickers!).length,
+  )
+  if (!orderPrice || getPriceErr) {
+    logger.error(`failed to calculate order price`)
+    return
+  }
+  logger = logger.child({ orderPrice })
+  logger.debug('calculated order price')
+
+  // create payment info message
+  const paymentInfoMessage = `Обери спосіб оплати (від цього залежить вартість доставки):
+
+
+  1️⃣ *Оплата зараз за допомогою бота (картка або Apple/Google Pay)*
+      
+    Вартість доставки складатиме *${ctx.config.delivery.cost}* грн.
+      
+    Оплата здійнюється за допомогою українського сервісу LiqPay (від Приват24). Ні Телеграм, ні бот не мають доступу до даних картки.
+      
+    ___Це рекомендований спосіб оплати_\r__.
+    
+    
+  2️⃣ *Оплата при отриманні на Новій Пошті*
+      
+    У цьому випадку вартість доставки складатиме *${
+      ctx.config.delivery.cost +
+      ctx.config.delivery.paybackFixCost +
+      (orderPrice.stickersPrice * ctx.config.delivery.paybackPercentCost) / 100
+    }* грн. через комісію Нової Пошти.`
+
+  // logger = logger.child({ paymentInfoMessage })
+
+  const escapedPaymentInfoMessage = paymentInfoMessage
+    .replace(/\(/gm, '\\(')
+    .replace(/\)/gm, '\\)')
+    .replace(/\./gm, '\\.')
+    .replace(/\:/gm, '\\:')
+
   // show payment info with payment options
-  await ctx.reply(`TODO: Щодо оплати замовлення...`, {
+  await ctx.reply(escapedPaymentInfoMessage, {
+    reply_markup: selectPaymentMethod,
+    parse_mode: 'MarkdownV2',
     deleteInFuture: true,
     deletePrevBotMessages: true,
   })

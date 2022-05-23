@@ -22,6 +22,9 @@ export const newConfig = () => {
     },
     bot: {
       token: process.env.BOT_TOKEN!,
+      liqpay: {
+        testToken: process.env.BOT_LIQPAY_TEST_TOKEN!,
+      },
     },
     tariffs: {
       level_1: {
@@ -62,6 +65,8 @@ export const newConfig = () => {
     },
     delivery: {
       cost: 41,
+      paybackFixCost: 20,
+      paybackPercentCost: 2,
     },
   }
 

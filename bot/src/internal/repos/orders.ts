@@ -14,6 +14,7 @@ export const newOrdersRepo = (db: admin.firestore.Firestore): OrdersRepo => {
     GetActiveUserOrders: (...args) => getActiveUserOrders(db, [...args]),
     CreateOrder: (...args) => createOrder(db, [...args]),
     AddOrderEvent: (...args) => addOrderEvent(db, [...args]),
+    UpdateOrder: (...args) => updateOrder(db, [...args]),
   }
 }
 
@@ -40,7 +41,7 @@ export const createOrder: Handler<'CreateOrder'> = async (db, [order]) => {
     .set({
       ...order,
       created_at: now,
-      events: [{ confirmed: now }],
+      events: [{ payment_pending: now }],
     } as Order)
 
   return orderID
@@ -61,4 +62,22 @@ export const addOrderEvent: Handler<'AddOrderEvent'> = async (db, [orderID, even
     .update({
       events: [...events, { [eventType]: now }],
     } as Order)
+}
+
+export const updateOrder: Handler<'UpdateOrder'> = async (db, [orderID, order]) => {
+  const updatedOrder = order
+
+  // if order status is changed, add order event
+  if (order.status) {
+    // get order
+    const orderSnapshot = await db.collection('orders').doc(orderID).get()
+    const dbOrder = orderSnapshot.data() as Order
+
+    // add order event
+    const now = new Date()
+    const events = dbOrder.events || []
+    updatedOrder.events = [...events, { [order.status]: now }] as Order['events']
+  }
+
+  await db.collection('orders').doc(orderID).update(updatedOrder)
 }

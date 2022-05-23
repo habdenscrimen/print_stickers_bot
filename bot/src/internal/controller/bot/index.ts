@@ -17,6 +17,7 @@ import { deleteMessagesTransformer } from './transformers'
 import { menus } from './menus'
 import { router, Routes } from './routes'
 import { commands } from './commands'
+import { mainMenu } from './menus/main'
 
 interface BotOptions {
   config: Config
@@ -69,6 +70,7 @@ export const newBot = (options: BotOptions) => {
   // configure session
   bot.use(
     lazySession({
+      getSessionKey: (ctx) => ctx.from?.id.toString(), // needs for handling payments
       storage: options.storageAdapter,
       initial: (): BotSessionData => ({
         route: Routes.Idle,
@@ -89,6 +91,7 @@ export const newBot = (options: BotOptions) => {
   })
 
   // use menus
+  bot.use(menus.selectPaymentMethod)
   bot.use(menus.mainMenu)
   bot.use(menus.confirmStickerSet)
   bot.use(menus.confirmSelectStickersDoneMenu)
@@ -102,6 +105,47 @@ export const newBot = (options: BotOptions) => {
 
   // use routes
   bot.use(router)
+
+  // handle pre-checkout query
+  bot.on('pre_checkout_query', (ctx) => ctx.answerPreCheckoutQuery(true))
+
+  // handle successful payment
+  bot.on(':successful_payment', async (ctx) => {
+    let logger = ctx.logger.child({ name: 'successful_payment', user_id: ctx.from!.id })
+
+    try {
+      // get order id from webhook payload
+      const orderID = ctx.update.message?.successful_payment?.invoice_payload
+      if (!orderID) {
+        logger = logger.child({ ctx })
+        logger.error('no order id in webhook payload')
+        return
+      }
+
+      // update order status in database
+      await ctx.repos.Orders.UpdateOrder(orderID, {
+        paid: true,
+        status: 'confirmed',
+      })
+
+      // clear order info from session
+      const session = await ctx.session
+      session.order = {}
+      logger.debug('cleared order info from session')
+
+      // change route to main menu
+      session.route = Routes.Welcome
+
+      // show success message to user
+      await ctx.reply(`✅ Оплата пройшла успішно, замовлення оформлене!`, {
+        reply_markup: mainMenu,
+        deleteInFuture: true,
+        deletePrevBotMessages: true,
+      })
+    } catch (error) {
+      logger.error(`failed to handle successful payment: ${error}`)
+    }
+  })
 
   // handle unhandled errors
   bot.catch((err) => {

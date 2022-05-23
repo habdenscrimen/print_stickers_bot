@@ -31,6 +31,7 @@ module.exports = {
     'no-useless-constructor': 0,
     '@typescript-eslint/no-empty-interface': 0,
     'prettier/prettier': ['error', { printWidth: 96 }],
+    'no-useless-escape': 0,
   },
   env: {
     node: true,

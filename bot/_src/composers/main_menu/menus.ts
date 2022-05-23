@@ -40,15 +40,12 @@ export const mainMenu: Menu<CustomContext> = new Menu<CustomContext>('main_menu'
 
       const freeStickersCount = session.user?.free_stickers_count || 0
 
-      return ctx.reply(
-        text.referralLink(session.user!.referral_code, freeStickersCount),
-        {
-          parse_mode: 'Markdown',
-          reply_markup: mainMenu,
-          deleteInFuture: true,
-          deletePrevBotMessages: true,
-        },
-      )
+      return ctx.reply(text.referralLink(session.user!.referral_code, freeStickersCount), {
+        parse_mode: 'Markdown',
+        reply_markup: mainMenu,
+        deleteInFuture: true,
+        deletePrevBotMessages: true,
+      })
     } catch (error) {
       throw new Error(`failed to send referral link message: ${error}`)
     }
@@ -65,8 +62,7 @@ export const mainMenu: Menu<CustomContext> = new Menu<CustomContext>('main_menu'
 
       // check if user has any orders
       if (userOrders.length === 0) {
-        // reply with no orders message
-        await ctx.reply(text.noOrders, {
+        await ctx.reply(`У тебе немає активних замовлень`, {
           reply_markup: mainMenu,
           deleteInFuture: true,
           deletePrevBotMessages: true,

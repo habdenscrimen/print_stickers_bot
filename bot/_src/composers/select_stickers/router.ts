@@ -41,8 +41,9 @@ selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
     // check if sticker is not animated
     if (ctx.message.sticker.is_animated || ctx.message.sticker.is_video) {
       const showDoneButton = stickersCount > 0
+      const message = `Наразі анімовані стікери не підтримуються 😔 \nПродовжуй надсилати стікери`
 
-      await ctx.reply(text.animatedStickerNotSupported, {
+      await ctx.reply(message, {
         reply_markup: showDoneButton ? menuDone : undefined,
         deleteInFuture: true,
         deletePrevBotMessages: true,
@@ -59,8 +60,9 @@ selectStickersRouter.route(Routes.SelectStickers, async (ctx) => {
     // check if sticker is already added
     if (session.stickers[stickerID]) {
       const showDoneButton = stickersCount > 0
+      const message = `Цей стікер уже додано, пропускаю \nПродовжуй надсилати стікери`
 
-      await ctx.reply(text.alreadyAddedSticker, {
+      await ctx.reply(message, {
         reply_markup: showDoneButton ? menuDone : undefined,
         deleteInFuture: true,
         deletePrevBotMessages: true,

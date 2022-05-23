@@ -19,9 +19,7 @@ class DeleteMessages {
       }
 
       // delete messages
-      await Promise.all(
-        chatMessageIDs.map((messageID) => api.deleteMessage(chatID, messageID)),
-      )
+      await Promise.all(chatMessageIDs.map((messageID) => api.deleteMessage(chatID, messageID)))
 
       // clear message ids after deletion
       this.messageIDs.set(chatID, [])
@@ -47,11 +45,7 @@ export const deleteMessagesTransformer: (api: Api<RawApi>) => Transformer =
           deleteMessages.delete(api, chat_id),
         ])
 
-        if (
-          'deleteInFuture' in payload &&
-          response.ok &&
-          'message_id' in response.result
-        ) {
+        if ('deleteInFuture' in payload && response.ok && 'message_id' in response.result) {
           deleteMessages.addIDs(chat_id, response.result.message_id)
         }
 
@@ -62,17 +56,12 @@ export const deleteMessagesTransformer: (api: Api<RawApi>) => Transformer =
     if (payload && 'deleteInFuture' in payload && 'chat_id' in payload) {
       const response = await prev(method, payload, signal)
 
-      if (
-        method !== 'sendMessage' ||
-        !response.ok ||
-        !('message_id' in response.result)
-      ) {
+      if (method !== 'sendMessage' || !response.ok || !('message_id' in response.result)) {
         return response
       }
 
       const { message_id } = response.result
-      const { deleteInFuture, chat_id }: { deleteInFuture: boolean; chat_id: number } =
-        payload
+      const { deleteInFuture, chat_id }: { deleteInFuture: boolean; chat_id: number } = payload
 
       if (deleteInFuture) {
         deleteMessages.addIDs(chat_id, message_id)

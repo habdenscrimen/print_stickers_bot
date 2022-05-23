@@ -45,7 +45,6 @@ export const newDatabase = (): Database => {
 
 export const newStorageAdapter = <T>(config: Config): StorageAdapter<T> => {
   const db = getFirestore()
-
   const collection = db.collection(config.database.sessionStorageKey)
 
   return {

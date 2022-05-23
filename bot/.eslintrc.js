@@ -29,6 +29,8 @@ module.exports = {
     '@typescript-eslint/no-non-null-assertion': 0,
     'no-use-before-define': 0,
     'no-useless-constructor': 0,
+    '@typescript-eslint/no-empty-interface': 0,
+    'prettier/prettier': ['error', { printWidth: 96 }],
   },
   env: {
     node: true,

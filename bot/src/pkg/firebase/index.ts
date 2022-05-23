@@ -13,13 +13,18 @@ export const initFirebase = (config: Config) => {
   // ignore undefined values
   app.firestore().settings({ ignoreUndefinedProperties: true })
 
+  const db = getFirestore()
+
   return {
     firebaseApp: app,
+    firestore: db,
   }
 }
 
-export const newStorageAdapter = <T>(config: Config): StorageAdapter<T> => {
-  const db = getFirestore()
+export const newStorageAdapter = <T>(
+  config: Config,
+  db: admin.firestore.Firestore,
+): StorageAdapter<T> => {
   const collection = db.collection(config.database.sessionStorageKey)
 
   return {

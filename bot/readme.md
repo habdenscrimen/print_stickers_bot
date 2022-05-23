@@ -1,7 +1,2 @@
 # Routes
-
-1. Start.
-1. Request contact (if not found in database).
-1. Ask user to select stickers.
-1. Ask user to confirm stickers.
-1. Ask user to enter delivery info.
+Перехід між роутами здійснюється тільки після дії користувача, тому логіка кожного роута повинна закінчуватись призивом користувача до дії.

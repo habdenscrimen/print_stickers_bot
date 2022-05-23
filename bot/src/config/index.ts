@@ -5,6 +5,7 @@ import 'dotenv/config'
 */
 export const newConfig = () => {
   const config = {
+    env: process.env.NODE_ENV || 'development',
     database: {
       sessionStorageKey: 'bot_session',
     },
@@ -58,6 +59,9 @@ export const newConfig = () => {
     },
     payment: {
       maxOrderPriceAllowedWithoutPrepayment: 500,
+    },
+    delivery: {
+      cost: 41,
     },
   }
 

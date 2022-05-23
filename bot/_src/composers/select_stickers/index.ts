@@ -19,48 +19,45 @@ selectStickersComposer.use(selectStickersRouter)
 const text = texts.routes.selectStickers
 
 // define callback queries
-selectStickersComposer.callbackQuery(
-  MenuDoneCallbackQueries.ConfirmStickers,
-  async (ctx) => {
-    const logger = ctx.logger.child({
-      name: 'selectStickersComposerCallbackQuery',
-      query: MenuDoneCallbackQueries.ConfirmStickers,
-    })
+selectStickersComposer.callbackQuery(MenuDoneCallbackQueries.ConfirmStickers, async (ctx) => {
+  const logger = ctx.logger.child({
+    name: 'selectStickersComposerCallbackQuery',
+    query: MenuDoneCallbackQueries.ConfirmStickers,
+  })
 
-    // set route to delivery
-    const session = await ctx.session
-    session.route = Routes.Delivery
-    logger.debug('set route to delivery')
+  // set route to delivery
+  const session = await ctx.session
+  session.route = Routes.Delivery
+  logger.debug('set route to delivery')
 
-    // save sticker set to user in database
-    await ctx.database.UpdateUser(
-      ctx.from.id,
-      {},
-      { newTelegramStickerSet: session.stickerSetName! },
-    )
-    logger.debug('saved sticker set to user in database')
+  // save sticker set to user in database
+  await ctx.database.UpdateUser(
+    ctx.from.id,
+    {},
+    { newTelegramStickerSet: session.stickerSetName! },
+  )
+  logger.debug('saved sticker set to user in database')
 
-    // ask user to enter delivery address
-    const stickersCount = Object.keys(session.stickers!).length
-    const orderPrice = ctx.services.Orders.CalculateOrderPrice(ctx, stickersCount)
+  // ask user to enter delivery address
+  const stickersCount = Object.keys(session.stickers!).length
+  const orderPrice = ctx.services.Orders.CalculateOrderPrice(ctx, stickersCount)
 
-    await ctx.reply(
-      text.confirmationMessage({
-        deliveryPrice: ctx.config.priceUAH.delivery,
-        isDeliveryFree: orderPrice.orderPriceLevel === OrderPriceLevel.free_delivery,
-        stickersPrice: orderPrice.stickersPrice,
-        totalPrice: orderPrice.totalPrice,
-      }),
-      {
-        deleteInFuture: true,
-        deletePrevBotMessages: true,
-      },
-    )
+  await ctx.reply(
+    text.confirmationMessage({
+      deliveryPrice: ctx.config.priceUAH.delivery,
+      isDeliveryFree: orderPrice.orderPriceLevel === OrderPriceLevel.free_delivery,
+      stickersPrice: orderPrice.stickersPrice,
+      totalPrice: orderPrice.totalPrice,
+    }),
+    {
+      deleteInFuture: true,
+      deletePrevBotMessages: true,
+    },
+  )
 
-    // remove client loading animation
-    await ctx.answerCallbackQuery()
-  },
-)
+  // remove client loading animation
+  await ctx.answerCallbackQuery()
+})
 
 selectStickersComposer.callbackQuery(MenuDoneCallbackQueries.Cancel, async (ctx) => {
   const logger = ctx.logger.child({
@@ -86,7 +83,7 @@ selectStickersComposer.callbackQuery(MenuDoneCallbackQueries.Cancel, async (ctx)
   // because `jump` to another composer after changing route is performed after user action only (pressing button, entering text, etc.)
   //
   // go back to main menu
-  await ctx.reply(text.cancelOrder, {
+  await ctx.reply(`Окей, повертаємось 👌`, {
     reply_markup: mainMenu,
     deleteInFuture: true,
     deletePrevBotMessages: true,

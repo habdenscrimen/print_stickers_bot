@@ -64,11 +64,8 @@ async function confirmStickers(ctx: Ctx) {
   const deliveryPriceText =
     deliveryPrice === 0 ? `доставка безкоштовна` : `доставка — ${deliveryPrice} грн`
 
-  // delivery info text
-  const askDeliveryInfo = `Напиши дані для доставки стікерів Новою Поштою (імʼя, номер телефону, місто і номер відділення/поштомату) 📤`
-
   // message text
-  const message = `Дякую, сума замовлення — ${stickersPrice} грн, ${deliveryPriceText}, всього — ${totalPrice} грн.\nОплата при отриманні на Новій Пошті.\n\n${askDeliveryInfo}`
+  const message = `Сума замовлення — ${stickersPrice} грн, ${deliveryPriceText}, всього — ${totalPrice} грн.\n\nНапиши дані для доставки стікерів Новою Поштою (імʼя, номер телефону, місто і номер відділення/поштомату) 📤`
 
   // ask user to enter delivery address
   await ctx.reply(message, { deleteInFuture: true, deletePrevBotMessages: true })

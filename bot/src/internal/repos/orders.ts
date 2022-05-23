@@ -11,21 +11,25 @@ type Handler<HandlerName extends keyof OrdersRepo> = (
 
 export const newOrdersRepo = (db: admin.firestore.Firestore): OrdersRepo => {
   return {
-    GetActiveUserOrders: (...args) => getActiveUserOrders(db, [...args]),
+    GetUserOrders: (...args) => getUserOrders(db, [...args]),
     CreateOrder: (...args) => createOrder(db, [...args]),
     AddOrderEvent: (...args) => addOrderEvent(db, [...args]),
     UpdateOrder: (...args) => updateOrder(db, [...args]),
   }
 }
 
-export const getActiveUserOrders: Handler<'GetActiveUserOrders'> = async (db, [userID]) => {
-  const snapshot = await db
-    .collection('orders')
-    .where('user_id', '==', userID)
-    .where('status', 'not-in', ['cancelled', 'completed'])
-    .orderBy('status', 'desc')
-    .orderBy('created_at', 'desc')
-    .get()
+export const getUserOrders: Handler<'GetUserOrders'> = async (
+  db,
+  [userID, excludeStatuses],
+) => {
+  let query = db.collection('orders').where('user_id', '==', userID)
+
+  // if excludeStatuses are not empty, filter by them
+  if (excludeStatuses) {
+    query = query.where('status', 'not-in', excludeStatuses)
+  }
+
+  const snapshot = await query.orderBy('status', 'desc').orderBy('created_at', 'desc').get()
 
   return snapshot.docs.map((doc) => doc.data() as Order)
 }

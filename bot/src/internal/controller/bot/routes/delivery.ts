@@ -55,13 +55,14 @@ export const delivery: RouteHandler = (nextRoute) => async (ctx) => {
   if (!ctx.message.contact && !session.user?.phone_number) {
     // ask user to send contact
     await ctx.reply(
-      `Мені потрібен твій контакт на випадок, якщо знадобляться якісь уточнення по замовленню.\nНомер телефону НЕ розголошується третім особам і НЕ буде використовуватись для відправки рекламних повідомлень`,
+      `Мені потрібен твій номер телефону на випадок, якщо знадобляться якісь уточнення по замовленню.\n\nНомер телефону *НЕ* розголошується третім особам і *НЕ* буде використовуватись для відправки рекламних повідомлень`,
       {
         reply_markup: {
           keyboard: new Keyboard().requestContact('Надіслати контакт').build(),
           resize_keyboard: true,
           remove_keyboard: true,
         },
+        parse_mode: 'Markdown',
         deleteInFuture: true,
         deletePrevBotMessages: true,
       },

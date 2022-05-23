@@ -23,6 +23,6 @@ export interface UsersRepo {
 export interface OrdersRepo {
   CreateOrder: (order: Omit<Order, 'created_at' | 'events'>) => Promise<string>
   AddOrderEvent: (orderID: string, eventType: OrderStatus) => Promise<void>
-  GetActiveUserOrders: (userID: number) => Promise<Order[]>
+  GetUserOrders: (userID: number, excludeStatuses?: OrderStatus[]) => Promise<Order[]>
   UpdateOrder: (orderID: string, order: Partial<Order>) => Promise<void>
 }

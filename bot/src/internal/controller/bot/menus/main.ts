@@ -10,13 +10,22 @@ export const mainMenu = new Menu<BotContext>('main')
   .row()
   .text(`Реферальна програма`, referralProgramButton)
   .row()
-  .text(`Мої замовлення`, myOrdersButton)
+  .submenu(`Мої замовлення`, 'stickers-and-orders')
   .text(`FAQ`, faqButton)
   .row()
 
+const stickersAndOrdersSubenu = new Menu<BotContext>('stickers-and-orders')
+  .text('Мої замовлення', myOrdersButton)
+  .text('Мої наліпки', myStickerSetsButton)
+  .row()
+  .back('⬅️ Назад')
+  .row()
+
+mainMenu.register(stickersAndOrdersSubenu)
+
 /** Changes route to Select Stickers, asks user to send stickers and shows pricing. */
 async function selectStickersButton(ctx: Ctx) {
-  let logger = ctx.logger.child({ name: 'main-menu: Select Stickers', user_id: ctx.from.id })
+  let logger = ctx.logger.child({ name: 'main-menu: Select stickers', user_id: ctx.from.id })
 
   // change route to SelectStickers
   const session = await ctx.session
@@ -43,7 +52,7 @@ async function selectStickersButton(ctx: Ctx) {
 
 /** Gets user's referral code and sends it to user along with referral program instructions. */
 async function referralProgramButton(ctx: Ctx) {
-  let logger = ctx.logger.child({ name: 'main-menu: Referral Program', user_id: ctx.from.id })
+  let logger = ctx.logger.child({ name: 'main-menu: Referral program', user_id: ctx.from.id })
 
   // get user's free stickers count and referral code
   const session = await ctx.session
@@ -53,7 +62,7 @@ async function referralProgramButton(ctx: Ctx) {
   const { freeStickerForInvitedUser } = ctx.config.referral
 
   // create a message with referral link and referral program instructions
-  const message = `\`https://t.me/print_stickers_ua_bot?start=${referralCode}\`\n\n(натисни щоб скопіювати)\n\nКоли хтось зареєструється за цим посиланням і зробить перше замовлення, ви удвох отримаєте по ${freeStickerForInvitedUser} безкоштовних стікера 🔥\n\nБезкоштовних стікерів: ${freeStickersCount}`
+  const message = `Твоє реферальне посилання (натисни щоб скопіювати):\n\`https://t.me/print_stickers_ua_bot?start=${referralCode}\`\n\nКоли хтось зареєструється за цим посиланням і зробить перше замовлення, ви удвох отримаєте по ${freeStickerForInvitedUser} безкоштовних стікера 🔥\n\nЗараз безкоштовних стікерів: ${freeStickersCount}`
   logger = logger.child({ message })
 
   // send message with referral link
@@ -68,11 +77,13 @@ async function referralProgramButton(ctx: Ctx) {
 
 /** Gets active user orders and sends their info (status, delivery address, price) to user. */
 async function myOrdersButton(ctx: Ctx) {
-  let logger = ctx.logger.child({ name: 'main-menu: My Orders', user_id: ctx.from.id })
+  let logger = ctx.logger.child({ name: 'main-menu: My orders', user_id: ctx.from.id })
 
   // get active user orders
   const userID = ctx.from.id
-  const [userOrders, err] = await goLike(ctx.repos.Orders.GetActiveUserOrders(userID))
+  const [userOrders, err] = await goLike(
+    ctx.repos.Orders.GetUserOrders(userID, ['cancelled', 'completed']),
+  )
   if (err) {
     logger.error('failed to get active user orders', { err })
     return
@@ -127,6 +138,53 @@ async function myOrdersButton(ctx: Ctx) {
     deletePrevBotMessages: true,
   })
   logger.debug('sent message with user orders')
+}
+
+async function myStickerSetsButton(ctx: Ctx) {
+  let logger = ctx.logger.child({ name: 'main-menu: My stickers', user_id: ctx.from.id })
+
+  try {
+    // get user orders
+    const userID = ctx.from.id
+    logger = logger.child({ userID })
+
+    const [userOrders, err] = await goLike(ctx.repos.Orders.GetUserOrders(userID))
+    if (err) {
+      logger.error(`failed to get user orders: ${err}`)
+      return
+    }
+    logger = logger.child({ userOrders })
+    logger.debug('got user orders')
+
+    // check if user has any orders
+    if (userOrders.length === 0) {
+      await ctx.reply(
+        `Поки що у тебе немає паків наліпок\nПри замовленні наліпок я створю пак із них, на памʼять 😎`,
+        { reply_markup: mainMenu, deleteInFuture: true, deletePrevBotMessages: true },
+      )
+      logger.debug('user has no sticker sets')
+      return
+    }
+
+    // create sticker sets message
+    const stickerSetsInline = userOrders
+      .map((order, index) => {
+        return `[Пак #${userOrders.length - index}](https://t.me/addstickers/${
+          order.telegram_sticker_set_name
+        })\n`
+      })
+      .join('\n')
+
+    // send message with user's stickers sets
+    await ctx.reply(`Твої наліпки:\n\n${stickerSetsInline}`, {
+      parse_mode: 'Markdown',
+      reply_markup: mainMenu,
+      deleteInFuture: true,
+      deletePrevBotMessages: true,
+    })
+  } catch (error) {
+    logger.error(`failed to get user stickers: ${error}`)
+  }
 }
 
 // TODO: implement

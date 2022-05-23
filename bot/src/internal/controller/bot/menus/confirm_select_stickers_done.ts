@@ -19,7 +19,7 @@ async function confirmSelectedStickers(ctx: Ctx) {
   // get session
   const session = await ctx.session
   // FIXME: without this line it does not redirect to `selectStickersComposer.callbackQuery`, and I don't know why
-  session.route = Routes.Idle
+  session.route = Routes.Delivery
   logger = logger.child({ session })
 
   // show loader before creating sticker set
@@ -29,7 +29,7 @@ async function confirmSelectedStickers(ctx: Ctx) {
   // TODO: use goLike
   const [stickerSetName, err] = await ctx.services.Telegram.CreateStickerSet(
     ctx,
-    Object.values(session.stickers!),
+    Object.values(session.order.stickers!),
   )
   if (err || !stickerSetName) {
     logger.error(`failed to create sticker set: ${err}`)
@@ -44,7 +44,7 @@ async function confirmSelectedStickers(ctx: Ctx) {
   logger.debug('created sticker set')
 
   // update sticker set name in session to be able to delete this set later
-  session.stickerSetName = stickerSetName
+  session.order.stickerSetName = stickerSetName
 
   // ask user to confirm stickers
   const [_, sendMessageErr] = await goLike(

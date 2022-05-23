@@ -19,7 +19,7 @@ async function finishSelectingStickers(ctx: Ctx) {
   const session = await ctx.session
   logger = logger.child({ session })
 
-  const stickersCount = Object.keys(session.stickers!).length
+  const stickersCount = Object.keys(session.order.stickers!).length
   const [orderPrice, err] = await ctx.services.Orders.CalculateOrderPrice(ctx, stickersCount)
   if (err || !orderPrice) {
     logger.error('error while calculating order price', err)

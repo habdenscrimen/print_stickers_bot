@@ -10,7 +10,7 @@ export const confirmStickerSet = new Menu<BotContext>('confirm-sticker-set')
     // get session
     const session = await ctx.session
 
-    range.url(`Мої стікери`, `https://t.me/addstickers/${session.stickerSetName}`).row()
+    range.url(`Мої стікери`, `https://t.me/addstickers/${session.order.stickerSetName}`).row()
   })
   .text(`Все супер, підтверджую`, confirmStickers)
   .row()
@@ -35,7 +35,7 @@ async function confirmStickers(ctx: Ctx) {
     ctx.repos.Users.UpdateUser(
       ctx.from.id,
       {},
-      { newTelegramStickerSet: session.stickerSetName! },
+      { newTelegramStickerSet: session.order.stickerSetName! },
     ),
   )
   if (updateUserErr) {
@@ -45,7 +45,7 @@ async function confirmStickers(ctx: Ctx) {
   logger.debug('saved sticker set to user in database')
 
   // get stickers count
-  const stickersCount = Object.keys(session.stickers!).length
+  const stickersCount = Object.keys(session.order.stickers!).length
   // calculate order price
   const [orderPrice, getPriceErr] = await ctx.services.Orders.CalculateOrderPrice(
     ctx,
@@ -90,7 +90,7 @@ async function cancelStickers(ctx: Ctx) {
   // delete sticker set
   const deleteSetErr = await ctx.services.Telegram.DeleteStickerSet(
     ctx,
-    session.stickerSetName!,
+    session.order.stickerSetName!,
   )
   if (deleteSetErr) {
     logger.error(`failed to delete sticker set: ${deleteSetErr}`)
@@ -99,8 +99,8 @@ async function cancelStickers(ctx: Ctx) {
   logger.debug('sticker set successfully deleted')
 
   // clear stickers from session
-  session.stickers = {}
-  session.stickerSetName = ''
+  session.order.stickers = {}
+  session.order.stickerSetName = ''
   logger.debug('cleared stickers from session')
 
   // go back to main menu

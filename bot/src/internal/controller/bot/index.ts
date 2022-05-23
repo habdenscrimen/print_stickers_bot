@@ -26,13 +26,17 @@ interface BotOptions {
   storageAdapter: StorageAdapter<BotSessionData>
 }
 
+interface SessionOrder {
+  stickerSetName: string | undefined
+  stickers: Record<string, string> | undefined
+  invitedByTelegramUserID: number | undefined
+  deliveryInfo: string | undefined
+}
+
 export interface BotSessionData {
   route: Routes
-  stickers: Record<string, string> | undefined
-  stickerSetName: string | undefined
-  stickerSets: string[] | undefined
-  invitedByTelegramUserID: number | undefined
   user: User | undefined
+  order: Partial<SessionOrder>
 }
 
 export interface BotContext extends Context, LazySessionFlavor<BotSessionData> {
@@ -68,11 +72,8 @@ export const newBot = (options: BotOptions) => {
       storage: options.storageAdapter,
       initial: (): BotSessionData => ({
         route: Routes.Idle,
-        stickers: undefined,
-        stickerSetName: undefined,
-        stickerSets: undefined,
-        invitedByTelegramUserID: undefined,
         user: undefined,
+        order: {},
       }),
     }),
   )

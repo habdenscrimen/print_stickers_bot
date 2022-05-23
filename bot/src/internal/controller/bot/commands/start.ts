@@ -40,8 +40,8 @@ export const start: Command = async (ctx) => {
     // check that current user is not referral code's owner
     invitedByUser.telegram_user_id !== ctx.from!.id
   ) {
-    // save referral code to session
-    session.invitedByTelegramUserID = invitedByUser.telegram_user_id
+    // save invited by user id to session
+    session.order.invitedByTelegramUserID = invitedByUser.telegram_user_id
 
     invitedByUserID = invitedByUser.telegram_user_id
 

@@ -17,12 +17,12 @@ export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
   logger.debug('got session')
 
   // if no stickers in session, create an empty object
-  if (!session.stickers) {
-    session.stickers = {}
+  if (!session.order.stickers) {
+    session.order.stickers = {}
   }
 
   // save stickers count to constant
-  const stickersCount = Object.keys(session.stickers).length
+  const stickersCount = Object.keys(session.order.stickers).length
 
   // check if sticker is not animated
   if (ctx.message.sticker.is_animated || ctx.message.sticker.is_video) {
@@ -44,7 +44,7 @@ export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
   logger = logger.child({ stickerID })
 
   // check if sticker is already added
-  if (session.stickers[stickerID]) {
+  if (session.order.stickers[stickerID]) {
     const showDoneButton = stickersCount > 0
     const message = `Цей стікер уже додано, пропускаю \nПродовжуй надсилати стікери`
 
@@ -59,7 +59,7 @@ export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
   }
 
   // add sticker id to session
-  session.stickers[stickerID] = ctx.message.sticker.file_id
+  session.order.stickers[stickerID] = ctx.message.sticker.file_id
 
   // send user a message that sticker was added
   const message = `Отримав (всього ${stickersCount + 1}) ✅ \nПродовжуй надсилати стікери`

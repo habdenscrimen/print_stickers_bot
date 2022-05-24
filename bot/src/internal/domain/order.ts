@@ -5,21 +5,27 @@ export type OrderStatus =
   | 'printing'
   | 'delivery'
   | 'completed'
+  | 'cancellation_pending'
   | 'cancelled'
+  | 'refunded'
 
 export type OrderEvent = Record<OrderStatus, string>
 
 export interface Order {
+  id: string
   user_id: number
   status: OrderStatus
   delivery_address: string
   telegram_sticker_file_ids: string[]
   layouts_ids?: string[]
-  telegram_sticker_set_name?: string
+  telegram_sticker_set_name: string
   // invited_by_user_id?: number
 
-  // status
-  paid?: boolean
+  // payment info
+  payment?: {
+    provider_transaction_id?: number
+    cancellation_reason?: string
+  }
 
   // cost
   delivery_cost: number

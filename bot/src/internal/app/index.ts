@@ -8,6 +8,9 @@ import { newUsersRepo } from '../repos/users'
 import { newOrdersRepo } from '../repos/orders'
 import { newOrdersService } from '../services/orders'
 import { newTelegramService } from '../services/telegram'
+import { newPaymentService } from '../services/payment'
+import { APIs } from '../api/api'
+import { newLiqpayAPI } from '../api/psp/liqpay'
 
 export const newApp = (config: Config) => {
   // init logger
@@ -25,13 +28,20 @@ export const newApp = (config: Config) => {
     Orders: newOrdersRepo(firestore),
   }
 
+  // init apis
+  const apis: APIs = {
+    PSP: newLiqpayAPI({ config, logger }),
+  }
+
   // init services
-  const ordersService = newOrdersService()
   const telegramService = newTelegramService()
+  const paymentService = newPaymentService({ apis, repos, config, logger })
+  const ordersService = newOrdersService({ apis, config, logger, paymentService, repos })
 
   const services: Services = {
     Orders: ordersService,
     Telegram: telegramService,
+    Payment: paymentService,
   }
 
   // init bot

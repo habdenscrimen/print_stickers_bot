@@ -26,6 +26,18 @@ export const newConfig = () => {
         testToken: process.env.BOT_LIQPAY_TEST_TOKEN!,
       },
     },
+    payment: {
+      liqpay: {
+        publicKey:
+          process.env.NODE_ENV !== 'production'
+            ? process.env.LIQPAY_PUBLIC_KEY_TEST
+            : process.env.LIQPAY_PUBLIC_KEY_PRODUCTION,
+        privateKey:
+          process.env.NODE_ENV !== 'production'
+            ? process.env.LIQPAY_PRIVATE_KEY_TEST
+            : process.env.LIQPAY_PRIVATE_KEY_PRODUCTION,
+      },
+    },
     tariffs: {
       level_1: {
         stickerCost: 18,
@@ -60,7 +72,7 @@ export const newConfig = () => {
     referral: {
       freeStickerForInvitedUser: 3,
     },
-    payment: {
+    paymentConfig: {
       maxOrderPriceAllowedWithoutPrepayment: 500,
     },
     delivery: {

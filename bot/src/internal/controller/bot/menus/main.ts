@@ -2,7 +2,7 @@ import { Menu } from '@grammyjs/menu'
 import { Ctx } from '.'
 import { BotContext } from '..'
 import { goLike } from '../../../../pkg/function_exec'
-import { OrderStatus } from '../../../domain'
+import { OrderStatus, User } from '../../../domain'
 import { Routes } from '../routes'
 
 export const mainMenu = new Menu<BotContext>('main')
@@ -14,14 +14,43 @@ export const mainMenu = new Menu<BotContext>('main')
   .text(`FAQ`, faqButton)
   .row()
 
-const stickersAndOrdersSubenu = new Menu<BotContext>('stickers-and-orders')
+const stickersAndOrdersSubmenu = new Menu<BotContext>('stickers-and-orders')
   .text('Мої замовлення', myOrdersButton)
   .text('Мої наліпки', myStickerSetsButton)
+  .row()
+  .text('Відмінити замовлення', async (ctx) => {
+    await ctx.editMessageText(
+      `ℹ️ Зверни увагу, що якщо замовлення уже виконується, воно не скасується автоматично. Замість цього створиться запит на скасування, який ми розглянемо.`,
+    )
+    ctx.menu.nav('confirm-cancel-order')
+  })
   .row()
   .back('⬅️ Назад')
   .row()
 
-mainMenu.register(stickersAndOrdersSubenu)
+const confirmCancelOrder = new Menu<BotContext>('confirm-cancel-order')
+  .text('❌ Зрозуміло, відмінити замовлення', cancelOrderButton)
+  .row()
+  .text('⬅️ Назад', async (ctx) => {
+    // TODO: update text
+    await ctx.editMessageText(`Обери що тебе цікавить`)
+    ctx.menu.back()
+  })
+
+stickersAndOrdersSubmenu.register(confirmCancelOrder)
+mainMenu.register(stickersAndOrdersSubmenu)
+
+const orderStatuses: Record<OrderStatus, string> = {
+  payment_pending: '⏳ Очікує оплати',
+  confirmed: `✅ Замовлення сплачено`,
+  layout_ready: `🖨 Виготовлення`,
+  printing: `🖨 Виготовлення`,
+  delivery: `🚚 Доставка`,
+  completed: `✅ Замовлення виконано`,
+  cancellation_pending: `❌ Створений запит на скасування`,
+  cancelled: `❌ Замовлення скасовано`,
+  refunded: `✅ Замовлення відмінено, кошти повернуто`,
+}
 
 /** Changes route to Select Stickers, asks user to send stickers and shows pricing. */
 async function selectStickersButton(ctx: Ctx) {
@@ -66,12 +95,7 @@ async function referralProgramButton(ctx: Ctx) {
   logger = logger.child({ message })
 
   // send message with referral link
-  await ctx.reply(message, {
-    parse_mode: 'Markdown',
-    reply_markup: mainMenu,
-    deleteInFuture: true,
-    deletePrevBotMessages: true,
-  })
+  await ctx.editMessageText(message, { parse_mode: 'Markdown' })
   logger.debug('sent message with referral link')
 }
 
@@ -82,7 +106,7 @@ async function myOrdersButton(ctx: Ctx) {
   // get active user orders
   const userID = ctx.from.id
   const [userOrders, err] = await goLike(
-    ctx.repos.Orders.GetUserOrders(userID, ['cancelled', 'completed']),
+    ctx.repos.Orders.GetUserOrders(userID, ['cancelled', 'completed', 'refunded']),
   )
   if (err) {
     logger.error('failed to get active user orders', { err })
@@ -94,29 +118,17 @@ async function myOrdersButton(ctx: Ctx) {
   // check if user has any orders
   if (userOrders.length === 0) {
     // reply with no orders message
-    await ctx.reply(`У тебе немає активних замовлень`, {
-      reply_markup: mainMenu,
-      deleteInFuture: true,
-      deletePrevBotMessages: true,
-    })
+    await ctx.editMessageText(
+      `У тебе немає активних замовлень. Обери наліпки для створення замовлення 😎`,
+    )
     logger.debug('user has no orders', { userID })
     return
-  }
-
-  const orderStatuses: Record<OrderStatus, string> = {
-    payment_pending: '⏳ Очікує оплати',
-    confirmed: `✅ Замовлення сплачено`,
-    layout_ready: `🖨 Виготовлення`,
-    printing: `🖨 Виготовлення`,
-    delivery: `🚚 Доставка`,
-    completed: `✅ Замовлення виконано`,
-    cancelled: `❌ Замовлення скасовано`,
   }
 
   // create a message with user's orders
   const ordersMessage = userOrders
     .map((order, index) => {
-      const title = `#${userOrders.length - index} [Стікери](https://t.me/addstickers/${
+      const title = `#${userOrders.length - index} [Наліпки](https://t.me/addstickers/${
         order.telegram_sticker_set_name
       })`
       const status = `_Статус_: ${orderStatuses[order.status]}`
@@ -131,13 +143,68 @@ async function myOrdersButton(ctx: Ctx) {
   logger = logger.child({ message })
 
   // send message with user's orders
-  await ctx.reply(message, {
-    parse_mode: 'Markdown',
-    reply_markup: mainMenu,
-    deleteInFuture: true,
-    deletePrevBotMessages: true,
-  })
+  await ctx.editMessageText(message, { parse_mode: 'Markdown' })
   logger.debug('sent message with user orders')
+}
+
+async function cancelOrderButton(ctx: Ctx) {
+  let logger = ctx.logger.child({ name: 'main-menu: Cancel order', user_id: ctx.from.id })
+
+  try {
+    // get active user orders
+    const userID = ctx.from.id
+    const [userOrders, err] = await goLike(
+      ctx.repos.Orders.GetUserOrders(userID, ['cancelled', 'completed', 'refunded']),
+    )
+    if (err) {
+      logger.error('failed to get active user orders', { err })
+      return
+    }
+    logger = logger.child({ userOrders })
+    logger.debug('got user orders')
+
+    // check if user has any orders
+    if (userOrders.length === 0) {
+      // reply with no orders message
+      await ctx.editMessageText(
+        `У тебе немає активних замовлень. Обери наліпки для створення замовлення 😎`,
+      )
+      logger.debug('user has no orders', { userID })
+      return
+    }
+
+    // set route to Cancel Order
+    const session = await ctx.session
+    session.route = Routes.CancelOrder
+
+    // save user orders to session
+    session.user = {
+      ...(session.user as User),
+      activeOrders: userOrders,
+    }
+
+    // create a message with user's orders
+    const ordersMessage = userOrders
+      .map((order, index) => {
+        const title = `#${userOrders.length - index} [Наліпки](https://t.me/addstickers/${
+          order.telegram_sticker_set_name
+        })`
+        const status = `_Статус_: ${orderStatuses[order.status]}`
+        const deliveryAddress = `_Адреса доствки_: ${order.delivery_address}`
+        const price = `_Ціна (без доставки)_: ${order.stickers_cost} грн`
+
+        return `${title}\n${status}\n${deliveryAddress}\n${price}\n\n`
+      })
+      .join('\n')
+
+    // show `cancel order` message
+    await ctx.editMessageText(
+      `Ось твої замовлення. Надішли мені номер замовлення, яке хочеш відмінити (наприклад, 1):\n\n${ordersMessage}`,
+      { parse_mode: 'Markdown' },
+    )
+  } catch (error) {
+    logger.error(`failed to cancel order: ${error}`)
+  }
 }
 
 async function myStickerSetsButton(ctx: Ctx) {
@@ -148,7 +215,9 @@ async function myStickerSetsButton(ctx: Ctx) {
     const userID = ctx.from.id
     logger = logger.child({ userID })
 
-    const [userOrders, err] = await goLike(ctx.repos.Orders.GetUserOrders(userID))
+    const [userOrders, err] = await goLike(
+      ctx.repos.Orders.GetUserOrders(userID, ['cancelled', 'completed', 'refunded']),
+    )
     if (err) {
       logger.error(`failed to get user orders: ${err}`)
       return
@@ -158,9 +227,9 @@ async function myStickerSetsButton(ctx: Ctx) {
 
     // check if user has any orders
     if (userOrders.length === 0) {
-      await ctx.reply(
+      // reply with no orders message
+      await ctx.editMessageText(
         `Поки що у тебе немає паків наліпок\nПри замовленні наліпок я створю пак із них, на памʼять 😎`,
-        { reply_markup: mainMenu, deleteInFuture: true, deletePrevBotMessages: true },
       )
       logger.debug('user has no sticker sets')
       return
@@ -176,11 +245,8 @@ async function myStickerSetsButton(ctx: Ctx) {
       .join('\n')
 
     // send message with user's stickers sets
-    await ctx.reply(`Твої наліпки:\n\n${stickerSetsInline}`, {
+    await ctx.editMessageText(`Твої наліпки:\n\n${stickerSetsInline}`, {
       parse_mode: 'Markdown',
-      reply_markup: mainMenu,
-      deleteInFuture: true,
-      deletePrevBotMessages: true,
     })
   } catch (error) {
     logger.error(`failed to get user stickers: ${error}`)

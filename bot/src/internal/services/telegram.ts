@@ -68,29 +68,45 @@ const createStickerSet: Service<'CreateStickerSet'> = async ([ctx, stickerFileID
 }
 
 const deleteStickerSet: Service<'DeleteStickerSet'> = async ([ctx, stickerSetName]) => {
-  let logger = ctx.logger.child({ name: 'deleteStickerSet', user_id: ctx.from!.id })
-  logger = logger.child({ stickerSetName })
+  let logger = ctx.logger.child({
+    name: 'deleteStickerSet',
+    user_id: ctx.from!.id,
+    sticker_set_name: stickerSetName,
+  })
 
-  // get sticker set
-  const [stickerSet, getStickerSetErr] = await goLike(ctx.api.getStickerSet(stickerSetName))
-  if (getStickerSetErr) {
-    logger.error('failed to get sticker set', { getStickerSetErr })
-    return [null, getStickerSetErr]
+  try {
+    // get sticker set
+    const stickerSet = await ctx.api.getStickerSet(stickerSetName)
+    logger = logger.child({ stickerSet })
+    logger.debug('got sticker set')
+
+    // delete stickers from sticker set
+    await Promise.all(
+      stickerSet.stickers.map((sticker) => ctx.api.deleteStickerFromSet(sticker.file_id)),
+    )
+    logger.debug('deleted stickers from set')
+
+    // get user (sticker set's owner)
+    const user = await ctx.repos.Users.GetUserByID(ctx.from!.id)
+    if (!user) {
+      logger.debug(`user not found`, { user_id: ctx.from!.id })
+      return
+    }
+    if (!user.telegram_sticker_sets) {
+      logger.debug(`user has no sticker sets`, { user_id: ctx.from!.id })
+      return
+    }
+
+    // update user's sticker sets (excluding deleted sticker set)
+    await ctx.repos.Users.UpdateUser(user.telegram_user_id, {
+      telegram_sticker_sets: user.telegram_sticker_sets.filter(
+        (stickerSet) => stickerSet !== stickerSetName,
+      ),
+    })
+    logger.debug('updated user sticker sets')
+
+    logger.debug('sticker set deleted')
+  } catch (error) {
+    logger.error(`failed to delete sticker set: ${error}`)
   }
-  logger = logger.child({ stickerSet })
-  logger.debug('got sticker set')
-
-  // delete stickers from sticker set
-  const deleteStickersPromise = stickerSet.stickers.map((sticker) =>
-    ctx.api.deleteStickerFromSet(sticker.file_id),
-  )
-  const [_, deleteStickersErr] = await goLike(Promise.all(deleteStickersPromise))
-  if (deleteStickersErr) {
-    logger.error('failed to delete stickers from set', { deleteStickersErr })
-    return [null, deleteStickersErr]
-  }
-  logger.debug('deleted stickers from set')
-
-  logger.debug('sticker set deleted')
-  return null
 }

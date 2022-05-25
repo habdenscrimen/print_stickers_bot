@@ -43,10 +43,10 @@ const createRefund: Service<'CreateRefund'> = async ({ apis, logger, repos }, [o
     if (wait_reserve) {
       log.debug(`refund not created, waiting for next payments`)
 
-      await repos.Orders.UpdateOrder(orderID, {
-        status: 'refund_failed_wait_reserve',
-      })
-      log.debug(`order status updated`)
+      if (order.status !== 'refund_failed_wait_reserve') {
+        await repos.Orders.UpdateOrder(orderID, { status: 'refund_failed_wait_reserve' })
+        log.debug(`order status updated`)
+      }
       return
     }
     log.debug(`refund in psp created`)

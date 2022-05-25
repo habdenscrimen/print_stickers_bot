@@ -1,7 +1,7 @@
 {
   "functions": {
     "runtime": "nodejs16",
-    "source": "functions/cmd"
+    "source": "functions"
   },
   "emulators": {
     "functions": {

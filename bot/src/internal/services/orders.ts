@@ -1,6 +1,7 @@
 import { OrdersService, PaymentService, TelegramService } from '.'
 import { Config } from '../../config'
 import { APIs } from '../api/api'
+import { OrderStatus } from '../domain'
 import { Logger } from '../logger'
 import { Repos } from '../repos'
 
@@ -145,8 +146,14 @@ const adminCancelOrder: Service<'AdminCancelOrder'> = async (
     log = log.child({ order })
     log.debug('got order')
 
-    // if order status is not cancelled or refunded, cancel it
-    if (order.status !== 'cancelled' && order.status !== 'refunded') {
+    // if order status is not one of these, update its status to 'cancelled'
+    const excludeStatusesFromUpdating = new Set<OrderStatus>([
+      'cancelled',
+      'refunded',
+      'refund_failed_wait_reserve',
+    ])
+
+    if (!excludeStatusesFromUpdating.has(order.status)) {
       await repos.Orders.UpdateOrder(orderID, { status: 'cancelled' })
       log.debug('updated order status to cancelled')
     }

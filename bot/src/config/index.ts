@@ -18,7 +18,7 @@ export const newConfig = () => {
       },
     },
     functions: {
-      region: process.env.FIREBASE_FUNCTIONS_REGION!,
+      region: process.env.FRBS_FUNCTIONS_REGION!,
     },
     bot: {
       token: process.env.BOT_TOKEN!,
@@ -28,14 +28,18 @@ export const newConfig = () => {
     },
     payment: {
       liqpay: {
-        publicKey:
-          process.env.NODE_ENV !== 'production'
-            ? process.env.LIQPAY_PUBLIC_KEY_TEST
-            : process.env.LIQPAY_PUBLIC_KEY_PRODUCTION,
-        privateKey:
-          process.env.NODE_ENV !== 'production'
-            ? process.env.LIQPAY_PRIVATE_KEY_TEST
-            : process.env.LIQPAY_PRIVATE_KEY_PRODUCTION,
+        // publicKey:
+        //   process.env.NODE_ENV !== 'production'
+        //     ? process.env.LIQPAY_PUBLIC_KEY_TEST
+        //     : process.env.LIQPAY_PUBLIC_KEY_PRODUCTION,
+        // privateKey:
+        //   process.env.NODE_ENV !== 'production'
+        //     ? process.env.LIQPAY_PRIVATE_KEY_TEST
+        //     : process.env.LIQPAY_PRIVATE_KEY_PRODUCTION,
+
+        // TODO: use production keys
+        publicKey: process.env.LIQPAY_PUBLIC_KEY_TEST,
+        privateKey: process.env.LIQPAY_PRIVATE_KEY_TEST,
       },
     },
     tariffs: {

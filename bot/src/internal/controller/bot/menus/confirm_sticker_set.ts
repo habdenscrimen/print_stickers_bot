@@ -86,11 +86,7 @@ async function cancelStickers(ctx: Ctx) {
     logger.debug('set route to welcome')
 
     // delete sticker set
-    await ctx.services.Telegram.DeleteStickerSet(
-      ctx,
-      session.order.stickerSetName!,
-      ctx.from.id,
-    )
+    await ctx.services.Telegram.DeleteStickerSet(ctx.from.id, session.order.stickerSetName!)
     logger.debug('sticker set successfully deleted')
 
     // clear stickers from session

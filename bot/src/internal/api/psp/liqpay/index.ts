@@ -36,25 +36,31 @@ const createRefund: API<'CreateRefund'> = async ({ logger, sdk }, [transactionID
       dateFrom: Number(new Date()) - 30 * 24 * 60 * 60 * 1000,
       dateTo: Number(new Date()),
     })
-    log = log.child({ reports })
+    // log = log.child({ reports })
     log.debug(`got reports for last 30 days`)
 
     // find order by transaction ID
-    const order = reports.data.find(({ transaction_id }) => transaction_id === transactionID)
-    if (!order) {
+    const report = reports.data.find(({ transaction_id }) => transaction_id === transactionID)
+    if (!report) {
       throw new Error(`order with transaction ID ${transactionID} not found`)
     }
-    log = log.child({ order })
+    log = log.child({ report })
 
     // TODO: remove hardcoded data
     const refundResponse = await sdk.createRefund({
-      orderID: order.order_id,
-      amount: order.amount,
+      orderID: report.order_id,
+      amount: report.amount,
     })
     log = log.child({ refund_response: refundResponse })
-    log.debug('liqpay refund created')
 
-    console.log({ refundResponse })
+    // check if refund created (not waiting for next payments)
+    if (refundResponse.err_code === 'payment_err_status') {
+      log.debug(`refund not created, waiting for next payments`)
+      return { wait_reserve: true }
+    }
+
+    log.debug('liqpay refund created')
+    return { wait_reserve: false }
   } catch (error) {
     log.error(`failed to create liqpay refund: ${error}`)
     throw new Error(`failed to create liqpay refund: ${error}`)

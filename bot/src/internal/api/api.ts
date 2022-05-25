@@ -4,5 +4,5 @@ export interface APIs {
 }
 
 export interface PSPApi {
-  CreateRefund: (transactionID: number) => Promise<void>
+  CreateRefund: (transactionID: number) => Promise<{ wait_reserve: boolean }>
 }

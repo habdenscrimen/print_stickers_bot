@@ -1,4 +1,4 @@
-import { OrdersService, PaymentService } from '.'
+import { OrdersService, PaymentService, TelegramService } from '.'
 import { Config } from '../../config'
 import { APIs } from '../api/api'
 import { Logger } from '../logger'
@@ -10,6 +10,7 @@ interface OrdersServiceOptions {
   config: Config
   logger: Logger
   paymentService: PaymentService
+  telegramService: TelegramService
 }
 
 type Service<HandlerName extends keyof OrdersService> = (
@@ -21,6 +22,7 @@ export const newOrdersService = (options: OrdersServiceOptions): OrdersService =
   return {
     CalculateOrderPrice: (...args) => calculateOrderPrice(options, args),
     HandleCancellationRequest: (...args) => handleCancellationRequest(options, args),
+    AdminCancelOrder: (...args) => adminCancelOrder(options, args),
   }
 }
 
@@ -72,14 +74,14 @@ const calculateOrderPrice: Service<'CalculateOrderPrice'> = async (
 }
 
 const handleCancellationRequest: Service<'HandleCancellationRequest'> = async (
-  { logger, paymentService },
-  [ctx, orderID, reason],
+  { logger, paymentService, repos, telegramService },
+  [orderID, reason],
 ) => {
-  let log = logger.child({ name: 'cancelOrder', orderID })
+  let log = logger.child({ name: 'handleCancellationRequest', order_id: orderID })
 
   try {
     // get order by id
-    const order = await ctx.repos.Orders.GetOrder(orderID)
+    const order = await repos.Orders.GetOrder(orderID)
     if (!order) {
       log.error('failed to find order', { orderID })
       return
@@ -91,7 +93,7 @@ const handleCancellationRequest: Service<'HandleCancellationRequest'> = async (
       log.debug('order is confirmed, cancelling order immediately')
 
       // update order status to 'cancelled'
-      await ctx.repos.Orders.UpdateOrder(orderID, {
+      await repos.Orders.UpdateOrder(orderID, {
         status: 'cancelled',
         // @ts-expect-error
         'payment.cancellation_reason': reason,
@@ -99,16 +101,11 @@ const handleCancellationRequest: Service<'HandleCancellationRequest'> = async (
       log.debug('updated order status to cancelled')
 
       // delete sticker set
-      await ctx.services.Telegram.DeleteStickerSet(
-        ctx,
-        order.telegram_sticker_set_name,
-        order.user_id,
-      )
+      await telegramService.DeleteStickerSet(order.user_id, order.telegram_sticker_set_name)
       log.debug('deleted sticker set')
 
       // create refund
-      await paymentService.CreateRefund(ctx, orderID)
-      log.debug('created refund')
+      await paymentService.CreateRefund(orderID)
 
       // TODO: create admin notification about cancellation
       return
@@ -118,7 +115,7 @@ const handleCancellationRequest: Service<'HandleCancellationRequest'> = async (
     log.debug('order is processing, creating cancellation request')
 
     // update order status to 'cancellation_requested'
-    await ctx.repos.Orders.UpdateOrder(orderID, {
+    await repos.Orders.UpdateOrder(orderID, {
       status: 'cancellation_pending',
       // @ts-expect-error
       'payment.cancellation_reason': reason,
@@ -129,5 +126,43 @@ const handleCancellationRequest: Service<'HandleCancellationRequest'> = async (
   } catch (error) {
     log.error(`failed to handle cancellation request: ${error}`)
     throw new Error(`failed to handle cancellation request: ${error}`)
+  }
+}
+
+const adminCancelOrder: Service<'AdminCancelOrder'> = async (
+  { logger, paymentService, repos, telegramService },
+  [orderID],
+) => {
+  let log = logger.child({ name: 'adminCancelOrder', order_id: orderID })
+
+  try {
+    // get order by id
+    const order = await repos.Orders.GetOrder(orderID)
+    if (!order) {
+      log.error('failed to find order', { orderID })
+      return
+    }
+    log = log.child({ order })
+    log.debug('got order')
+
+    // if order status is not cancelled or refunded, cancel it
+    if (order.status !== 'cancelled' && order.status !== 'refunded') {
+      await repos.Orders.UpdateOrder(orderID, { status: 'cancelled' })
+      log.debug('updated order status to cancelled')
+    }
+
+    // delete sticker set
+    await telegramService.DeleteStickerSet(order.user_id, order.telegram_sticker_set_name)
+    log.debug('deleted sticker set')
+
+    // if order status is not refunded, create refund (it can be refunded if order was cancelled by admin but refund creation failed)
+    if (order.status !== 'refunded') {
+      await paymentService.CreateRefund(orderID)
+    }
+
+    // TODO: send notification that order is cancelled and refund is created
+  } catch (error) {
+    log.error(`failed to cancel order as admin: ${error}`)
+    throw new Error(`failed to cancel order as admin: ${error}`)
   }
 }

@@ -49,7 +49,8 @@ const orderStatuses: Record<OrderStatus, string> = {
   completed: `✅ Замовлення виконано`,
   cancellation_pending: `❌ Створений запит на скасування`,
   cancelled: `❌ Замовлення скасовано`,
-  refunded: `✅ Замовлення відмінено, кошти повернуто`,
+  refund_failed_wait_reserve: `❌ Замовлення скасовано, створений запит на повернення коштів`,
+  refunded: `❌ Замовлення скасовано, кошти повернуто`,
 }
 
 /** Changes route to Select Stickers, asks user to send stickers and shows pricing. */

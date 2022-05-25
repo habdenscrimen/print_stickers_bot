@@ -22,11 +22,8 @@ export const newPaymentService = (options: PaymentServiceOptions): PaymentServic
   }
 }
 
-const createRefund: Service<'CreateRefund'> = async (
-  { apis, logger, repos },
-  [ctx, orderID],
-) => {
-  let log = logger.child({ name: 'create-refund-service', user_id: ctx.from?.id })
+const createRefund: Service<'CreateRefund'> = async ({ apis, logger, repos }, [orderID]) => {
+  let log = logger.child({ name: 'create-refund-service', order_id: orderID })
 
   try {
     // get order's provider transaction ID
@@ -40,7 +37,18 @@ const createRefund: Service<'CreateRefund'> = async (
     log = log.child({ order })
 
     // create refund in psp
-    await apis.PSP.CreateRefund(order.payment.provider_transaction_id)
+    const { wait_reserve } = await apis.PSP.CreateRefund(order.payment.provider_transaction_id)
+
+    // check if refund created (not waiting for next payments)
+    if (wait_reserve) {
+      log.debug(`refund not created, waiting for next payments`)
+
+      await repos.Orders.UpdateOrder(orderID, {
+        status: 'refund_failed_wait_reserve',
+      })
+      log.debug(`order status updated`)
+      return
+    }
     log.debug(`refund in psp created`)
 
     // update order status in database

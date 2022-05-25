@@ -7,6 +7,7 @@ export type OrderStatus =
   | 'completed'
   | 'cancellation_pending'
   | 'cancelled'
+  | 'refund_failed_wait_reserve'
   | 'refunded'
 
 export type OrderEvent = Record<OrderStatus, string>

@@ -10,7 +10,7 @@ export interface Services {
 }
 
 export interface PaymentService {
-  CreateRefund: (ctx: BotContext, orderID: string) => Promise<void>
+  CreateRefund: (orderID: string) => Promise<void>
 }
 
 export interface OrdersService {
@@ -28,10 +28,11 @@ export interface OrdersService {
       any,
     ]
   >
-  HandleCancellationRequest: (ctx: BotContext, orderID: string, reason: string) => Promise<void>
+  HandleCancellationRequest: (orderID: string, reason: string) => Promise<void>
+  AdminCancelOrder: (orderID: string) => Promise<void>
 }
 
 export interface TelegramService {
-  CreateStickerSet: (ctx: BotContext, stickerFileIDs: string[]) => Promise<[string | null, any]>
-  DeleteStickerSet: (ctx: BotContext, stickerSetName: string, userID: number) => Promise<void>
+  CreateStickerSet: (userID: number, stickerFileIDs: string[]) => Promise<[string | null, any]>
+  DeleteStickerSet: (userID: number, stickerSetName: string) => Promise<void>
 }

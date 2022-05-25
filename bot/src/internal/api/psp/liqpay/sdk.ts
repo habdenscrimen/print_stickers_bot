@@ -84,7 +84,10 @@ export class LiqpaySDK {
     const apiData = (await response.json()) as CreateRefundResponse
 
     // check for errors
-    if (apiData.status === 'error' || apiData.result === 'error') {
+    if (
+      (apiData.status === 'error' || apiData.result === 'error') &&
+      apiData.err_code !== 'payment_err_status'
+    ) {
       throw new Error(`Liqpay error: ${JSON.stringify(apiData)}`)
     }
 

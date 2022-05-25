@@ -1,6 +1,7 @@
+import { Api, Bot, RawApi } from 'grammy'
 import { initFirebase, newStorageAdapter } from '../../pkg/firebase'
 import { Config } from '../../config'
-import { BotSessionData, newBot } from '../controller/bot'
+import { BotContext, BotSessionData, newBot } from '../controller/bot'
 import { newLogger } from '../logger'
 import { Repos } from '../repos'
 import { Services } from '../services'
@@ -12,7 +13,14 @@ import { newPaymentService } from '../services/payment'
 import { APIs } from '../api/api'
 import { newLiqpayAPI } from '../api/psp/liqpay'
 
-export const newApp = (config: Config) => {
+interface App {
+  repos: Repos
+  services: Services
+  tgApi: Api
+  bot: Bot<BotContext, Api<RawApi>>
+}
+
+export const newApp = (config: Config): App => {
   // init logger
   const logger = newLogger(config)
 
@@ -33,10 +41,20 @@ export const newApp = (config: Config) => {
     PSP: newLiqpayAPI({ config, logger }),
   }
 
+  // init telegram api
+  const tgApi = new Api(config.bot.token)
+
   // init services
-  const telegramService = newTelegramService()
+  const telegramService = newTelegramService({ apis, config, logger, repos, tgApi })
   const paymentService = newPaymentService({ apis, repos, config, logger })
-  const ordersService = newOrdersService({ apis, config, logger, paymentService, repos })
+  const ordersService = newOrdersService({
+    apis,
+    config,
+    logger,
+    repos,
+    paymentService,
+    telegramService,
+  })
 
   const services: Services = {
     Orders: ordersService,
@@ -53,5 +71,10 @@ export const newApp = (config: Config) => {
     services,
   })
 
-  return { bot }
+  return {
+    bot,
+    repos,
+    services,
+    tgApi,
+  }
 }

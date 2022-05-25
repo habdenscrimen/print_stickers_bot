@@ -72,11 +72,7 @@ export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
     }
 
     // handle cancellation request
-    await ctx.services.Orders.HandleCancellationRequest(
-      ctx,
-      orderToDelete.id!,
-      ctx.message!.text!,
-    )
+    await ctx.services.Orders.HandleCancellationRequest(orderToDelete.id!, ctx.message!.text!)
     logger.debug('handled cancellation request')
 
     // delete order from session

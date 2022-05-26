@@ -50,6 +50,7 @@ const orderStatuses: Record<OrderStatus, string> = {
   cancellation_pending: `❌ Створений запит на скасування`,
   cancelled: `❌ Замовлення скасовано`,
   refund_failed_wait_reserve: `❌ Замовлення скасовано, створений запит на повернення коштів`,
+  refund_success_wait_amount: `❌ Замовлення скасовано, створений запит на повернення коштів`,
   refunded: `❌ Замовлення скасовано, кошти повернуто`,
 }
 

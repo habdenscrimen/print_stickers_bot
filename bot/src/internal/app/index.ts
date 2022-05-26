@@ -2,7 +2,7 @@ import { Api, Bot, RawApi } from 'grammy'
 import { initFirebase, newStorageAdapter } from '../../pkg/firebase'
 import { Config } from '../../config'
 import { BotContext, BotSessionData, newBot } from '../controller/bot'
-import { newLogger } from '../logger'
+import { Logger, newLogger } from '../logger'
 import { Repos } from '../repos'
 import { Services } from '../services'
 import { newUsersRepo } from '../repos/users'
@@ -18,6 +18,7 @@ interface App {
   services: Services
   tgApi: Api
   bot: Bot<BotContext, Api<RawApi>>
+  logger: Logger
 }
 
 export const newApp = (config: Config): App => {
@@ -76,5 +77,6 @@ export const newApp = (config: Config): App => {
     repos,
     services,
     tgApi,
+    logger,
   }
 }

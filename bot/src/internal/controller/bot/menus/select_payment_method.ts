@@ -63,6 +63,9 @@ async function paymentUsingBot(ctx: Ctx) {
       {
         protect_content: true,
         start_parameter: nanoid(),
+        provider_data: JSON.stringify({
+          server_url: `${ctx.config.payment.liqpay.webhookURL}?order_id=${orderID}`,
+        }),
       },
     )
     logger = logger.child({ invoice })

@@ -119,39 +119,40 @@ export const newBot = (options: BotOptions) => {
     return ctx.answerPreCheckoutQuery(true)
   })
 
+  // TODO: get rid of this. Use LiqPay webhooks instead.
   // handle successful payment
   bot.on(':successful_payment', async (ctx) => {
-    let logger = ctx.logger.child({ name: 'successful_payment', user_id: ctx.from!.id })
+    const logger = ctx.logger.child({ name: 'successful_payment', user_id: ctx.from!.id })
 
     try {
-      console.log('successful_payment', JSON.stringify(ctx))
+      // console.log('successful_payment', JSON.stringify(ctx))
 
-      // get order id from webhook payload
-      const orderID = ctx.update.message?.successful_payment?.invoice_payload
-      if (!orderID) {
-        logger = logger.child({ ctx })
-        logger.error('no order id in webhook payload')
-        return
-      }
-      logger = logger.child({ order_id: orderID })
-      logger.debug('order id in webhook payload')
+      // // get order id from webhook payload
+      // const orderID = ctx.update.message?.successful_payment?.invoice_payload
+      // if (!orderID) {
+      //   logger = logger.child({ ctx })
+      //   logger.error('no order id in webhook payload')
+      //   return
+      // }
+      // logger = logger.child({ order_id: orderID })
+      // logger.debug('order id in webhook payload')
 
-      // get provider charge id
-      const providerTransactionID =
-        ctx.update.message?.successful_payment.provider_payment_charge_id
+      // // get provider charge id
+      // const providerTransactionID =
+      //   ctx.update.message?.successful_payment.provider_payment_charge_id
 
-      if (!providerTransactionID) {
-        logger.error('no provider transaction id in webhook payload')
-        return
-      }
+      // if (!providerTransactionID) {
+      //   logger.error('no provider transaction id in webhook payload')
+      //   return
+      // }
 
-      // update order status in database
-      await ctx.repos.Orders.UpdateOrder(orderID, {
-        // @ts-expect-error
-        'payment.provider_transaction_id': Number(providerTransactionID),
-        status: 'confirmed',
-      })
-      logger.debug('order status updated')
+      // // update order status in database
+      // await ctx.repos.Orders.UpdateOrder(orderID, {
+      //   // @ts-expect-error
+      //   'payment.provider_transaction_id': Number(providerTransactionID),
+      //   status: 'confirmed',
+      // })
+      // logger.debug('order status updated')
 
       // clear order info from session
       const session = await ctx.session

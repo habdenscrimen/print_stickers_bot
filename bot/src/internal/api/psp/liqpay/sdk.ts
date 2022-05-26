@@ -9,7 +9,7 @@ interface RequestParams {
 }
 
 interface CreateRefundOptions {
-  orderID: number
+  orderID: string
   amount: number
 }
 
@@ -23,23 +23,25 @@ interface CreateRefundResponse {
   err_description?: string
   key: string
   result: string
+
+  wait_amount: boolean
 }
 
-interface GetReportsOptions {
-  dateFrom: number
-  dateTo: number
-}
+// interface GetReportsOptions {
+//   dateFrom: number
+//   dateTo: number
+// }
 
-interface GetReportsResponse {
-  result: string
-  data: [
-    {
-      transaction_id: number
-      order_id: number
-      amount: number
-    },
-  ]
-}
+// interface GetReportsResponse {
+//   result: string
+//   data: [
+//     {
+//       transaction_id: number
+//       order_id: number
+//       amount: number
+//     },
+//   ]
+// }
 
 export class LiqpaySDK {
   private apiHost: string
@@ -94,28 +96,28 @@ export class LiqpaySDK {
     return apiData
   }
 
-  public getReports = async (options: GetReportsOptions) => {
-    const params = {
-      ...this.params,
-      action: 'reports',
-      date_from: options.dateFrom,
-      date_to: options.dateTo,
-    }
+  // public getReports = async (options: GetReportsOptions) => {
+  //   const params = {
+  //     ...this.params,
+  //     action: 'reports',
+  //     date_from: options.dateFrom,
+  //     date_to: options.dateTo,
+  //   }
 
-    const data = Buffer.from(JSON.stringify(params)).toString('base64')
-    const signature = Base64.stringify(crypto.SHA1(this.privateKey + data + this.privateKey))
+  //   const data = Buffer.from(JSON.stringify(params)).toString('base64')
+  //   const signature = Base64.stringify(crypto.SHA1(this.privateKey + data + this.privateKey))
 
-    const urlParams = new URLSearchParams()
-    urlParams.append('data', data)
-    urlParams.append('signature', signature)
+  //   const urlParams = new URLSearchParams()
+  //   urlParams.append('data', data)
+  //   urlParams.append('signature', signature)
 
-    const response = await fetch(this.apiHost, {
-      method: 'POST',
-      body: urlParams,
-    })
+  //   const response = await fetch(this.apiHost, {
+  //     method: 'POST',
+  //     body: urlParams,
+  //   })
 
-    const apiData = (await response.json()) as GetReportsResponse
+  //   const apiData = (await response.json()) as GetReportsResponse
 
-    return apiData
-  }
+  //   return apiData
+  // }
 }

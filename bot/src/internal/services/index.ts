@@ -11,6 +11,13 @@ export interface Services {
 
 export interface PaymentService {
   CreateRefund: (orderID: string) => Promise<void>
+  HandleSuccessfulPayment: (options: {
+    orderID: string
+    transactionID: number
+    transactionAmount: number
+    providerOrderID: string
+  }) => Promise<void>
+  HandleSuccessfulRefund: (options: { orderID: string }) => Promise<void>
 }
 
 export interface OrdersService {

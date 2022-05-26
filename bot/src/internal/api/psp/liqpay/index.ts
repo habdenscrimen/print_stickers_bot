@@ -27,30 +27,28 @@ export const newLiqpayAPI = (options: LiqpayAPIOptions): PSPApi => {
   }
 }
 
-const createRefund: API<'CreateRefund'> = async ({ logger, sdk }, [transactionID]) => {
-  let log = logger.child({ name: 'create-refund-api', transaction_id: transactionID })
+const createRefund: API<'CreateRefund'> = async ({ logger, sdk }, [{ amount, orderID }]) => {
+  let log = logger.child({ name: 'create-refund-api', amount, order_id: orderID })
 
   try {
-    // get orders list for last 30 days
-    const reports = await sdk.getReports({
-      dateFrom: Number(new Date()) - 30 * 24 * 60 * 60 * 1000,
-      dateTo: Number(new Date()),
-    })
-    // log = log.child({ reports })
-    log.debug(`got reports for last 30 days`)
+    // // get orders list for last 30 days
+    // const reports = await sdk.getReports({
+    //   dateFrom: Number(new Date()) - 30 * 24 * 60 * 60 * 1000,
+    //   dateTo: Number(new Date()),
+    // })
+    // // log = log.child({ reports })
+    // log.debug(`got reports for last 30 days`)
 
-    // find order by transaction ID
-    const report = reports.data.find(({ transaction_id }) => transaction_id === transactionID)
-    if (!report) {
-      throw new Error(`order with transaction ID ${transactionID} not found`)
-    }
-    log = log.child({ report })
+    // // find order by transaction ID
+    // const report = reports.data.find(({ transaction_id }) => transaction_id === transactionID)
+    // if (!report) {
+    //   throw new Error(`order with transaction ID ${transactionID} not found`)
+    // }
+    // log = log.child({ report })
+    // log.debug(`found transaction report by transaction ID`)
 
-    // TODO: remove hardcoded data
-    const refundResponse = await sdk.createRefund({
-      orderID: report.order_id,
-      amount: report.amount,
-    })
+    // create refund
+    const refundResponse = await sdk.createRefund({ orderID, amount })
     log = log.child({ refund_response: refundResponse })
 
     // check if refund created (not waiting for next payments)
@@ -59,8 +57,16 @@ const createRefund: API<'CreateRefund'> = async ({ logger, sdk }, [transactionID
       return { wait_reserve: true }
     }
 
+    // Check if refund created and will be processed by Liqpay automatically once
+    // the company's balance will incremented for refunded amount.
+    if (refundResponse.wait_amount) {
+      log.debug(`successfully refunded, wait for next transactions to be processed by liqpay`)
+      return { wait_amount: true }
+    }
+
+    // Refund is created and processed.
     log.debug('liqpay refund created')
-    return { wait_reserve: false }
+    return { wait_reserve: false, wait_amount: false }
   } catch (error) {
     log.error(`failed to create liqpay refund: ${error}`)
     throw new Error(`failed to create liqpay refund: ${error}`)

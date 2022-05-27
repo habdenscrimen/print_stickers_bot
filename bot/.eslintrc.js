@@ -6,9 +6,10 @@ module.exports = {
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
+    'plugin:ava/recommended',
   ],
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'ava'],
   rules: {
     // 'react-hooks/exhaustive-deps': 0,
     'no-shadow': 0,
@@ -32,6 +33,8 @@ module.exports = {
     '@typescript-eslint/no-empty-interface': 0,
     'prettier/prettier': ['error', { printWidth: 96 }],
     'no-useless-escape': 0,
+    'class-methods-use-this': 0,
+    'ava/use-test': 0,
   },
   env: {
     node: true,

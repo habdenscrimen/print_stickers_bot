@@ -93,6 +93,10 @@ export const newBot = (options: BotOptions) => {
     ctx.logger = options.logger
     ctx.services = options.services
 
+    // console.log('CTX')
+
+    // console.log(JSON.stringify(ctx.update, null, 2))
+
     return next()
   })
 
@@ -105,6 +109,12 @@ export const newBot = (options: BotOptions) => {
 
   // use transformers
   bot.api.config.use(deleteMessagesTransformer(bot.api))
+
+  // bot.api.config.use((prev, method, payload, signal) => {
+  //   console.log(JSON.stringify({ method, payload }, null, 2))
+
+  //   return prev(method, payload, signal)
+  // })
 
   // use commands
   bot.command('start', commands.start)

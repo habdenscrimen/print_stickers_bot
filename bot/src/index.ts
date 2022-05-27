@@ -40,7 +40,7 @@ interface WebhookRequestBody {
   signature: string
 }
 
-interface WebhookPayload {
+export interface WebhookPayload {
   action: string
   status: string
   order_id: string

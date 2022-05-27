@@ -37,10 +37,13 @@ export const newConfig = () => {
         //     ? process.env.LIQPAY_PRIVATE_KEY_TEST
         //     : process.env.LIQPAY_PRIVATE_KEY_PRODUCTION,
 
-        // TODO: use production keys
+        // TODO: use production keys in production
         publicKey: process.env.LIQPAY_PUBLIC_KEY_TEST,
         privateKey: process.env.LIQPAY_PRIVATE_KEY_TEST,
-        webhookURL: `https://5447-93-170-119-216.ngrok.io/print-stickers/europe-central2/liqpayWebhook`,
+        webhookURL:
+          process.env.NODE_ENV === 'test'
+            ? 'http://127.0.0.1:5001/print-stickers/europe-central2/liqpayWebhook'
+            : `https://5447-93-170-119-216.ngrok.io/print-stickers/europe-central2/liqpayWebhook`,
       },
     },
     tariffs: {

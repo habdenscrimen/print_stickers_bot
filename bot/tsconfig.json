@@ -3,7 +3,7 @@
     "target": "es6",                               
     "module": "commonjs",                           
     "outDir": "./functions",                             
-    "rootDir": "./src",                             
+    "rootDir": ".",                             
     "strict": true,
     "moduleResolution": "node",
     "esModuleInterop": true, 
@@ -13,5 +13,5 @@
     "./node_modules",
     "./_src/**/*",
     "./mocks/**/*",
-  ]
+  ],
 }

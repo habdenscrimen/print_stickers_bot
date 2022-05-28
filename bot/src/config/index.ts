@@ -21,6 +21,7 @@ export const newConfig = () => {
       region: process.env.FRBS_FUNCTIONS_REGION!,
     },
     bot: {
+      disabled: JSON.parse(process.env.BOT_DISABLED!) || false,
       token: process.env.BOT_TOKEN!,
       liqpay: {
         testToken: process.env.BOT_LIQPAY_TEST_TOKEN!,

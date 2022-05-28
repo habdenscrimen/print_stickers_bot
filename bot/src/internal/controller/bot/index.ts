@@ -93,6 +93,13 @@ export const newBot = (options: BotOptions) => {
     ctx.logger = options.logger
     ctx.services = options.services
 
+    if (options.config.bot.disabled) {
+      ctx.reply(
+        `Перепрошую, наразі виконуються технічні роботи і я тимчасово недоступний. Спробуйте трохи пізніше.`,
+      )
+      return next()
+    }
+
     // console.log('CTX')
     // console.log(JSON.stringify(ctx.update, null, 2))
 
@@ -114,6 +121,11 @@ export const newBot = (options: BotOptions) => {
   //   console.log(JSON.stringify({ method, payload }, null, 2))
   //   return prev(method, payload, signal)
   // })
+
+  // if bot is disabled, don't handle any message
+  if (options.config.bot.disabled) {
+    return bot
+  }
 
   // use commands
   bot.command('start', commands.start)

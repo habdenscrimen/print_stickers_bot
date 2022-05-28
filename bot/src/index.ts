@@ -17,16 +17,19 @@ export const botWebhooksHandler = functions
 export const adminCancelOrderHandler = functions
   .region(config.functions.region)
   .https.onRequest(async (req, res) => {
+    const log = logger.child({ name: 'admin-cancel-order-handler', req })
+
     try {
       // get order ID from request query
-      const { orderID } = req.query
-      if (!orderID) {
+      const { order_id } = req.query
+      if (!order_id) {
         res.status(400).send('orderId is required')
         return
       }
 
       // cancel order
-      await services.Orders.AdminCancelOrder(orderID as string)
+      await services.Orders.AdminCancelOrder(order_id as string)
+      log.debug(`successfully cancelled order ${order_id} by admin`)
 
       // send response
       res.status(200).send('ok')
@@ -133,11 +136,9 @@ export const liqpayWebhook = functions
 
       // check if webhook event is about successful refund (money already returned to user)
       if (
-        payload.action === 'pay' &&
+        payload.action === 'refund' &&
         payload.status === 'reversed' &&
         payload.refund_amount &&
-        payload.reserve_amount &&
-        payload.reserve_date &&
         payload.refund_date_last
       ) {
         log.info(`webhook about successful refund - money refunded to user`)

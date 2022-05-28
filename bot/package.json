@@ -10,7 +10,6 @@
     "check": "npm run check:format && npm run check:typescript && npm run check:eslint",
     "dev": "npm run firebase:dev",
     "start": "npm run firebase:start",
-    "_build": "rm -rf ./functions && tsc --build && cp package.json functions/package.json && cp .env functions/.env",
     "build": "rm -rf ./functions && tsc --build && cp package.json functions/src/package.json && cp .env functions/src/.env",
     "firebase:logs": "firebase functions:log",
     "firebase:dev": "npm run build && firebase emulators:start --only functions,firestore,storage",

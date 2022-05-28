@@ -43,7 +43,7 @@ export const newConfig = () => {
         webhookURL:
           process.env.NODE_ENV === 'test'
             ? 'http://127.0.0.1:5001/print-stickers/europe-central2/liqpayWebhook'
-            : `https://5447-93-170-119-216.ngrok.io/print-stickers/europe-central2/liqpayWebhook`,
+            : `https://9957-213-109-232-122.ngrok.io/print-stickers/europe-central2/liqpayWebhook`,
       },
     },
     tariffs: {

@@ -79,10 +79,6 @@ const createRefund: Service<'CreateRefund'> = async ({ apis, logger, repos }, [o
     // refund is created and processed by provider
     log.debug(`refund in psp created`)
 
-    // update order status in database
-    await repos.Orders.UpdateOrder(orderID, { status: 'refunded' })
-    log.debug(`order status updated`)
-
     // TODO: create notification about order refunded
   } catch (error) {
     log.error(`failed to create refund: ${error}`)

@@ -1,8 +1,9 @@
 import { Keyboard } from 'grammy'
 import { RouteHandler, Routes } from '.'
 import { goLike } from '../../../../pkg/function_exec'
+import { OrderPrice } from '../../../services'
 import { mainMenu } from '../menus/main'
-import { selectPaymentMethod } from '../menus/select_payment_method'
+import { selectPaymentMethod, selectPaymentMethodInBot } from '../menus/select_payment_method'
 
 export const delivery: RouteHandler = (nextRoute) => async (ctx) => {
   let logger = ctx.logger.child({ name: 'delivery-route', user_id: ctx.from!.id })
@@ -83,29 +84,17 @@ export const delivery: RouteHandler = (nextRoute) => async (ctx) => {
     logger.error(`failed to calculate order price`)
     return
   }
-  logger = logger.child({ orderPrice })
+  logger = logger.child({ order_price: orderPrice })
   logger.debug('calculated order price')
 
+  // check if nova poshta is available
+  const novaPoshtaAvailable =
+    orderPrice.stickersPrice <=
+    ctx.config.payment.novaPoshta.maxOrderPriceAllowedWithoutPrepayment
+  logger = logger.child({ nova_poshta_available: novaPoshtaAvailable })
+
   // create payment info message
-  const paymentInfoMessage = `Обери спосіб оплати (від цього залежить вартість доставки):
-
-
-  1️⃣ *Оплата зараз за допомогою бота (картка або Apple/Google Pay)*
-      
-    Вартість доставки складатиме *${ctx.config.delivery.cost}* грн.
-      
-    Оплата здійнюється за допомогою українського сервісу LiqPay (від Приват24). Ні Телеграм, ні бот не мають доступу до даних картки.
-      
-    ___Це рекомендований спосіб оплати_\r__.
-    
-    
-  2️⃣ *Оплата при отриманні на Новій Пошті*
-      
-    У цьому випадку вартість доставки складатиме *${
-      ctx.config.delivery.cost +
-      ctx.config.delivery.paybackFixCost +
-      (orderPrice.stickersPrice * ctx.config.delivery.paybackPercentCost) / 100
-    }* грн. через комісію Нової Пошти.`
+  const paymentInfoMessage = createPaymentInfoMessage(novaPoshtaAvailable, orderPrice)
 
   // logger = logger.child({ paymentInfoMessage })
 
@@ -117,10 +106,35 @@ export const delivery: RouteHandler = (nextRoute) => async (ctx) => {
 
   // show payment info with payment options
   await ctx.reply(escapedPaymentInfoMessage, {
-    reply_markup: selectPaymentMethod,
+    reply_markup: novaPoshtaAvailable ? selectPaymentMethod : selectPaymentMethodInBot,
     parse_mode: 'MarkdownV2',
     deleteInFuture: true,
     deletePrevBotMessages: true,
   })
   logger.debug(`asked to select payment option`)
+}
+
+const createPaymentInfoMessage = (
+  novaPoshtaAvailable: boolean,
+  orderPrice: OrderPrice,
+): string => {
+  if (novaPoshtaAvailable) {
+    return `Обери спосіб оплати (від цього залежить вартість доставки):
+
+
+    1️⃣ *Оплата зараз за допомогою бота (картка або Apple/Google Pay)*
+        
+      Вартість доставки складатиме *${orderPrice.deliveryPrice}* грн.
+        
+      Оплата здійнюється за допомогою українського сервісу LiqPay (від Приват24). Ні Телеграм, ні бот не мають доступу до даних картки.
+        
+      ___Це рекомендований спосіб оплати_\r__.
+      
+      
+    2️⃣ *Оплата при отриманні на Новій Пошті*
+        
+      У цьому випадку вартість доставки складатиме *${orderPrice.codPrice}* грн. через комісію Нової Пошти.`
+  }
+
+  return `На жаль, замовлення на таку суму (${orderPrice.stickersPrice} грн) не може бути виконане без передоплати.`
 }

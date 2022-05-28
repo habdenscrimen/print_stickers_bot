@@ -62,10 +62,17 @@ const calculateOrderPrice: Service<'CalculateOrderPrice'> = async (
   const totalPrice = stickersPrice + ctx.config.delivery.cost
   log = log.child({ totalPrice })
 
+  // calculate C.O.D. price
+  const codPrice =
+    ctx.config.delivery.cost +
+    ctx.config.delivery.paybackFixCost +
+    (stickersPrice * ctx.config.delivery.paybackPercentCost) / 100
+
   log.debug('calculated order price')
   return [
     {
       deliveryPrice: ctx.config.delivery.cost,
+      codPrice,
       stickersPrice,
       totalPrice,
       orderPriceLevel: priceLevel,

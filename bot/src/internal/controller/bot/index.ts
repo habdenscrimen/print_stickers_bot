@@ -94,15 +94,15 @@ export const newBot = (options: BotOptions) => {
     ctx.services = options.services
 
     // console.log('CTX')
-
     // console.log(JSON.stringify(ctx.update, null, 2))
 
     return next()
   })
 
   // use menus
-  bot.use(menus.selectPaymentMethod)
+  bot.use(menus.selectPaymentMethodInBot)
   bot.use(menus.mainMenu)
+  bot.use(menus.selectPaymentMethod)
   bot.use(menus.confirmStickerSet)
   bot.use(menus.confirmSelectStickersDoneMenu)
   bot.use(menus.selectStickersDoneMenu)
@@ -112,7 +112,6 @@ export const newBot = (options: BotOptions) => {
 
   // bot.api.config.use((prev, method, payload, signal) => {
   //   console.log(JSON.stringify({ method, payload }, null, 2))
-
   //   return prev(method, payload, signal)
   // })
 
@@ -135,35 +134,6 @@ export const newBot = (options: BotOptions) => {
     const logger = ctx.logger.child({ name: 'successful_payment', user_id: ctx.from!.id })
 
     try {
-      // console.log('successful_payment', JSON.stringify(ctx))
-
-      // // get order id from webhook payload
-      // const orderID = ctx.update.message?.successful_payment?.invoice_payload
-      // if (!orderID) {
-      //   logger = logger.child({ ctx })
-      //   logger.error('no order id in webhook payload')
-      //   return
-      // }
-      // logger = logger.child({ order_id: orderID })
-      // logger.debug('order id in webhook payload')
-
-      // // get provider charge id
-      // const providerTransactionID =
-      //   ctx.update.message?.successful_payment.provider_payment_charge_id
-
-      // if (!providerTransactionID) {
-      //   logger.error('no provider transaction id in webhook payload')
-      //   return
-      // }
-
-      // // update order status in database
-      // await ctx.repos.Orders.UpdateOrder(orderID, {
-      //   // @ts-expect-error
-      //   'payment.provider_transaction_id': Number(providerTransactionID),
-      //   status: 'confirmed',
-      // })
-      // logger.debug('order status updated')
-
       // clear order info from session
       const session = await ctx.session
       session.order = {}

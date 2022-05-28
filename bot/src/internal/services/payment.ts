@@ -106,6 +106,7 @@ const handleSuccessfulPayment: Service<'HandleSuccessfulPayment'> = async (
       'payment.provider_transaction_id': Number(transactionID),
       'payment.provider_transaction_amount': Number(transactionAmount),
       'payment.provider_order_id': providerOrderID,
+      'payment.method': 'liqpay',
       status: 'confirmed',
     })
     log.debug('order status updated')

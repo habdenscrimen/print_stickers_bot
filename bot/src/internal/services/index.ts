@@ -20,21 +20,19 @@ export interface PaymentService {
   HandleSuccessfulRefund: (options: { orderID: string }) => Promise<void>
 }
 
+export interface OrderPrice {
+  orderPriceLevel: keyof Config['tariffs']
+  stickersPrice: number
+  deliveryPrice: number
+  codPrice: number
+  totalPrice: number
+}
+
 export interface OrdersService {
   CalculateOrderPrice: (
     ctx: BotContext,
     stickersCount: number,
-  ) => Promise<
-    [
-      {
-        orderPriceLevel: keyof Config['tariffs']
-        stickersPrice: number
-        deliveryPrice: number
-        totalPrice: number
-      } | null,
-      any,
-    ]
-  >
+  ) => Promise<[OrderPrice | null, any]>
   HandleCancellationRequest: (orderID: string, reason: string) => Promise<void>
   AdminCancelOrder: (orderID: string) => Promise<void>
 }

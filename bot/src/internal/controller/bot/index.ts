@@ -9,7 +9,7 @@ import {
 } from 'grammy'
 import { Message } from 'grammy/out/platform.node'
 import { Config } from '../../../config'
-import { User } from '../../domain'
+import { Order, User } from '../../domain'
 import { Logger } from '../../logger'
 import { Repos } from '../../repos'
 import { Services } from '../../services'
@@ -34,10 +34,15 @@ interface SessionOrder {
   deliveryInfo: string | undefined
 }
 
+interface SessionUser extends User {
+  activeOrders?: Order[] | undefined
+}
+
 export interface BotSessionData {
   route: Routes
-  user: User | undefined
+  user: SessionUser | undefined
   order: Partial<SessionOrder>
+  orderToDelete: Partial<Order> | undefined
 }
 
 export interface BotContext extends Context, LazySessionFlavor<BotSessionData> {
@@ -76,6 +81,7 @@ export const newBot = (options: BotOptions) => {
         route: Routes.Idle,
         user: undefined,
         order: {},
+        orderToDelete: {},
       }),
     }),
   )
@@ -86,6 +92,10 @@ export const newBot = (options: BotOptions) => {
     ctx.config = options.config
     ctx.logger = options.logger
     ctx.services = options.services
+
+    // console.log('CTX')
+
+    // console.log(JSON.stringify(ctx.update, null, 2))
 
     return next()
   })
@@ -100,6 +110,12 @@ export const newBot = (options: BotOptions) => {
   // use transformers
   bot.api.config.use(deleteMessagesTransformer(bot.api))
 
+  // bot.api.config.use((prev, method, payload, signal) => {
+  //   console.log(JSON.stringify({ method, payload }, null, 2))
+
+  //   return prev(method, payload, signal)
+  // })
+
   // use commands
   bot.command('start', commands.start)
 
@@ -107,26 +123,46 @@ export const newBot = (options: BotOptions) => {
   bot.use(router)
 
   // handle pre-checkout query
-  bot.on('pre_checkout_query', (ctx) => ctx.answerPreCheckoutQuery(true))
+  bot.on('pre_checkout_query', (ctx) => {
+    console.log('pre_checkout_query', JSON.stringify(ctx))
 
+    return ctx.answerPreCheckoutQuery(true)
+  })
+
+  // TODO: get rid of this. Use LiqPay webhooks instead.
   // handle successful payment
   bot.on(':successful_payment', async (ctx) => {
-    let logger = ctx.logger.child({ name: 'successful_payment', user_id: ctx.from!.id })
+    const logger = ctx.logger.child({ name: 'successful_payment', user_id: ctx.from!.id })
 
     try {
-      // get order id from webhook payload
-      const orderID = ctx.update.message?.successful_payment?.invoice_payload
-      if (!orderID) {
-        logger = logger.child({ ctx })
-        logger.error('no order id in webhook payload')
-        return
-      }
+      // console.log('successful_payment', JSON.stringify(ctx))
 
-      // update order status in database
-      await ctx.repos.Orders.UpdateOrder(orderID, {
-        paid: true,
-        status: 'confirmed',
-      })
+      // // get order id from webhook payload
+      // const orderID = ctx.update.message?.successful_payment?.invoice_payload
+      // if (!orderID) {
+      //   logger = logger.child({ ctx })
+      //   logger.error('no order id in webhook payload')
+      //   return
+      // }
+      // logger = logger.child({ order_id: orderID })
+      // logger.debug('order id in webhook payload')
+
+      // // get provider charge id
+      // const providerTransactionID =
+      //   ctx.update.message?.successful_payment.provider_payment_charge_id
+
+      // if (!providerTransactionID) {
+      //   logger.error('no provider transaction id in webhook payload')
+      //   return
+      // }
+
+      // // update order status in database
+      // await ctx.repos.Orders.UpdateOrder(orderID, {
+      //   // @ts-expect-error
+      //   'payment.provider_transaction_id': Number(providerTransactionID),
+      //   status: 'confirmed',
+      // })
+      // logger.debug('order status updated')
 
       // clear order info from session
       const session = await ctx.session

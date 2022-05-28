@@ -4,8 +4,20 @@ import { BotContext } from '../controller/bot'
 export interface Services {
   Orders: OrdersService
   Telegram: TelegramService
+  Payment: PaymentService
   // User: UserServices
   // Notifications: NotificationsServices
+}
+
+export interface PaymentService {
+  CreateRefund: (orderID: string) => Promise<void>
+  HandleSuccessfulPayment: (options: {
+    orderID: string
+    transactionID: number
+    transactionAmount: number
+    providerOrderID: string
+  }) => Promise<void>
+  HandleSuccessfulRefund: (options: { orderID: string }) => Promise<void>
 }
 
 export interface OrdersService {
@@ -23,9 +35,11 @@ export interface OrdersService {
       any,
     ]
   >
+  HandleCancellationRequest: (orderID: string, reason: string) => Promise<void>
+  AdminCancelOrder: (orderID: string) => Promise<void>
 }
 
 export interface TelegramService {
-  CreateStickerSet: (ctx: BotContext, stickerFileIDs: string[]) => Promise<[string | null, any]>
-  DeleteStickerSet: (ctx: BotContext, stickerSetName: string) => Promise<any>
+  CreateStickerSet: (userID: number, stickerFileIDs: string[]) => Promise<[string | null, any]>
+  DeleteStickerSet: (userID: number, stickerSetName: string) => Promise<void>
 }

@@ -18,12 +18,32 @@ export const newConfig = () => {
       },
     },
     functions: {
-      region: process.env.FIREBASE_FUNCTIONS_REGION!,
+      region: process.env.FRBS_FUNCTIONS_REGION!,
     },
     bot: {
       token: process.env.BOT_TOKEN!,
       liqpay: {
         testToken: process.env.BOT_LIQPAY_TEST_TOKEN!,
+      },
+    },
+    payment: {
+      liqpay: {
+        // publicKey:
+        //   process.env.NODE_ENV !== 'production'
+        //     ? process.env.LIQPAY_PUBLIC_KEY_TEST
+        //     : process.env.LIQPAY_PUBLIC_KEY_PRODUCTION,
+        // privateKey:
+        //   process.env.NODE_ENV !== 'production'
+        //     ? process.env.LIQPAY_PRIVATE_KEY_TEST
+        //     : process.env.LIQPAY_PRIVATE_KEY_PRODUCTION,
+
+        // TODO: use production keys in production
+        publicKey: process.env.LIQPAY_PUBLIC_KEY_TEST,
+        privateKey: process.env.LIQPAY_PRIVATE_KEY_TEST,
+        webhookURL:
+          process.env.NODE_ENV === 'test'
+            ? 'http://127.0.0.1:5001/print-stickers/europe-central2/liqpayWebhook'
+            : `https://9957-213-109-232-122.ngrok.io/print-stickers/europe-central2/liqpayWebhook`,
       },
     },
     tariffs: {
@@ -60,7 +80,7 @@ export const newConfig = () => {
     referral: {
       freeStickerForInvitedUser: 3,
     },
-    payment: {
+    paymentConfig: {
       maxOrderPriceAllowedWithoutPrepayment: 500,
     },
     delivery: {

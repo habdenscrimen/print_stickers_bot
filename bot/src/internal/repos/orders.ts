@@ -15,7 +15,17 @@ export const newOrdersRepo = (db: admin.firestore.Firestore): OrdersRepo => {
     CreateOrder: (...args) => createOrder(db, [...args]),
     AddOrderEvent: (...args) => addOrderEvent(db, [...args]),
     UpdateOrder: (...args) => updateOrder(db, [...args]),
+    GetOrder: (...args) => getOrder(db, [...args]),
   }
+}
+export const getOrder: Handler<'GetOrder'> = async (db, [orderID]) => {
+  const orderRef = db.collection('orders').doc(orderID)
+  const orderSnapshot = await orderRef.get()
+  if (!orderSnapshot.exists) {
+    return undefined
+  }
+
+  return orderSnapshot.data() as Order
 }
 
 export const getUserOrders: Handler<'GetUserOrders'> = async (
@@ -44,6 +54,7 @@ export const createOrder: Handler<'CreateOrder'> = async (db, [order]) => {
     .doc(orderID)
     .set({
       ...order,
+      id: orderID,
       created_at: now,
       events: [{ payment_pending: now }],
     } as Order)

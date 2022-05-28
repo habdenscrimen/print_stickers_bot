@@ -28,7 +28,7 @@ async function confirmSelectedStickers(ctx: Ctx) {
   // create sticker set
   // TODO: use goLike
   const [stickerSetName, err] = await ctx.services.Telegram.CreateStickerSet(
-    ctx,
+    ctx.from.id,
     Object.values(session.order.stickers!),
   )
   if (err || !stickerSetName) {

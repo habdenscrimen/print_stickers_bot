@@ -77,38 +77,35 @@ async function cancelStickers(ctx: Ctx) {
     user_id: ctx.from.id,
   })
 
-  // get session
-  const session = await ctx.session
+  try {
+    // get session
+    const session = await ctx.session
 
-  // set route to welcome
-  session.route = Routes.Welcome
-  logger.debug('set route to welcome')
+    // set route to welcome
+    session.route = Routes.Welcome
+    logger.debug('set route to welcome')
 
-  // delete sticker set
-  const deleteSetErr = await ctx.services.Telegram.DeleteStickerSet(
-    ctx,
-    session.order.stickerSetName!,
-  )
-  if (deleteSetErr) {
-    logger.error(`failed to delete sticker set: ${deleteSetErr}`)
-    return
-  }
-  logger.debug('sticker set successfully deleted')
+    // delete sticker set
+    await ctx.services.Telegram.DeleteStickerSet(ctx.from.id, session.order.stickerSetName!)
+    logger.debug('sticker set successfully deleted')
 
-  // clear stickers from session
-  session.order.stickers = {}
-  session.order.stickerSetName = ''
-  logger.debug('cleared stickers from session')
+    // clear stickers from session
+    session.order.stickers = {}
+    session.order.stickerSetName = ''
+    logger.debug('cleared stickers from session')
 
-  // go back to main menu
-  const [_, sendMessageErr] = await goLike(
-    ctx.reply(`Відмінив замовлення, повертаємось у головне меню 👌`, {
-      reply_markup: mainMenu,
-      deleteInFuture: true,
-      deletePrevBotMessages: true,
-    }),
-  )
-  if (sendMessageErr) {
-    logger.error(`failed to send message: ${sendMessageErr}`)
+    // go back to main menu
+    const [_, sendMessageErr] = await goLike(
+      ctx.reply(`Відмінив замовлення, повертаємось у головне меню 👌`, {
+        reply_markup: mainMenu,
+        deleteInFuture: true,
+        deletePrevBotMessages: true,
+      }),
+    )
+    if (sendMessageErr) {
+      logger.error(`failed to send message: ${sendMessageErr}`)
+    }
+  } catch (error) {
+    logger.error(`failed to cancel selecting stickers: ${error}`)
   }
 }

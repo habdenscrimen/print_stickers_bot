@@ -1,96 +1,132 @@
 import { customAlphabet } from 'nanoid'
 import { lowercase } from 'nanoid-dictionary'
+import { Logger } from 'pino'
 import { TelegramService } from '.'
+import { Config } from '../../config'
 import { goLike } from '../../pkg/function_exec'
+import { APIs } from '../api/api'
+import { BotContext } from '../controller/bot'
+import { Repos } from '../repos'
+
+interface TelegramServiceOptions {
+  apis: APIs
+  repos: Repos
+  config: Config
+  logger: Logger
+  tgApi: BotContext['api']
+}
 
 type Service<HandlerName extends keyof TelegramService> = (
+  options: TelegramServiceOptions,
   args: Parameters<TelegramService[HandlerName]>,
 ) => ReturnType<TelegramService[HandlerName]>
 
-export const newTelegramService = (): TelegramService => {
+export const newTelegramService = (options: TelegramServiceOptions): TelegramService => {
   return {
-    CreateStickerSet: (...args) => createStickerSet(args),
-    DeleteStickerSet: (...args) => deleteStickerSet(args),
+    CreateStickerSet: (...args) => createStickerSet(options, args),
+    DeleteStickerSet: (...args) => deleteStickerSet(options, args),
   }
 }
 
-const createStickerSet: Service<'CreateStickerSet'> = async ([ctx, stickerFileIDs]) => {
-  let logger = ctx.logger.child({ name: 'createStickerSet', user_id: ctx.from!.id })
-  logger = logger.child({ stickerFileIDs })
+const createStickerSet: Service<'CreateStickerSet'> = async (
+  { logger, repos, tgApi },
+  [userID, stickerFileIDs],
+) => {
+  let log = logger.child({ name: 'createStickerSet', user_id: userID })
+  log = log.child({ stickerFileIDs })
 
   // generate random sticker pack name
   const prefix = customAlphabet(lowercase, 20)()
   const stickerSetName = `${prefix}_by_print_stickers_ua_bot`
-  logger = logger.child({ stickerSetName })
+  log = log.child({ stickerSetName })
 
   // get user
-  const [user, getUserErr] = await goLike(ctx.repos.Users.GetUserByID(ctx.from!.id))
+  const [user, getUserErr] = await goLike(repos.Users.GetUserByID(userID))
   if (getUserErr) {
-    logger.error('failed to get user', { getUserErr })
+    log.error('failed to get user', { getUserErr })
     return [null, getUserErr]
   }
   if (!user) {
-    logger.error('user not found')
+    log.error('user not found')
     return [null, new Error('user not found')]
   }
-  logger = logger.child({ user })
+  log = log.child({ user })
 
   // create sticker pack with 1st sticker
-  await ctx.api.createNewStickerSet(
-    ctx.from!.id,
+  await tgApi.createNewStickerSet(
+    userID,
     stickerSetName,
     `Мої стікери #${(user?.telegram_sticker_sets?.length || 0) + 1}`,
     '😆',
     { png_sticker: stickerFileIDs[0] },
   )
-  logger.debug('created sticker set')
+  log.debug('created sticker set')
 
   // check if sticker set has 1 sticker
   if (stickerFileIDs.length === 1) {
-    logger.debug('sticker set has 1 sticker', { stickerSetName })
+    log.debug('sticker set has 1 sticker', { stickerSetName })
     return [stickerSetName, null]
   }
 
   // add other stickers to sticker pack
   const addStickersToPackPromise = stickerFileIDs.slice(1).map((stickerFileID) =>
-    ctx.api.addStickerToSet(ctx.from!.id, stickerSetName, '😆', {
+    tgApi.addStickerToSet(userID, stickerSetName, '😆', {
       png_sticker: stickerFileID,
     }),
   )
   const [_, addStickersErr] = await goLike(Promise.all(addStickersToPackPromise))
   if (addStickersErr) {
-    logger.error('failed to add stickers to set', { addStickersErr })
+    log.error('failed to add stickers to set', { addStickersErr })
     return [null, addStickersErr]
   }
-  logger.debug('added stickers to set')
+  log.debug('added stickers to set')
 
   return [stickerSetName, null]
 }
 
-const deleteStickerSet: Service<'DeleteStickerSet'> = async ([ctx, stickerSetName]) => {
-  let logger = ctx.logger.child({ name: 'deleteStickerSet', user_id: ctx.from!.id })
-  logger = logger.child({ stickerSetName })
+const deleteStickerSet: Service<'DeleteStickerSet'> = async (
+  { logger, tgApi, repos },
+  [userID, stickerSetName],
+) => {
+  let log = logger.child({
+    name: 'deleteStickerSet',
+    user_id: userID,
+    sticker_set_name: stickerSetName,
+  })
 
-  // get sticker set
-  const [stickerSet, getStickerSetErr] = await goLike(ctx.api.getStickerSet(stickerSetName))
-  if (getStickerSetErr) {
-    logger.error('failed to get sticker set', { getStickerSetErr })
-    return [null, getStickerSetErr]
+  try {
+    // get sticker set
+    const stickerSet = await tgApi.getStickerSet(stickerSetName)
+    log = log.child({ stickerSet })
+    log.debug('got sticker set')
+
+    // delete stickers from sticker set
+    await Promise.all(
+      stickerSet.stickers.map((sticker) => tgApi.deleteStickerFromSet(sticker.file_id)),
+    )
+    log.debug('deleted stickers from set')
+
+    // get user (sticker set's owner)
+    const user = await repos.Users.GetUserByID(userID)
+    if (!user) {
+      log.debug(`user not found`, { user_id: userID })
+      return
+    }
+    if (!user.telegram_sticker_sets) {
+      log.debug(`user has no sticker sets`, { user_id: userID })
+      return
+    }
+
+    // update user's sticker sets (excluding deleted sticker set)
+    await repos.Users.UpdateUser(user.telegram_user_id, {
+      telegram_sticker_sets: user.telegram_sticker_sets.filter(
+        (stickerSet) => stickerSet !== stickerSetName,
+      ),
+    })
+    log.debug('updated user sticker sets')
+
+    log.debug('sticker set deleted')
+  } catch (error) {
+    log.error(`failed to delete sticker set: ${error}`)
   }
-  logger = logger.child({ stickerSet })
-  logger.debug('got sticker set')
-
-  // delete stickers from sticker set
-  const deleteStickersPromise = stickerSet.stickers.map((sticker) =>
-    ctx.api.deleteStickerFromSet(sticker.file_id),
-  )
-  const [_, deleteStickersErr] = await goLike(Promise.all(deleteStickersPromise))
-  if (deleteStickersErr) {
-    logger.error('failed to delete stickers from set', { deleteStickersErr })
-    return [null, deleteStickersErr]
-  }
-  logger.debug('deleted stickers from set')
-
-  logger.debug('sticker set deleted')
-  return null
 }

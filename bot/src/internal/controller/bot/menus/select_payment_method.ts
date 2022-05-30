@@ -6,15 +6,15 @@ import { Routes } from '../routes'
 import { mainMenu } from './main'
 
 export const selectPaymentMethod = new Menu<BotContext>('select-payment-method')
-  .text(`1️⃣ Оплатити за допомогою бота`, paymentUsingBot)
+  .text(`💳 Оплатити за допомогою бота`, paymentUsingBot)
   .row()
-  .text(`2️⃣ Оплатити на Новій Пошті`, paymentOnNovaPoshta)
+  .text(`🚚 Оплатити на Новій Пошті`, paymentOnNovaPoshta)
   .row()
 
 // the same as menu above but without option to pay on Nova Poshta
 export const selectPaymentMethodInBot = new Menu<BotContext>(
   'select-payment-method-in-bot',
-).text(`Оплатити за допомогою бота`, paymentUsingBot)
+).text(`💳 Оплатити за допомогою бота`, paymentUsingBot)
 
 async function paymentUsingBot(ctx: Ctx) {
   let logger = ctx.logger.child({
@@ -54,7 +54,7 @@ async function paymentUsingBot(ctx: Ctx) {
     logger.debug('created order in database')
 
     // send a message explaining that user should click on "Pay" button
-    await ctx.reply(`Створив платіж, тисни на кнопку оплати 👇`, {
+    await ctx.reply(`Бот підготував платіж, тисни на кнопку оплати 👇`, {
       deleteInFuture: true,
       deletePrevBotMessages: true,
     })

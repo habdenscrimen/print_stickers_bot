@@ -1,6 +1,7 @@
 import { Command } from '.'
 import { goLike } from '../../../../pkg/function_exec'
 import { mainMenu } from '../menus/main'
+import { startText } from '../texts'
 
 export const start: Command = async (ctx) => {
   let logger = ctx.logger.child({ name: 'start-command', user_id: ctx.from!.id })
@@ -58,7 +59,6 @@ export const start: Command = async (ctx) => {
     await ctx.reply(createGreetingMessage(invitedByName), {
       reply_markup: mainMenu,
       parse_mode: 'Markdown',
-      deleteInFuture: true,
     })
 
     logger.debug('current user exists, saved to session')
@@ -101,7 +101,6 @@ export const start: Command = async (ctx) => {
   await ctx.reply(createGreetingMessage(invitedByName), {
     reply_markup: mainMenu,
     parse_mode: 'Markdown',
-    deleteInFuture: true,
   })
 }
 
@@ -112,5 +111,5 @@ const createGreetingMessage = (invitedByName?: string) => {
     ? `Тебе запросив(ла) ${invitedByName}. Як тільки ти зробиш перше замовлення, ви удвох отримаєте по 3 безкоштовних стікера 🔥\n\n`
     : ''
 
-  return `Привіт!\n${invitedMessage}Надішли мені стікери, які хочеш роздрукувати, а далі я сам 🚀`
+  return startText.text
 }

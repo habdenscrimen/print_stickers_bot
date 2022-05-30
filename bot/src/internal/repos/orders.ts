@@ -90,7 +90,7 @@ export const updateOrder: Handler<'UpdateOrder'> = async (db, [orderID, order]) 
 
     // add order event
     const now = new Date()
-    const events = dbOrder.events || []
+    const events = dbOrder?.events || []
     updatedOrder.events = [...events, { [order.status]: now }] as Order['events']
   }
 

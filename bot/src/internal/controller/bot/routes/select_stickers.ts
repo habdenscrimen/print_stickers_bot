@@ -1,12 +1,21 @@
 import { RouteHandler } from '.'
 import { selectStickersDoneMenu } from '../menus/select_stickers_done'
+import {
+  animatedStickersNotSupportedText,
+  gotStickerText,
+  notStickerSelectedText,
+  stickerAlreadySelectedText,
+} from '../texts'
 
 export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
   let logger = ctx.logger.child({ name: 'select-stickers-route', user_id: ctx.from!.id })
 
   // check if user sent sticker
   if (!ctx.message?.sticker) {
-    await ctx.reply(`Це не стікер`, { deleteInFuture: true, deletePrevBotMessages: true })
+    await ctx.reply(notStickerSelectedText.text, {
+      deleteInFuture: true,
+      deletePrevBotMessages: true,
+    })
     logger.debug('received no sticker', { message: ctx.message })
     return
   }
@@ -27,9 +36,8 @@ export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
   // check if sticker is not animated
   if (ctx.message.sticker.is_animated || ctx.message.sticker.is_video) {
     const showDoneButton = stickersCount > 0
-    const message = `Наразі анімовані стікери не підтримуються 😔 \nПродовжуй надсилати стікери`
 
-    await ctx.reply(message, {
+    await ctx.reply(animatedStickersNotSupportedText.text, {
       reply_markup: showDoneButton ? selectStickersDoneMenu : undefined,
       deleteInFuture: true,
       deletePrevBotMessages: true,
@@ -46,9 +54,8 @@ export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
   // check if sticker is already added
   if (session.order.stickers[stickerID]) {
     const showDoneButton = stickersCount > 0
-    const message = `Цей стікер уже додано, пропускаю \nПродовжуй надсилати стікери`
 
-    await ctx.reply(message, {
+    await ctx.reply(stickerAlreadySelectedText.text, {
       reply_markup: showDoneButton ? selectStickersDoneMenu : undefined,
       deleteInFuture: true,
       deletePrevBotMessages: true,
@@ -62,9 +69,7 @@ export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
   session.order.stickers[stickerID] = ctx.message.sticker.file_id
 
   // send user a message that sticker was added
-  const message = `Отримав (всього ${stickersCount + 1}) ✅ \nПродовжуй надсилати стікери`
-
-  await ctx.reply(message, {
+  await ctx.reply(gotStickerText(stickersCount + 1).text, {
     reply_markup: selectStickersDoneMenu,
     deleteInFuture: true,
     deletePrevBotMessages: true,

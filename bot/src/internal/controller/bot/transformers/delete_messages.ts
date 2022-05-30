@@ -56,7 +56,11 @@ export const deleteMessagesTransformer: (api: Api<RawApi>) => Transformer =
     if (payload && 'deleteInFuture' in payload && 'chat_id' in payload) {
       const response = await prev(method, payload, signal)
 
-      if (method !== 'sendMessage' || !response.ok || !('message_id' in response.result)) {
+      if (
+        (method !== 'sendMessage' && method !== 'editMessageText') ||
+        !response.ok ||
+        !('message_id' in response.result)
+      ) {
         return response
       }
 

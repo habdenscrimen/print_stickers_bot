@@ -18,6 +18,7 @@ import { menus } from './menus'
 import { router, Routes } from './routes'
 import { commands } from './commands'
 import { mainMenu } from './menus/main'
+import { successfulPaymentText } from './texts'
 
 interface BotOptions {
   config: Config
@@ -60,6 +61,14 @@ export interface BotContext extends Context, LazySessionFlavor<BotSessionData> {
     },
     signal?: AbortSignal,
   ) => Promise<Message.TextMessage>
+  editMessageText: (
+    text: Parameters<Context['editMessageText']>['0'],
+    other?: Parameters<Context['editMessageText']>['1'] & {
+      deleteInFuture?: boolean
+      deletePrevBotMessages?: boolean
+    },
+    signal?: AbortSignal,
+  ) => ReturnType<Context['editMessageText']>
 }
 
 const disallowedWebhookReplyMethods = new Set(['getStickerSet', 'sendMessage'])
@@ -95,7 +104,7 @@ export const newBot = (options: BotOptions) => {
 
     if (options.config.bot.disabled) {
       ctx.reply(
-        `Перепрошую, наразі виконуються технічні роботи і я тимчасово недоступний. Спробуйте трохи пізніше.`,
+        `Перепрошую, наразі виконуються технічні роботи, тому бот тимчасово недоступний. Спробуйте трохи пізніше.`,
       )
       return next()
     }
@@ -155,10 +164,10 @@ export const newBot = (options: BotOptions) => {
       session.route = Routes.Welcome
 
       // show success message to user
-      await ctx.reply(`✅ Оплата пройшла успішно, замовлення оформлене!`, {
+      await ctx.reply(successfulPaymentText.text, {
         reply_markup: mainMenu,
+        parse_mode: successfulPaymentText.parseMode,
         deleteInFuture: true,
-        deletePrevBotMessages: true,
       })
     } catch (error) {
       logger.error(`failed to handle successful payment: ${error}`)

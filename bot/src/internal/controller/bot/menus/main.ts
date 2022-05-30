@@ -4,41 +4,54 @@ import { BotContext } from '..'
 import { goLike } from '../../../../pkg/function_exec'
 import { OrderStatus, User } from '../../../domain'
 import { Routes } from '../routes'
+import {
+  activeOrdersListText,
+  cancelOrdersListText,
+  myOrdersText,
+  selectStickersInstructionsText,
+  startText,
+} from '../texts'
 
 export const mainMenu = new Menu<BotContext>('main')
-  .text(`Обрати стікери`, selectStickersButton)
+  .text(`🚀 Замовити наліпки`, selectStickersButton)
   .row()
-  .text(`Реферальна програма`, referralProgramButton)
+  .text(`👫 Запросити друзів`, referralProgramButton)
   .row()
-  .submenu(`Мої замовлення`, 'stickers-and-orders')
-  .text(`FAQ`, faqButton)
+  .text(`✉️ Мої замовлення`, goToMyOrders)
+  .text(`❓ Питання`, faqButton)
+  .row()
+  .url(`📚 Про сервіс`, 'https://telegra.ph/Test-05-30-157')
+  .row()
+
+const selectStickersSubmenu = new Menu<BotContext>('select-stickers')
+  .text('⬅️ Назад', goToMainMenu)
   .row()
 
 const stickersAndOrdersSubmenu = new Menu<BotContext>('stickers-and-orders')
-  .text('Мої замовлення', myOrdersButton)
-  .text('Мої наліпки', myStickerSetsButton)
+  .text('🚚 Замовлення', myOrdersButton)
+  .text('💅 Наліпки', myStickerSetsButton)
   .row()
-  .text('Відмінити замовлення', async (ctx) => {
-    await ctx.editMessageText(
-      `ℹ️ Зверни увагу, що якщо замовлення уже виконується, воно не скасується автоматично. Замість цього створиться запит на скасування, який ми розглянемо.`,
-    )
-    ctx.menu.nav('confirm-cancel-order')
-  })
+  .text('❌ Скасувати замовлення', cancelOrderMenuButton)
   .row()
-  .back('⬅️ Назад')
+  .text('⬅️ Назад', goToMainMenu)
+  .row()
+
+const goToMyOrdersMenu = new Menu<BotContext>('go-to-my-orders')
+  .text('⬅️ Назад', goToMyOrders)
   .row()
 
 const confirmCancelOrder = new Menu<BotContext>('confirm-cancel-order')
-  .text('❌ Зрозуміло, відмінити замовлення', cancelOrderButton)
+  .text('❌ Зрозуміло, скасувати замовлення', cancelOrderButton)
   .row()
   .text('⬅️ Назад', async (ctx) => {
-    // TODO: update text
-    await ctx.editMessageText(`Обери що тебе цікавить`)
+    await ctx.editMessageText(myOrdersText.text, { parse_mode: myOrdersText.parseMode })
     ctx.menu.back()
   })
 
 stickersAndOrdersSubmenu.register(confirmCancelOrder)
 mainMenu.register(stickersAndOrdersSubmenu)
+mainMenu.register(selectStickersSubmenu)
+mainMenu.register(goToMyOrdersMenu)
 
 const orderStatuses: Record<OrderStatus, string> = {
   payment_pending: '⏳ Очікує оплати',
@@ -54,30 +67,68 @@ const orderStatuses: Record<OrderStatus, string> = {
   refunded: `❌ Замовлення скасовано, кошти повернуто`,
 }
 
+async function cancelOrderMenuButton(ctx: Ctx) {
+  const logger = ctx.logger.child({
+    name: 'select-stickers: Cancel order',
+    user_id: ctx.from.id,
+  })
+
+  try {
+    await ctx.editMessageText(
+      `ℹ️ Зверни увагу, що якщо замовлення уже виконується, воно не скасується автоматично. Замість цього створиться запит на скасування, який ми розглянемо.`,
+    )
+    ctx.menu.nav('confirm-cancel-order')
+  } catch (error) {
+    logger.error(`failed to navigate to my orders: ${error}`)
+  }
+}
+
+async function goToMyOrders(ctx: Ctx) {
+  const logger = ctx.logger.child({ name: 'select-stickers: My orders', user_id: ctx.from.id })
+
+  try {
+    // show message about `My orders` submenu
+    await ctx.editMessageText(myOrdersText.text, { parse_mode: myOrdersText.parseMode })
+
+    ctx.menu.nav('stickers-and-orders')
+  } catch (error) {
+    logger.error(`failed to navigate to my orders: ${error}`)
+  }
+}
+
+async function goToMainMenu(ctx: Ctx) {
+  const logger = ctx.logger.child({ name: 'select-stickers: Go back', user_id: ctx.from.id })
+
+  try {
+    // change route to Welcome
+    const session = await ctx.session
+    session.route = Routes.Welcome
+    logger.debug('changed route to Welcome')
+
+    await ctx.editMessageText(startText.text, { parse_mode: startText.parseMode })
+    ctx.menu.back()
+  } catch (error) {
+    logger.error(`failed to navigate to main menu: ${error}`)
+  }
+}
+
 /** Changes route to Select Stickers, asks user to send stickers and shows pricing. */
 async function selectStickersButton(ctx: Ctx) {
-  let logger = ctx.logger.child({ name: 'main-menu: Select stickers', user_id: ctx.from.id })
+  const logger = ctx.logger.child({ name: 'main-menu: Select stickers', user_id: ctx.from.id })
 
   // change route to SelectStickers
   const session = await ctx.session
   session.route = Routes.SelectStickers
   logger.debug('changed route to SelectStickers')
 
-  // create tariffs message
-  const tariffsString = Object.entries(ctx.config.tariffs)
-    .map(([_, { freeDelivery, stickerCost, stickersMax, stickersMin }]) => {
-      const freeDeliveryMessage = freeDelivery ? ` і безкоштовна доставка` : ''
+  ctx.menu.nav('select-stickers')
 
-      return `*${stickersMin}-${stickersMax}* стікерів: ${stickerCost} грн/шт${freeDeliveryMessage}\n`
-    })
-    .join('')
-
-  // create message that informs user they can send stickers
-  const message = `Супер! Надішли мені потрібні стікери 🔥\n\nЗверни увагу, що чим більше стікерів ти замовиш, тим нижча буде ціна:\n\n${tariffsString}`
-  logger = logger.child({ message })
+  const { parseMode, text } = selectStickersInstructionsText(ctx.config)
 
   // send message with info that user can send stickers now
-  await ctx.reply(message, { deletePrevBotMessages: true, parse_mode: 'Markdown' })
+  await ctx.editMessageText(text, { parse_mode: parseMode, deleteInFuture: true })
+  // await ctx.editMessageText(text, { parse_mode: parseMode })
+
   logger.debug('sent message that user can send stickers')
 }
 
@@ -120,32 +171,17 @@ async function myOrdersButton(ctx: Ctx) {
   // check if user has any orders
   if (userOrders.length === 0) {
     // reply with no orders message
-    await ctx.editMessageText(
-      `У тебе немає активних замовлень. Обери наліпки для створення замовлення 😎`,
-    )
+    await ctx.editMessageText(`Поки що у тебе немає активних замовлень`)
     logger.debug('user has no orders', { userID })
     return
   }
 
   // create a message with user's orders
-  const ordersMessage = userOrders
-    .map((order, index) => {
-      const title = `#${userOrders.length - index} [Наліпки](https://t.me/addstickers/${
-        order.telegram_sticker_set_name
-      })`
-      const status = `_Статус_: ${orderStatuses[order.status]}`
-      const deliveryAddress = `_Адреса доствки_: ${order.delivery_address}`
-      const price = `_Ціна (без доставки)_: ${order.stickers_cost} грн`
-
-      return `${title}\n${status}\n${deliveryAddress}\n${price}\n\n`
-    })
-    .join('\n')
-
-  const message = `Твої замовлення:\n\n${ordersMessage}`
+  const message = activeOrdersListText({ orders: userOrders })
   logger = logger.child({ message })
 
   // send message with user's orders
-  await ctx.editMessageText(message, { parse_mode: 'Markdown' })
+  await ctx.editMessageText(message.text, { parse_mode: message.parseMode })
   logger.debug('sent message with user orders')
 }
 
@@ -170,6 +206,7 @@ async function cancelOrderButton(ctx: Ctx) {
       // reply with no orders message
       await ctx.editMessageText(
         `У тебе немає активних замовлень. Обери наліпки для створення замовлення 😎`,
+        { reply_markup: stickersAndOrdersSubmenu },
       )
       logger.debug('user has no orders', { userID })
       return
@@ -185,25 +222,11 @@ async function cancelOrderButton(ctx: Ctx) {
       activeOrders: userOrders,
     }
 
-    // create a message with user's orders
-    const ordersMessage = userOrders
-      .map((order, index) => {
-        const title = `#${userOrders.length - index} [Наліпки](https://t.me/addstickers/${
-          order.telegram_sticker_set_name
-        })`
-        const status = `_Статус_: ${orderStatuses[order.status]}`
-        const deliveryAddress = `_Адреса доствки_: ${order.delivery_address}`
-        const price = `_Ціна (без доставки)_: ${order.stickers_cost} грн`
-
-        return `${title}\n${status}\n${deliveryAddress}\n${price}\n\n`
-      })
-      .join('\n')
+    // create message
+    const { parseMode, text } = cancelOrdersListText({ orders: userOrders })
 
     // show `cancel order` message
-    await ctx.editMessageText(
-      `Ось твої замовлення. Надішли мені номер замовлення, яке хочеш відмінити (наприклад, 1):\n\n${ordersMessage}`,
-      { parse_mode: 'Markdown' },
-    )
+    await ctx.editMessageText(text, { parse_mode: parseMode, reply_markup: goToMyOrdersMenu })
   } catch (error) {
     logger.error(`failed to cancel order: ${error}`)
   }
@@ -231,7 +254,7 @@ async function myStickerSetsButton(ctx: Ctx) {
     if (userOrders.length === 0) {
       // reply with no orders message
       await ctx.editMessageText(
-        `Поки що у тебе немає паків наліпок\nПри замовленні наліпок я створю пак із них, на памʼять 😎`,
+        `Поки що у тебе немає паків наліпок.\nПри замовленні наліпок я створю пак із них, на памʼять 😎`,
       )
       logger.debug('user has no sticker sets')
       return

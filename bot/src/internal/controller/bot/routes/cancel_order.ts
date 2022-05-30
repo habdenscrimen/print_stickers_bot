@@ -1,5 +1,26 @@
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
 import { RouteHandler } from '.'
 import { mainMenu } from '../menus/main'
+import { OrderStatus } from '../../../domain'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+const orderStatuses: Record<OrderStatus, string> = {
+  payment_pending: '⏳ Очікує оплати',
+  confirmed: `✅ Замовлення сплачено`,
+  layout_ready: `🖨 Виготовлення`,
+  printing: `🖨 Виготовлення`,
+  delivery: `🚚 Доставка`,
+  completed: `✅ Замовлення виконано`,
+  cancellation_pending: `❌ Створений запит на скасування`,
+  cancelled: `❌ Замовлення скасовано`,
+  refund_failed_wait_reserve: `❌ Замовлення скасовано, створений запит на повернення коштів`,
+  refund_success_wait_amount: `❌ Замовлення скасовано, створений запит на повернення коштів`,
+  refunded: `❌ Замовлення скасовано, кошти повернуто`,
+}
 
 export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
   let logger = ctx.logger.child({ name: 'cancel-order-route', user_id: ctx.from!.id })
@@ -22,10 +43,11 @@ export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
       // get user orders from session
       const userOrders = session.user?.activeOrders || []
       if (!userOrders.length) {
+        logger.debug('user has no orders', { userID: ctx.from!.id })
         await ctx.editMessageText(
           `У тебе немає активних замовлень. Обери наліпки для створення замовлення 😎`,
         )
-        logger.debug('user has no orders', { userID: ctx.from!.id })
+        return
       }
 
       // check that user entered an order number that exists
@@ -50,16 +72,24 @@ export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
       const deliveryAddress = `🚚 _Адреса доствки_: ${order.delivery_address}`
       const price = `💰 _Ціна (без доставки)_: ${order.stickers_cost} грн`
 
-      const orderInfo = `${title}\n${deliveryAddress}\n${price}\n\n`
+      const status = `_Статус_: ${orderStatuses[order.status]}`
+
+      const date = `_Дата створення_: ${dayjs(order.created_at)
+        .tz('Europe/Kiev')
+        .format('DD.MM.YYYY, HH:mm')}`
+
+      const stickersCount = `_Кількість наліпок_: ${order.telegram_sticker_file_ids.length}`
+
+      const orderInfo = `${title}\n${status}\n${date}\n${stickersCount}\n${deliveryAddress}\n${price}\n\n`
       logger = logger.child({ orderInfo })
 
       // show confirmation message
       const message =
         order.status === 'confirmed'
-          ? `Ти хочеш видалити це замовлення:\n\n${orderInfo}Будь ласка, напиши причину відміни замовлення, і я відміню його.`
-          : `Ти хочеш видалити це замовлення:\n\n${orderInfo}Будь ласка, напиши причину відміни замовлення, і я створю запит на його відміну.`
+          ? `Ти хочеш видалити це замовлення:\n\n${orderInfo}Будь ласка, напиши причину скасування замовлення, і я скасую його.`
+          : `Ти хочеш видалити це замовлення:\n\n${orderInfo}Будь ласка, напиши причину скасування замовлення, і я створю запит на його скасування.`
 
-      await ctx.reply(message, { parse_mode: 'Markdown' })
+      await ctx.reply(message, { parse_mode: 'Markdown', deleteInFuture: true })
       return
     }
 
@@ -71,6 +101,9 @@ export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
       return
     }
 
+    // show loader
+    await ctx.editMessageText(`⏳ Секунду...`, { reply_markup: undefined })
+
     // handle cancellation request
     await ctx.services.Orders.HandleCancellationRequest(orderToDelete.id!, ctx.message!.text!)
     logger.debug('handled cancellation request')
@@ -81,8 +114,8 @@ export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
     // create success message, depending on order status
     const successMessage =
       orderToDelete.status === 'confirmed'
-        ? `✅ Замовлення успішно відмінено`
-        : `✅ Запит на відміну замовлення успішно створено`
+        ? `✅ Замовлення успішно скасовано\n\nПовертаємось у головне меню 👇`
+        : `✅ Запит на скасування замовлення успішно створено\n\nПовертаємось у головне меню 👇`
 
     // show success message
     await ctx.reply(successMessage, {
@@ -92,6 +125,6 @@ export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
     })
   } catch (error) {
     logger.error(`failed to cancel user order: ${error}`)
-    await ctx.reply(`❌ На жаль, при відміні сталася помилка, спробуй ще раз.`)
+    await ctx.reply(`❌ На жаль, при скасуванні сталася помилка, спробуй ще раз.`)
   }
 }

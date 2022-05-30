@@ -29,7 +29,7 @@ export const newTelegramService = (options: TelegramServiceOptions): TelegramSer
 }
 
 const createStickerSet: Service<'CreateStickerSet'> = async (
-  { logger, repos, tgApi },
+  { logger, repos, tgApi, config },
   [userID, stickerFileIDs],
 ) => {
   let log = logger.child({ name: 'createStickerSet', user_id: userID })
@@ -39,6 +39,12 @@ const createStickerSet: Service<'CreateStickerSet'> = async (
   const prefix = customAlphabet(lowercase, 20)()
   const stickerSetName = `${prefix}_by_print_stickers_ua_bot`
   log = log.child({ stickerSetName })
+
+  // avoid creating sticker set (using during development)
+  if (config.bot.avoidCreatingStickerSet) {
+    log.warn('avoid creating sticker set')
+    return [stickerSetName, null]
+  }
 
   // get user
   const [user, getUserErr] = await goLike(repos.Users.GetUserByID(userID))
@@ -56,7 +62,7 @@ const createStickerSet: Service<'CreateStickerSet'> = async (
   await tgApi.createNewStickerSet(
     userID,
     stickerSetName,
-    `Мої стікери #${(user?.telegram_sticker_sets?.length || 0) + 1}`,
+    `Мої наліпки #${(user?.telegram_sticker_sets?.length || 0) + 1}`,
     '😆',
     { png_sticker: stickerFileIDs[0] },
   )
@@ -85,7 +91,7 @@ const createStickerSet: Service<'CreateStickerSet'> = async (
 }
 
 const deleteStickerSet: Service<'DeleteStickerSet'> = async (
-  { logger, tgApi, repos },
+  { logger, tgApi, repos, config },
   [userID, stickerSetName],
 ) => {
   let log = logger.child({
@@ -95,6 +101,12 @@ const deleteStickerSet: Service<'DeleteStickerSet'> = async (
   })
 
   try {
+    // avoid creating sticker set (using during development)
+    if (config.bot.avoidCreatingStickerSet) {
+      log.warn('avoid creating deleting set')
+      return
+    }
+
     // get sticker set
     const stickerSet = await tgApi.getStickerSet(stickerSetName)
     log = log.child({ stickerSet })

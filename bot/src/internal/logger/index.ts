@@ -22,5 +22,7 @@ export const newLogger = (config: Config): Logger => {
     logger = pino({ level: 'debug' })
   }
 
+  logger = logger.child({ config })
+
   return logger
 }

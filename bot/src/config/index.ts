@@ -26,6 +26,7 @@ export const newConfig = () => {
       liqpay: {
         testToken: process.env.BOT_LIQPAY_TEST_TOKEN!,
       },
+      avoidCreatingStickerSet: JSON.parse(process.env.BOT_AVOID_CREATING_STICKER_SET!) || false,
     },
     payment: {
       liqpay: {
@@ -44,7 +45,7 @@ export const newConfig = () => {
         webhookURL:
           process.env.NODE_ENV === 'test'
             ? 'http://127.0.0.1:5001/print-stickers/europe-central2/liqpayWebhook'
-            : `https://9957-213-109-232-122.ngrok.io/print-stickers/europe-central2/liqpayWebhook`,
+            : `https://cc0c-93-170-119-216.ngrok.io/print-stickers/europe-central2/liqpayWebhook`,
       },
       novaPoshta: {
         maxOrderPriceAllowedWithoutPrepayment: 500,

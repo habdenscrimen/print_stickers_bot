@@ -1,0 +1,89 @@
+{
+  "name": "print_stickers_bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "check:format": "prettier --check \"./!(node_modules|build|dist)/**/*.{ts,tsx,js,jsx}\"",
+    "check:typescript": "tsc --noEmit -p .",
+    "check:eslint": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "check": "npm run check:format && npm run check:typescript && npm run check:eslint",
+    "dev": "BOT_AVOID_CREATING_STICKER_SET=true npm run firebase:dev",
+    "start": "npm run firebase:start",
+    "build": "rm -rf ./functions && tsc --build && cp package.json functions/src/package.json && cp .env functions/src/.env",
+    "firebase:logs": "firebase functions:log",
+    "firebase:dev": "npm run build && firebase emulators:start --only functions,firestore,storage",
+    "firebase:start": "npm run build && firebase emulators:start --only functions",
+    "firebase:deploy": "npm run build && firebase deploy --only functions",
+    "test": "NODE_ENV=\"test\" FIRESTORE_EMULATOR_HOST=\"localhost:8080\" ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/habdenscrimen/print_stickers_bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/habdenscrimen/print_stickers_bot/issues"
+  },
+  "homepage": "https://github.com/habdenscrimen/print_stickers_bot#readme",
+  "dependencies": {
+    "@faker-js/faker": "^7.1.0",
+    "@grammyjs/menu": "^1.1.1",
+    "@grammyjs/router": "^2.0.0",
+    "@mswjs/interceptors": "^0.16.4",
+    "crypto-js": "^4.1.1",
+    "dayjs": "^1.11.2",
+    "dotenv": "^16.0.1",
+    "download": "^8.0.0",
+    "firebase-admin": "^10.2.0",
+    "firebase-functions": "^3.21.2",
+    "grammy": "^1.8.3",
+    "nanoid": "^3.3.4",
+    "nanoid-dictionary": "^4.3.0",
+    "node-fetch": "^2.6.7",
+    "pino": "^7.11.0",
+    "pino-pretty": "^7.6.1",
+    "typegram": "^3.9.1",
+    "winston": "^3.7.2"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.0.1",
+    "@commitlint/config-conventional": "^17.0.0",
+    "@types/crypto-js": "^4.1.1",
+    "@types/download": "^8.0.1",
+    "@types/nanoid-dictionary": "^4.2.0",
+    "@types/node": "^17.0.36",
+    "@types/node-fetch": "^2.6.1",
+    "@typescript-eslint/eslint-plugin": "^5.27.0",
+    "@typescript-eslint/parser": "^5.27.0",
+    "ava": "^4.2.0",
+    "eslint": "^8.16.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-ava": "^13.2.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^12.4.3",
+    "prettier": "^2.6.2",
+    "ts-node": "^10.8.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.7.2"
+  },
+  "lint-staged": {
+    "*.{js,css,md}": "prettier --write"
+  },
+  "ava": {
+    "files": [
+      "tests/**/*.test.ts"
+    ],
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
+  }
+}

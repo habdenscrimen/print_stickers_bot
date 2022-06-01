@@ -48,7 +48,7 @@ export const newConfig = () => {
         webhookURL:
           process.env.NODE_ENV === 'test'
             ? 'http://127.0.0.1:5001/print-stickers/europe-central2/liqpayWebhook'
-            : `https://e0e3-62-122-203-109.ngrok.io/print-stickers/europe-central2/liqpayWebhook`,
+            : `https://9162-37-73-156-140.ngrok.io/print-stickers/europe-central2/liqpayWebhook`,
       },
       novaPoshta: {
         maxOrderPriceAllowedWithoutPrepayment: 500,
@@ -87,6 +87,7 @@ export const newConfig = () => {
     },
     referral: {
       freeStickerForInvitedUser: 3,
+      incrementFreeStickersImmediately: true,
     },
     delivery: {
       cost: 41,

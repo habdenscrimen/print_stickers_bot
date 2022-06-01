@@ -1,13 +1,25 @@
 import { Config } from '../../config'
 import { BotContext } from '../controller/bot'
-import { Order } from '../domain'
+import { Order, User } from '../domain'
 
 export interface Services {
   Orders: OrdersService
   Telegram: TelegramService
   Payment: PaymentService
-  // User: UserServices
+  User: UserService
   Notification: NotificationService
+}
+
+export interface UserService {
+  UpdateUser: (options: {
+    telegramUserID: number
+    user: Partial<User>
+    options?: {
+      incrementFreeStickers?: number
+      newInvitedUserID?: number
+      newTelegramStickerSet?: string
+    }
+  }) => Promise<void>
 }
 
 export interface AdminNotificationPayloads {
@@ -31,6 +43,10 @@ export interface UserNotificationPayloads {
     orderID: string
   }
   admin_cancelled_order: {
+    telegramChatID: number
+    orderID: string
+  }
+  order_by_your_referral_code: {
     telegramChatID: number
     orderID: string
   }
@@ -68,15 +84,16 @@ export interface OrderPrice {
   stickersPrice: number
   deliveryPrice: number
   codPrice: number
-  totalPrice: number
+  freeStickersUsed: number
+  freeStickersLeft: number
 }
 
 export interface OrdersService {
   CreateOrder: (order: Omit<Order, 'id' | 'created_at' | 'events'>) => Promise<string>
-  CalculateOrderPrice: (
-    ctx: BotContext,
-    stickersCount: number,
-  ) => Promise<[OrderPrice | null, any]>
+  CalculateOrderPrice: (options: {
+    userID: number
+    stickersCount: number
+  }) => Promise<OrderPrice>
   HandleCancellationRequest: (orderID: string, reason: string) => Promise<void>
   AdminCancelOrder: (orderID: string) => Promise<void>
 }

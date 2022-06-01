@@ -28,30 +28,40 @@ async function paymentUsingBot(ctx: Ctx) {
 
     // get sticker price
     const stickersCount = Object.values(session.order.stickers!).length
-    const [orderPrice, getPriceErr] = await ctx.services.Orders.CalculateOrderPrice(
-      ctx,
+    const orderPrice = await ctx.services.Orders.CalculateOrderPrice({
       stickersCount,
-    )
-    if (!orderPrice || getPriceErr) {
-      logger.error(`failed to calculate order price`)
-      return
-    }
-    logger = logger.child({ orderPrice })
+      userID: ctx.from.id,
+    })
+    logger = logger.child({ order_price: orderPrice })
     logger.debug('calculated order price')
+
+    const negativePaymentAmount = orderPrice.stickersPrice <= 0
 
     // create order in database
     const orderID = await ctx.services.Orders.CreateOrder({
       delivery_address: session.order.deliveryInfo!,
       delivery_cost: orderPrice.deliveryPrice,
-      status: 'payment_pending',
+      status: negativePaymentAmount ? 'confirmed' : 'payment_pending',
       stickers_cost: orderPrice.stickersPrice,
       user_id: ctx.from.id,
       telegram_sticker_set_name: session.order.stickerSetName!,
       telegram_sticker_file_ids: Object.values(session.order.stickers!),
       by_referral_of_user_id: session.order.invitedByTelegramUserID,
+      payment: {
+        method: 'liqpay',
+      },
     })
     logger = logger.child({ orderID })
     logger.debug('created order in database')
+
+    // check if order price is positive
+    if (negativePaymentAmount) {
+      logger.debug('order price is 0, skipping payment')
+      await ctx.reply(
+        `😎 Завдяки безкоштовним наліпкам замовлення вийшло безкоштовним! Оплата лише за доставку!`,
+      )
+      return
+    }
 
     // send a message explaining that user should click on "Pay" button
     await ctx.reply(`Бот підготував платіж, тисни на кнопку оплати 👇`, {
@@ -94,15 +104,11 @@ async function paymentOnNovaPoshta(ctx: Ctx) {
 
     // get sticker price
     const stickersCount = Object.values(session.order.stickers!).length
-    const [orderPrice, getPriceErr] = await ctx.services.Orders.CalculateOrderPrice(
-      ctx,
+    const orderPrice = await ctx.services.Orders.CalculateOrderPrice({
       stickersCount,
-    )
-    if (!orderPrice || getPriceErr) {
-      logger.error(`failed to calculate order price`)
-      return
-    }
-    logger = logger.child({ orderPrice })
+      userID: ctx.from.id,
+    })
+    logger = logger.child({ order_price: orderPrice })
     logger.debug('calculated order price')
 
     // check if order can be created without prepayment

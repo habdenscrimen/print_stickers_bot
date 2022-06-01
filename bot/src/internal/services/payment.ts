@@ -1,4 +1,4 @@
-import { NotificationService, PaymentService } from '.'
+import { NotificationService, OrdersService, PaymentService, UserService } from '.'
 import { Config } from '../../config'
 import { APIs } from '../api/api'
 import { Logger } from '../logger'
@@ -10,6 +10,7 @@ interface PaymentServiceOptions {
   config: Config
   logger: Logger
   notificationService: NotificationService
+  userService: UserService
 }
 
 type Service<HandlerName extends keyof PaymentService> = (
@@ -92,10 +93,10 @@ const createRefund: Service<'CreateRefund'> = async (
 }
 
 const handleSuccessfulPayment: Service<'HandleSuccessfulPayment'> = async (
-  { logger, repos, notificationService },
+  { logger, repos, notificationService, userService, config },
   [{ orderID, transactionID, transactionAmount, providerOrderID }],
 ) => {
-  const log = logger.child({
+  let log = logger.child({
     name: 'handle-successful-payment-service',
     order_id: orderID,
     transaction_id: transactionID,
@@ -118,6 +119,50 @@ const handleSuccessfulPayment: Service<'HandleSuccessfulPayment'> = async (
     // send admin notification about new order
     notificationService.AddNotification({
       admin: { event: 'new_order', payload: { orderID } },
+    })
+
+    // check if incrementing free stickers immediately is allowed
+    // TODO: if not allowed, increment them once the user picked up the order on the NovaPoshta
+    if (!config.referral.incrementFreeStickersImmediately) {
+      log.debug(`disallowed incrementing free stickers immediately`)
+      return
+    }
+
+    // check if order is by referral code of another user
+    const order = await repos.Orders.GetOrder(orderID)
+    if (!order?.by_referral_of_user_id) {
+      return
+    }
+    log = log.child({ invited_by_user_id: order.by_referral_of_user_id })
+    log.debug(`order is by referral code of another user`)
+
+    // get referral code's owner
+    const user = await repos.Users.GetUserByID(order.by_referral_of_user_id)
+    if (!user) {
+      throw new Error(`user with ID ${order.by_referral_of_user_id} not found`)
+    }
+    log = log.child({ referral_code_owner: user })
+
+    // increment free stickers count for both users
+    await Promise.all([
+      userService.UpdateUser({
+        telegramUserID: order.user_id,
+        user: {},
+        options: { incrementFreeStickers: 3 },
+      }),
+      userService.UpdateUser({
+        telegramUserID: order.by_referral_of_user_id,
+        user: {},
+        options: { incrementFreeStickers: 3 },
+      }),
+    ])
+
+    // create user notification about new order by referral
+    notificationService.AddNotification({
+      user: {
+        event: 'order_by_your_referral_code',
+        payload: { telegramChatID: user.telegram_chat_id, orderID },
+      },
     })
   } catch (error) {
     log.error(`failed to handle successful payment: ${error}`)

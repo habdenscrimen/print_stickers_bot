@@ -105,7 +105,8 @@ async function goToMainMenu(ctx: Ctx) {
     session.route = Routes.Welcome
     logger.debug('changed route to Welcome')
 
-    await ctx.editMessageText(startText.text, { parse_mode: startText.parseMode })
+    const { text, parseMode } = startText(session.invitedByUserName)
+    await ctx.editMessageText(text, { parse_mode: parseMode })
     ctx.menu.back()
   } catch (error) {
     logger.error(`failed to navigate to main menu: ${error}`)
@@ -114,7 +115,7 @@ async function goToMainMenu(ctx: Ctx) {
 
 /** Changes route to Select Stickers, asks user to send stickers and shows pricing. */
 async function selectStickersButton(ctx: Ctx) {
-  const logger = ctx.logger.child({ name: 'main-menu: Select stickers', user_id: ctx.from.id })
+  let logger = ctx.logger.child({ name: 'main-menu: Select stickers', user_id: ctx.from.id })
 
   // change route to SelectStickers
   const session = await ctx.session
@@ -123,11 +124,24 @@ async function selectStickersButton(ctx: Ctx) {
 
   ctx.menu.nav('select-stickers')
 
-  const { parseMode, text } = selectStickersInstructionsText(ctx.config)
+  // get fresh user object with updated free stickers count
+  const user = await ctx.repos.Users.GetUserByID(ctx.from.id)
+  if (!user) {
+    logger.error(`failed to get user with id ${ctx.from.id}`)
+    throw new Error(`failed to get user with id ${ctx.from.id}`)
+  }
+  logger = logger.child({ user })
+
+  const freeStickersCount = user.free_stickers_count
+
+  const { parseMode, text } = selectStickersInstructionsText(ctx.config, freeStickersCount)
 
   // send message with info that user can send stickers now
-  await ctx.editMessageText(text, { parse_mode: parseMode, deleteInFuture: true })
-  // await ctx.editMessageText(text, { parse_mode: parseMode })
+  await ctx.editMessageText(text, {
+    parse_mode: parseMode,
+    deleteInFuture: true,
+    disable_web_page_preview: true,
+  })
 
   logger.debug('sent message that user can send stickers')
 }
@@ -138,8 +152,17 @@ async function referralProgramButton(ctx: Ctx) {
 
   // get user's free stickers count and referral code
   const session = await ctx.session
-  const freeStickersCount = session.user!.free_stickers_count
   const referralCode = session.user!.referral_code
+
+  // get fresh user object with updated free stickers count
+  const user = await ctx.repos.Users.GetUserByID(ctx.from.id)
+  if (!user) {
+    logger.error(`failed to get user with id ${ctx.from.id}`)
+    throw new Error(`failed to get user with id ${ctx.from.id}`)
+  }
+  logger = logger.child({ user })
+
+  const freeStickersCount = user.free_stickers_count
 
   const { freeStickerForInvitedUser } = ctx.config.referral
 

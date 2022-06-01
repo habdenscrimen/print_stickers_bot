@@ -29,12 +29,34 @@ export const newOrdersService = (options: OrdersServiceOptions): OrdersService =
   }
 }
 
-const createOrder: Service<'CreateOrder'> = async ({ logger, repos }, [order]) => {
-  const log = logger.child({ name: 'createOrder', order })
+const createOrder: Service<'CreateOrder'> = async (options, [order]) => {
+  let log = options.logger.child({ name: 'createOrder', order })
 
   try {
     // create order in database
-    const orderID = await repos.Orders.CreateOrder(order)
+    const orderID = await options.repos.Orders.CreateOrder(order)
+    log.debug(`order created with id ${orderID}`)
+
+    // get free stickers count
+    const stickersCount = order.telegram_sticker_file_ids.length
+    const orderPrice = await calculateOrderPrice(options, [
+      { stickersCount, userID: order.user_id },
+    ])
+    log = log.child({ order_price: orderPrice })
+
+    // decrement free stickers count
+    await options.repos.Users.UpdateUser(order.user_id, {
+      free_stickers_count: orderPrice.freeStickersLeft,
+    })
+    log.debug(`free stickers count decremented`)
+
+    // create notification about successful order if order's status is `confirmed`
+    if (order.status === 'confirmed') {
+      options.notificationService.AddNotification({
+        admin: { event: 'new_order', payload: { orderID } },
+      })
+      log.debug(`notification about new order created`)
+    }
 
     return orderID
   } catch (error) {
@@ -44,57 +66,77 @@ const createOrder: Service<'CreateOrder'> = async ({ logger, repos }, [order]) =
 }
 
 const calculateOrderPrice: Service<'CalculateOrderPrice'> = async (
-  { logger },
-  [ctx, stickersCount],
+  { logger, config, repos },
+  [{ stickersCount, userID }],
 ) => {
   let log = logger.child({ name: 'calculateOrderPrice' })
   log = log.child({ stickersCount })
 
-  let priceLevel: keyof Config['tariffs']
-
-  // find price level by stickers count
-  Object.entries(ctx.config.tariffs).forEach(([key, value]) => {
-    if (stickersCount >= value.stickersMin && stickersCount <= value.stickersMax) {
-      priceLevel = key as keyof Config['tariffs']
+  try {
+    // get user from database to get their free stickers count
+    const user = await repos.Users.GetUserByID(userID)
+    if (!user) {
+      log.error(`user not found: ${userID}`)
+      throw new Error(`user with id ${userID} not found`)
     }
-  })
+    log = log.child({ user })
 
-  // @ts-expect-error
-  if (!priceLevel) {
-    log.error('failed to find price level', { stickersCount })
-    return [null, new Error('failed to find price level')]
-  }
-  log = log.child({ priceLevel })
-  log.debug(`found price level`)
+    // get user's free stickers count
+    const freeStickersCount = user.free_stickers_count || 0
 
-  const price = ctx.config.tariffs[priceLevel]
-  log = log.child({ price })
+    let priceLevel: keyof Config['tariffs']
 
-  // calculate stickers price
-  const stickersPrice = price.stickerCost * stickersCount
-  log = log.child({ stickersPrice })
+    // find price level by stickers count
+    Object.entries(config.tariffs).forEach(([key, value]) => {
+      if (stickersCount >= value.stickersMin && stickersCount <= value.stickersMax) {
+        priceLevel = key as keyof Config['tariffs']
+      }
+    })
 
-  // calculate total price (stickers + delivery)
-  const totalPrice = stickersPrice + ctx.config.delivery.cost
-  log = log.child({ totalPrice })
+    // @ts-expect-error
+    if (!priceLevel) {
+      log.error('failed to find price level', { stickersCount })
+      throw new Error('failed to find price level')
+    }
+    log = log.child({ priceLevel })
+    log.debug(`found price level`)
 
-  // calculate C.O.D. price
-  const codPrice =
-    ctx.config.delivery.cost +
-    ctx.config.delivery.paybackFixCost +
-    (stickersPrice * ctx.config.delivery.paybackPercentCost) / 100
+    const price = config.tariffs[priceLevel]
+    log = log.child({ price })
 
-  log.debug('calculated order price')
-  return [
-    {
-      deliveryPrice: ctx.config.delivery.cost,
+    // calculate how much free stickers used
+    const freeStickersUsed =
+      stickersCount - freeStickersCount <= 0 ? stickersCount : freeStickersCount
+
+    // calculate stickers price
+    const stickersPrice =
+      price.stickerCost *
+      (stickersCount - freeStickersUsed <= 0 ? 0 : stickersCount - freeStickersUsed)
+    log = log.child({ stickers_price: stickersPrice })
+
+    // calculate free stickers left
+    const freeStickersLeft = freeStickersCount - freeStickersUsed
+
+    // calculate P.O.D. (Pay On Delivery) price
+    const codPrice =
+      config.delivery.cost +
+      config.delivery.paybackFixCost +
+      (stickersPrice * config.delivery.paybackPercentCost) / 100
+    log = log.child({ cod_price: codPrice })
+
+    log.debug('calculated order price')
+    return {
+      deliveryPrice: config.delivery.cost,
       codPrice,
       stickersPrice,
-      totalPrice,
       orderPriceLevel: priceLevel,
-    },
-    null,
-  ]
+      freeStickersUsed,
+      freeStickersLeft,
+    }
+  } catch (error) {
+    log.error(`failed to calculate order price: ${error}`)
+    throw new Error(`failed to calculate order price: ${error}`)
+  }
 }
 
 const handleCancellationRequest: Service<'HandleCancellationRequest'> = async (

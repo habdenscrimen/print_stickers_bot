@@ -9,22 +9,28 @@ import { mainMenu } from './main'
 export const confirmSelectStickersDoneMenu = new Menu<BotContext>(
   'confirm-select-stickers-done',
 ).dynamic(async (ctx, range) => {
-  // get session
-  const session = await ctx.session
+  let log = ctx.logger.child({ name: 'confirm-select-stickers-done-menu' })
 
-  const stickersCount = Object.keys(session.order.stickers!).length
-  const [orderPrice, err] = await ctx.services.Orders.CalculateOrderPrice(ctx, stickersCount)
-  if (err || !orderPrice) {
-    console.error('error while calculating order price', err)
-    return
+  try {
+    // get session
+    const session = await ctx.session
+
+    const stickersCount = Object.keys(session.order.stickers!).length
+    const orderPrice = await ctx.services.Orders.CalculateOrderPrice({
+      stickersCount,
+      userID: ctx.from!.id,
+    })
+    log = log.child({ order_price: orderPrice })
+
+    if (orderPrice.orderPriceLevel === 'level_4') {
+      range.text(`👌 Мені вистачить`, confirmSelectedStickers)
+      return
+    }
+
+    range.text(`👌 Знаю, але мені вистачить`, confirmSelectedStickers)
+  } catch (error) {
+    log.error(`failed to dynamically create menu button text: ${error}`)
   }
-
-  if (orderPrice.orderPriceLevel === 'level_4') {
-    range.text(`👌 Мені вистачить`, confirmSelectedStickers)
-    return
-  }
-
-  range.text(`👌 Знаю, але мені вистачить`, confirmSelectedStickers)
 })
 
 async function confirmSelectedStickers(ctx: Ctx) {

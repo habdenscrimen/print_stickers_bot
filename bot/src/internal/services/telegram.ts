@@ -25,6 +25,19 @@ export const newTelegramService = (options: TelegramServiceOptions): TelegramSer
   return {
     CreateStickerSet: (...args) => createStickerSet(options, args),
     DeleteStickerSet: (...args) => deleteStickerSet(options, args),
+    SendMessage: (...args) => sendMessage(options, args),
+  }
+}
+
+const sendMessage: Service<'SendMessage'> = async ({ logger, tgApi }, [chatID, text]) => {
+  const log = logger.child({ name: 'sendMessage', chat_id: chatID, text })
+
+  try {
+    await tgApi.sendMessage(chatID, text)
+
+    log.info(`successfully sent message`)
+  } catch (error) {
+    log.error(`failed to send message: ${error}`)
   }
 }
 

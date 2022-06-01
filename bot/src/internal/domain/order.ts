@@ -45,7 +45,7 @@ export interface Order {
   nps?: number
 
   // events
-  events: OrderEvent[]
+  events: OrderEvent
 
   // referral
   by_referral_of_user_id?: number

@@ -1,4 +1,4 @@
-import { OrdersService, PaymentService, TelegramService } from '.'
+import { NotificationService, OrdersService, PaymentService, TelegramService } from '.'
 import { Config } from '../../config'
 import { APIs } from '../api/api'
 import { OrderStatus } from '../domain'
@@ -12,6 +12,7 @@ interface OrdersServiceOptions {
   logger: Logger
   paymentService: PaymentService
   telegramService: TelegramService
+  notificationService: NotificationService
 }
 
 type Service<HandlerName extends keyof OrdersService> = (
@@ -24,6 +25,21 @@ export const newOrdersService = (options: OrdersServiceOptions): OrdersService =
     CalculateOrderPrice: (...args) => calculateOrderPrice(options, args),
     HandleCancellationRequest: (...args) => handleCancellationRequest(options, args),
     AdminCancelOrder: (...args) => adminCancelOrder(options, args),
+    CreateOrder: (...args) => createOrder(options, args),
+  }
+}
+
+const createOrder: Service<'CreateOrder'> = async ({ logger, repos }, [order]) => {
+  const log = logger.child({ name: 'createOrder', order })
+
+  try {
+    // create order in database
+    const orderID = await repos.Orders.CreateOrder(order)
+
+    return orderID
+  } catch (error) {
+    log.error(`failed to create order: ${error}`)
+    throw new Error(`failed to create order: ${error}`)
   }
 }
 
@@ -82,7 +98,7 @@ const calculateOrderPrice: Service<'CalculateOrderPrice'> = async (
 }
 
 const handleCancellationRequest: Service<'HandleCancellationRequest'> = async (
-  { logger, paymentService, repos, telegramService },
+  { logger, paymentService, repos, telegramService, notificationService },
   [orderID, reason],
 ) => {
   let log = logger.child({ name: 'handleCancellationRequest', order_id: orderID })
@@ -115,7 +131,10 @@ const handleCancellationRequest: Service<'HandleCancellationRequest'> = async (
       // create refund
       await paymentService.CreateRefund(orderID)
 
-      // TODO: create admin notification about cancellation
+      // create admin notification about cancellation
+      notificationService.AddNotification({
+        admin: { event: 'order_cancelled', payload: { orderID } },
+      })
       return
     }
 
@@ -130,7 +149,10 @@ const handleCancellationRequest: Service<'HandleCancellationRequest'> = async (
     })
     log.debug('updated order status to cancellation_requested')
 
-    // TODO: create admin notification about cancellation request
+    // create admin notification about cancellation request
+    notificationService.AddNotification({
+      admin: { event: 'order_cancellation_requested', payload: { orderID } },
+    })
   } catch (error) {
     log.error(`failed to handle cancellation request: ${error}`)
     throw new Error(`failed to handle cancellation request: ${error}`)
@@ -138,7 +160,7 @@ const handleCancellationRequest: Service<'HandleCancellationRequest'> = async (
 }
 
 const adminCancelOrder: Service<'AdminCancelOrder'> = async (
-  { logger, paymentService, repos, telegramService },
+  { logger, paymentService, repos, telegramService, notificationService },
   [orderID],
 ) => {
   let log = logger.child({ name: 'adminCancelOrder', order_id: orderID })
@@ -174,7 +196,13 @@ const adminCancelOrder: Service<'AdminCancelOrder'> = async (
       await paymentService.CreateRefund(orderID)
     }
 
-    // TODO: send notification that order is cancelled and refund is created
+    // send notification that order is cancelled and refund is created
+    notificationService.AddNotification({
+      user: {
+        event: 'admin_cancelled_order',
+        payload: { orderID, telegramChatID: order.user_id },
+      },
+    })
   } catch (error) {
     log.error(`failed to cancel order as admin: ${error}`)
     throw new Error(`failed to cancel order as admin: ${error}`)

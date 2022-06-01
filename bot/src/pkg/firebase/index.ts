@@ -1,4 +1,6 @@
 import { getFirestore } from 'firebase-admin/firestore'
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
+import * as firebaseClient from 'firebase/app'
 import { StorageAdapter } from 'grammy'
 import admin from 'firebase-admin'
 import { Config } from '../../config'
@@ -15,9 +17,21 @@ export const initFirebase = (config: Config) => {
 
   const db = getFirestore()
 
+  // init firebase client to get access to functions
+  const firebaseClientApp = firebaseClient.initializeApp(
+    JSON.parse(config.firebase.clientConfig),
+  )
+  const functions = getFunctions(firebaseClientApp, 'europe-central2')
+
+  // connect emulator if not in production
+  if (config.env !== 'production') {
+    connectFunctionsEmulator(functions, '127.0.0.1', 5001)
+  }
+
   return {
     firebaseApp: app,
     firestore: db,
+    functions,
   }
 }
 

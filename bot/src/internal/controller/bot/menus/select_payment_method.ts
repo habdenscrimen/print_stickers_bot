@@ -40,7 +40,7 @@ async function paymentUsingBot(ctx: Ctx) {
     logger.debug('calculated order price')
 
     // create order in database
-    const orderID = await ctx.repos.Orders.CreateOrder({
+    const orderID = await ctx.services.Orders.CreateOrder({
       delivery_address: session.order.deliveryInfo!,
       delivery_cost: orderPrice.deliveryPrice,
       status: 'payment_pending',
@@ -114,7 +114,7 @@ async function paymentOnNovaPoshta(ctx: Ctx) {
     }
 
     // create order in database
-    const orderID = await ctx.repos.Orders.CreateOrder({
+    const orderID = await ctx.services.Orders.CreateOrder({
       delivery_address: session.order.deliveryInfo!,
       delivery_cost: orderPrice.codPrice,
       status: 'confirmed',

@@ -149,7 +149,6 @@ export const newBot = (options: BotOptions) => {
     return ctx.answerPreCheckoutQuery(true)
   })
 
-  // TODO: get rid of this. Use LiqPay webhooks instead.
   // handle successful payment
   bot.on(':successful_payment', async (ctx) => {
     const logger = ctx.logger.child({ name: 'successful_payment', user_id: ctx.from!.id })

@@ -12,6 +12,7 @@ import { newTelegramService } from '../services/telegram'
 import { newPaymentService } from '../services/payment'
 import { APIs } from '../api/api'
 import { newLiqpayAPI } from '../api/psp/liqpay'
+import { newNotificationService } from '../services/notification'
 
 interface App {
   repos: Repos
@@ -26,7 +27,7 @@ export const newApp = (config: Config): App => {
   const logger = newLogger(config)
 
   // init firebase
-  const { firestore } = initFirebase(config)
+  const { firestore, functions } = initFirebase(config)
 
   // init storage adapter
   const storageAdapter = newStorageAdapter<BotSessionData>(config, firestore)
@@ -47,7 +48,15 @@ export const newApp = (config: Config): App => {
 
   // init services
   const telegramService = newTelegramService({ apis, config, logger, repos, tgApi })
-  const paymentService = newPaymentService({ apis, repos, config, logger })
+  const notificationService = newNotificationService({
+    apis,
+    config,
+    logger,
+    repos,
+    telegramService,
+    functions,
+  })
+  const paymentService = newPaymentService({ apis, repos, config, logger, notificationService })
   const ordersService = newOrdersService({
     apis,
     config,
@@ -55,12 +64,14 @@ export const newApp = (config: Config): App => {
     repos,
     paymentService,
     telegramService,
+    notificationService,
   })
 
   const services: Services = {
     Orders: ordersService,
     Telegram: telegramService,
     Payment: paymentService,
+    Notification: notificationService,
   }
 
   // init bot

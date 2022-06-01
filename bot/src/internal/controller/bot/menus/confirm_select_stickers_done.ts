@@ -44,7 +44,6 @@ async function confirmSelectedStickers(ctx: Ctx) {
     await ctx.editMessageText(`⏳ Секунду...`, { reply_markup: undefined })
 
     // create sticker set
-    // TODO: use goLike
     const [stickerSetName, err] = await ctx.services.Telegram.CreateStickerSet(
       ctx.from.id,
       Object.values(session.order.stickers!),

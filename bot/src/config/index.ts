@@ -6,6 +6,9 @@ import 'dotenv/config'
 export const newConfig = () => {
   const config = {
     env: process.env.NODE_ENV || 'development',
+    firebase: {
+      clientConfig: `{"apiKey":"AIzaSyB584l9YTXWuqyj28q2a3nip9YCOa8uLhM","authDomain":"print-stickers.firebaseapp.com","databaseURL":"https://print-stickers-default-rtdb.europe-west1.firebasedatabase.app","projectId":"print-stickers","storageBucket":"print-stickers.appspot.com","messagingSenderId":"706787137358","appId":"1:706787137358:web:bd4cf07b5739b69c1ef01f"}`,
+    },
     database: {
       sessionStorageKey: 'bot_session',
     },
@@ -45,7 +48,7 @@ export const newConfig = () => {
         webhookURL:
           process.env.NODE_ENV === 'test'
             ? 'http://127.0.0.1:5001/print-stickers/europe-central2/liqpayWebhook'
-            : `https://cc0c-93-170-119-216.ngrok.io/print-stickers/europe-central2/liqpayWebhook`,
+            : `https://e0e3-62-122-203-109.ngrok.io/print-stickers/europe-central2/liqpayWebhook`,
       },
       novaPoshta: {
         maxOrderPriceAllowedWithoutPrepayment: 500,

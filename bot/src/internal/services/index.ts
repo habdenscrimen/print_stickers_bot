@@ -1,12 +1,55 @@
 import { Config } from '../../config'
 import { BotContext } from '../controller/bot'
+import { Order } from '../domain'
 
 export interface Services {
   Orders: OrdersService
   Telegram: TelegramService
   Payment: PaymentService
   // User: UserServices
-  // Notifications: NotificationsServices
+  Notification: NotificationService
+}
+
+export interface AdminNotificationPayloads {
+  new_order: {
+    orderID: string
+  }
+  order_cancelled: {
+    orderID: string
+  }
+  order_cancellation_requested: {
+    orderID: string
+  }
+  order_cannot_be_refunded: {
+    orderID: string
+  }
+}
+
+export interface UserNotificationPayloads {
+  order_refunded: {
+    telegramChatID: number
+    orderID: string
+  }
+  admin_cancelled_order: {
+    telegramChatID: number
+    orderID: string
+  }
+}
+
+export interface NotificationPayload {
+  admin?: {
+    event: keyof AdminNotificationPayloads
+    payload: AdminNotificationPayloads[keyof AdminNotificationPayloads]
+  }
+  user?: {
+    event: keyof UserNotificationPayloads
+    payload: UserNotificationPayloads[keyof UserNotificationPayloads]
+  }
+}
+
+export interface NotificationService {
+  AddNotification: (payload: NotificationPayload) => Promise<void>
+  SendNotification: (payload: NotificationPayload) => Promise<void>
 }
 
 export interface PaymentService {
@@ -29,6 +72,7 @@ export interface OrderPrice {
 }
 
 export interface OrdersService {
+  CreateOrder: (order: Omit<Order, 'id' | 'created_at' | 'events'>) => Promise<string>
   CalculateOrderPrice: (
     ctx: BotContext,
     stickersCount: number,
@@ -40,4 +84,5 @@ export interface OrdersService {
 export interface TelegramService {
   CreateStickerSet: (userID: number, stickerFileIDs: string[]) => Promise<[string | null, any]>
   DeleteStickerSet: (userID: number, stickerSetName: string) => Promise<void>
+  SendMessage: (chatID: number, text: string) => Promise<void>
 }

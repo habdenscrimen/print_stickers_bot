@@ -1,4 +1,4 @@
-import { PaymentService } from '.'
+import { NotificationService, PaymentService } from '.'
 import { Config } from '../../config'
 import { APIs } from '../api/api'
 import { Logger } from '../logger'
@@ -9,6 +9,7 @@ interface PaymentServiceOptions {
   repos: Repos
   config: Config
   logger: Logger
+  notificationService: NotificationService
 }
 
 type Service<HandlerName extends keyof PaymentService> = (
@@ -24,7 +25,10 @@ export const newPaymentService = (options: PaymentServiceOptions): PaymentServic
   }
 }
 
-const createRefund: Service<'CreateRefund'> = async ({ apis, logger, repos }, [orderID]) => {
+const createRefund: Service<'CreateRefund'> = async (
+  { apis, logger, repos, notificationService },
+  [orderID],
+) => {
   let log = logger.child({ name: 'create-refund-service', order_id: orderID })
 
   try {
@@ -78,17 +82,17 @@ const createRefund: Service<'CreateRefund'> = async ({ apis, logger, repos }, [o
 
     // refund is created and processed by provider
     log.debug(`refund in psp created`)
-
-    // TODO: create notification about order refunded
   } catch (error) {
     log.error(`failed to create refund: ${error}`)
+    notificationService.AddNotification({
+      admin: { event: 'order_cannot_be_refunded', payload: { orderID } },
+    })
     throw new Error(`failed to create refund: ${error}`)
-    // TODO: create admin notification that order cannot be refunded
   }
 }
 
 const handleSuccessfulPayment: Service<'HandleSuccessfulPayment'> = async (
-  { logger, repos },
+  { logger, repos, notificationService },
   [{ orderID, transactionID, transactionAmount, providerOrderID }],
 ) => {
   const log = logger.child({
@@ -110,6 +114,11 @@ const handleSuccessfulPayment: Service<'HandleSuccessfulPayment'> = async (
       status: 'confirmed',
     })
     log.debug('order status updated')
+
+    // send admin notification about new order
+    notificationService.AddNotification({
+      admin: { event: 'new_order', payload: { orderID } },
+    })
   } catch (error) {
     log.error(`failed to handle successful payment: ${error}`)
     throw new Error(`failed to handle successful payment: ${error}`)

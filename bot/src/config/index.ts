@@ -87,7 +87,7 @@ export const newConfig = () => {
     },
     referral: {
       freeStickerForInvitedUser: 3,
-      incrementFreeStickersImmediately: true,
+      incrementFreeStickersImmediately: false,
     },
     delivery: {
       cost: 41,

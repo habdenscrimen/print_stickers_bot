@@ -47,6 +47,7 @@ async function paymentUsingBot(ctx: Ctx) {
       telegram_sticker_set_name: session.order.stickerSetName!,
       telegram_sticker_file_ids: Object.values(session.order.stickers!),
       by_referral_of_user_id: session.order.invitedByTelegramUserID,
+      free_stickers_used: orderPrice.freeStickersUsed,
       payment: {
         method: 'liqpay',
       },
@@ -129,6 +130,7 @@ async function paymentOnNovaPoshta(ctx: Ctx) {
       telegram_sticker_set_name: session.order.stickerSetName!,
       telegram_sticker_file_ids: Object.values(session.order.stickers!),
       by_referral_of_user_id: session.order.invitedByTelegramUserID,
+      free_stickers_used: orderPrice.freeStickersUsed,
       payment: {
         method: 'nova_poshta',
       },

@@ -49,6 +49,7 @@ export interface Order {
 
   // referral
   by_referral_of_user_id?: number
+  free_stickers_used?: number
 
   // timestamps
   created_at: string

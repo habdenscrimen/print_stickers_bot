@@ -1,5 +1,4 @@
 import { Config } from '../../config'
-import { BotContext } from '../controller/bot'
 import { Order, User } from '../domain'
 
 export interface Services {

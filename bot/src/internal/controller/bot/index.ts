@@ -44,6 +44,7 @@ export interface BotSessionData {
   user: SessionUser | undefined
   order: Partial<SessionOrder>
   orderToDelete: Partial<Order> | undefined
+  invitedByUserName: string | undefined
 }
 
 export interface BotContext extends Context, LazySessionFlavor<BotSessionData> {
@@ -91,6 +92,7 @@ export const newBot = (options: BotOptions) => {
         user: undefined,
         order: {},
         orderToDelete: {},
+        invitedByUserName: undefined,
       }),
     }),
   )
@@ -162,10 +164,13 @@ export const newBot = (options: BotOptions) => {
       // change route to main menu
       session.route = Routes.Welcome
 
+      // create message about successful payment
+      const { text, parseMode } = successfulPaymentText(session.invitedByUserName)
+
       // show success message to user
-      await ctx.reply(successfulPaymentText.text, {
+      await ctx.reply(text, {
         reply_markup: mainMenu,
-        parse_mode: successfulPaymentText.parseMode,
+        parse_mode: parseMode,
         deleteInFuture: true,
       })
     } catch (error) {

@@ -13,6 +13,7 @@ import { newPaymentService } from '../services/payment'
 import { APIs } from '../api/api'
 import { newLiqpayAPI } from '../api/psp/liqpay'
 import { newNotificationService } from '../services/notification'
+import { newUserService } from '../services/user'
 
 interface App {
   repos: Repos
@@ -56,7 +57,15 @@ export const newApp = (config: Config): App => {
     telegramService,
     functions,
   })
-  const paymentService = newPaymentService({ apis, repos, config, logger, notificationService })
+  const userService = newUserService({ apis, config, logger, repos })
+  const paymentService = newPaymentService({
+    apis,
+    repos,
+    config,
+    logger,
+    notificationService,
+    userService,
+  })
   const ordersService = newOrdersService({
     apis,
     config,
@@ -72,6 +81,7 @@ export const newApp = (config: Config): App => {
     Telegram: telegramService,
     Payment: paymentService,
     Notification: notificationService,
+    User: userService,
   }
 
   // init bot

@@ -21,12 +21,11 @@ async function finishSelectingStickers(ctx: Ctx) {
     logger = logger.child({ session })
 
     const stickersCount = Object.keys(session.order.stickers!).length
-    const [orderPrice, err] = await ctx.services.Orders.CalculateOrderPrice(ctx, stickersCount)
-    if (err || !orderPrice) {
-      logger.error('error while calculating order price', err)
-      return
-    }
-    logger = logger.child({ stickersCount, orderPrice })
+    const orderPrice = await ctx.services.Orders.CalculateOrderPrice({
+      stickersCount,
+      userID: ctx.from!.id,
+    })
+    logger = logger.child({ stickers_count: stickersCount, order_price: orderPrice })
     logger.debug('calculated order price')
 
     // create message that motivates user to select more stickers

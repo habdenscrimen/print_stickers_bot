@@ -15,6 +15,7 @@ import { goBackToMainMenuText } from './go_back_to_main_menu'
 import { myOrdersText } from './my_orders'
 import { cancelOrdersListText } from './cancel_orders_list'
 import { activeOrdersListText } from './active_orders_list'
+import { successfulOrderWithoutPaymentText } from './successful_order_without_payment'
 
 export {
   startText,
@@ -34,4 +35,5 @@ export {
   myOrdersText,
   cancelOrdersListText,
   activeOrdersListText,
+  successfulOrderWithoutPaymentText,
 }

@@ -50,16 +50,15 @@ export const start: Command = async (ctx) => {
     invitedByName = `${invitedByUser.first_name}${
       invitedByUser.last_name ? ` ${invitedByUser.last_name}` : ''
     }`
+    session.invitedByUserName = invitedByName
   }
 
   if (currentUser) {
     // save current user to session
     session.user = currentUser
 
-    await ctx.reply(createGreetingMessage(invitedByName), {
-      reply_markup: mainMenu,
-      parse_mode: 'Markdown',
-    })
+    const { parseMode, text } = startText(invitedByName)
+    await ctx.reply(text, { reply_markup: mainMenu, parse_mode: parseMode })
 
     logger.debug('current user exists, saved to session')
     return
@@ -98,18 +97,6 @@ export const start: Command = async (ctx) => {
   session.user = newUser
   logger.debug('set current user to session')
 
-  await ctx.reply(createGreetingMessage(invitedByName), {
-    reply_markup: mainMenu,
-    parse_mode: 'Markdown',
-  })
-}
-
-/* messages */
-
-const createGreetingMessage = (invitedByName?: string) => {
-  const invitedMessage = invitedByName
-    ? `Тебе запросив(ла) ${invitedByName}. Як тільки ти зробиш перше замовлення, ви удвох отримаєте по 3 безкоштовних стікера 🔥\n\n`
-    : ''
-
-  return startText.text
+  const { parseMode, text } = startText(invitedByName)
+  await ctx.reply(text, { reply_markup: mainMenu, parse_mode: parseMode })
 }

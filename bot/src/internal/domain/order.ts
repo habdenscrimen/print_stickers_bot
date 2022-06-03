@@ -29,7 +29,7 @@ export interface Order {
 
   // payment info
   payment?: {
-    method?: 'liqpay' | 'nova_poshta'
+    method?: 'liqpay' | 'nova_poshta' | 'free_order'
     provider_transaction_id?: number
     provider_transaction_amount?: number
     provider_order_id?: string
@@ -49,6 +49,7 @@ export interface Order {
 
   // referral
   by_referral_of_user_id?: number
+  free_stickers_used?: number
 
   // timestamps
   created_at: string

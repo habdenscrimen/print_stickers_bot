@@ -15,7 +15,9 @@
     "firebase:dev": "npm run build && firebase emulators:start --only functions,firestore,storage",
     "firebase:start": "npm run build && firebase emulators:start --only functions",
     "firebase:deploy": "npm run build && firebase deploy --only functions",
-    "test": "NODE_ENV=\"test\" FIRESTORE_EMULATOR_HOST=\"localhost:8080\" ava"
+    "test": "NODE_ENV=\"test\" FIRESTORE_EMULATOR_HOST=\"localhost:8080\" ava",
+    "_mocks": "npm run build && node ./functions/src/mocks/index.js",
+    "mocks": "ts-node ./mocks/users.ts"
   },
   "repository": {
     "type": "git",

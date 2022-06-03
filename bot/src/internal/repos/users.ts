@@ -90,6 +90,8 @@ const createUser: Handler<'CreateUser'> = async (db, [telegramUserID, user]) => 
       telegram_user_id: telegramUserID,
       referral_code: referralCode,
       created_at: createdAt,
-      free_stickers_count: 0,
+      // free_stickers_count: 0,
+      // FIXME: set back to 0!
+      free_stickers_count: 3,
     } as User)
 }

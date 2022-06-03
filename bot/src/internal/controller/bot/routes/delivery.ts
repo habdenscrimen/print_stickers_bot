@@ -3,7 +3,11 @@ import { RouteHandler, Routes } from '.'
 import { goLike } from '../../../../pkg/function_exec'
 import { mainMenu } from '../menus/main'
 import { selectPaymentMethod, selectPaymentMethodInBot } from '../menus/select_payment_method'
-import { askPhoneNumberText, paymentMethodInfoText } from '../texts'
+import {
+  askPhoneNumberText,
+  paymentMethodInfoText,
+  successfulOrderWithoutPaymentText,
+} from '../texts'
 
 export const delivery: RouteHandler = (nextRoute) => async (ctx) => {
   let logger = ctx.logger.child({ name: 'delivery-route', user_id: ctx.from!.id })
@@ -86,6 +90,46 @@ export const delivery: RouteHandler = (nextRoute) => async (ctx) => {
       orderPrice.stickersPrice <=
       ctx.config.payment.novaPoshta.maxOrderPriceAllowedWithoutPrepayment
     logger = logger.child({ nova_poshta_available: novaPoshtaAvailable })
+
+    // check if stickers are free for user (user has free stickers from referral program)
+    if (orderPrice.stickersPrice === 0) {
+      // create order
+      // create order in database
+      const orderID = await ctx.services.Orders.CreateOrder({
+        delivery_address: session.order.deliveryInfo!,
+        delivery_cost: orderPrice.codPrice,
+        status: 'confirmed',
+        stickers_cost: orderPrice.stickersPrice,
+        user_id: ctx.from!.id,
+        telegram_sticker_set_name: session.order.stickerSetName!,
+        telegram_sticker_file_ids: Object.values(session.order.stickers!),
+        by_referral_of_user_id: session.order.invitedByTelegramUserID,
+        free_stickers_used: orderPrice.freeStickersUsed,
+        payment: {
+          method: 'free_order',
+        },
+      })
+      logger = logger.child({ orderID })
+      logger.debug('created order in database')
+
+      // clear order from session
+      session.order = {}
+      logger.debug('cleared order info from session')
+
+      // change route to main menu
+      session.route = Routes.Welcome
+
+      // show message about successful order
+      logger.debug(`order created for free`)
+      const { parseMode, text } = successfulOrderWithoutPaymentText()
+      await ctx.reply(text, {
+        parse_mode: parseMode,
+        reply_markup: mainMenu,
+        deleteInFuture: true,
+        deletePrevBotMessages: true,
+      })
+      return
+    }
 
     // create payment info message
     const paymentInfoMessage = paymentMethodInfoText({ novaPoshtaAvailable, orderPrice })

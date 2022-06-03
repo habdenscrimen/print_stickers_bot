@@ -29,7 +29,7 @@ export interface Order {
 
   // payment info
   payment?: {
-    method?: 'liqpay' | 'nova_poshta'
+    method?: 'liqpay' | 'nova_poshta' | 'free_order'
     provider_transaction_id?: number
     provider_transaction_amount?: number
     provider_order_id?: string

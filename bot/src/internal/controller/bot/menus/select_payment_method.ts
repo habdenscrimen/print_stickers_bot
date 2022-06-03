@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid'
 import { Ctx } from '.'
 import { BotContext } from '..'
 import { Routes } from '../routes'
+import { successfulOrderWithoutPaymentText } from '../texts'
 import { mainMenu } from './main'
 
 export const selectPaymentMethod = new Menu<BotContext>('select-payment-method')
@@ -146,8 +147,11 @@ async function paymentOnNovaPoshta(ctx: Ctx) {
     session.route = Routes.Welcome
 
     // show success message to user
-    await ctx.reply(`✅ Замовлення оформлене!`, {
+    const { parseMode, text } = successfulOrderWithoutPaymentText()
+
+    await ctx.reply(text, {
       reply_markup: mainMenu,
+      parse_mode: parseMode,
       deleteInFuture: true,
       deletePrevBotMessages: true,
     })

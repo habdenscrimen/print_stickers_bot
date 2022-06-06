@@ -14,11 +14,18 @@ import { Logger } from '../../logger'
 import { Repos } from '../../repos'
 import { Services } from '../../services'
 import { deleteMessagesTransformer } from './transformers'
-import { menus } from './menus'
+import { Menus } from './menus'
 import { router, Routes } from './routes'
 import { commands } from './commands'
-import { mainMenu } from './menus/main'
-import { successfulPaymentText } from './texts'
+import { successfulPaymentText, Texts } from './texts'
+import { newMainMenuTexts } from './texts/main_menu'
+import { newMainMenu } from './menus/main'
+import { newSelectStickersMenus } from './menus/select_stickers'
+import { newSharedTexts } from './texts/shared'
+import { newSelectStickersTexts } from './texts/select_stickers'
+import { newDeliveryTexts } from './texts/delivery'
+import { newPaymentMenus } from './menus/payment'
+import { newPaymentTexts } from './texts/payment'
 
 interface BotOptions {
   config: Config
@@ -52,6 +59,8 @@ export interface BotContext extends Context, LazySessionFlavor<BotSessionData> {
   config: Config
   services: Services
   repos: Repos
+  texts: Texts
+  menus: Menus
 
   // add custom fields to `reply` options
   reply: (
@@ -75,8 +84,10 @@ export interface BotContext extends Context, LazySessionFlavor<BotSessionData> {
 const disallowedWebhookReplyMethods = new Set(['getStickerSet', 'sendMessage'])
 
 export const newBot = (options: BotOptions) => {
+  const { config } = options
+
   // init bot
-  const bot = new Bot<BotContext>(options.config.bot.token, {
+  const bot = new Bot<BotContext>(config.bot.token, {
     client: {
       canUseWebhookReply: (method) => !disallowedWebhookReplyMethods.has(method),
     },
@@ -97,86 +108,102 @@ export const newBot = (options: BotOptions) => {
     }),
   )
 
+  // init texts
+  const texts: Texts = {
+    MainMenu: newMainMenuTexts({ config }),
+    Shared: newSharedTexts({ config }),
+    SelectStickers: newSelectStickersTexts({ config }),
+    Delivery: newDeliveryTexts({ config }),
+    Payment: newPaymentTexts({ config }),
+  }
+
+  // init menus
+  const menus: Menus = {
+    Main: newMainMenu({ config }),
+    SelectStickers: newSelectStickersMenus({ config }),
+    Payment: newPaymentMenus({ config }),
+  }
+
   // add data to context
-  bot.use((ctx, next) => {
+  bot.use(async (ctx, next) => {
     ctx.repos = options.repos
     ctx.config = options.config
     ctx.logger = options.logger
     ctx.services = options.services
+    ctx.texts = texts
+    ctx.menus = menus
 
-    if (options.config.bot.disabled) {
-      ctx.reply(
+    if (config.bot.disabled) {
+      await ctx.reply(
         `Перепрошую, наразі виконуються технічні роботи, тому бот тимчасово недоступний. Спробуйте трохи пізніше.`,
       )
       return next()
     }
 
-    // console.log('CTX')
-    // console.log(JSON.stringify(ctx.update, null, 2))
-
     return next()
   })
 
   // use menus
-  bot.use(menus.selectPaymentMethodInBot)
-  bot.use(menus.mainMenu)
-  bot.use(menus.selectPaymentMethod)
-  bot.use(menus.confirmStickerSet)
-  bot.use(menus.confirmSelectStickersDoneMenu)
-  bot.use(menus.selectStickersDoneMenu)
+  bot.use(menus.Main.Main)
+  bot.use(menus.Payment.ChooseNovaPoshtaMethod)
+  bot.use(menus.Payment.SelectPaymentMethod)
+  bot.use(menus.SelectStickers.ConfirmStickerSet)
+  bot.use(menus.SelectStickers.FinishSelectingStickers)
+  bot.use(menus.SelectStickers.Done)
 
   // use transformers
   bot.api.config.use(deleteMessagesTransformer(bot.api))
 
-  // bot.api.config.use((prev, method, payload, signal) => {
-  //   console.log(JSON.stringify({ method, payload }, null, 2))
-  //   return prev(method, payload, signal)
-  // })
-
   // if bot is disabled, don't handle any message
-  if (options.config.bot.disabled) {
+  if (config.bot.disabled) {
     return bot
   }
 
   // use commands
-  bot.command('start', commands.start)
+  bot.command(
+    'start',
+    config.features.referralProgram ? commands.start : commands.startWithoutReferral,
+  )
 
   // use routes
   bot.use(router)
 
-  // handle pre-checkout query
-  bot.on('pre_checkout_query', (ctx) => {
-    console.log('pre_checkout_query', JSON.stringify(ctx))
+  // check if LiqPay feature is enabled
+  if (config.features.liqPay) {
+    // handle pre-checkout query
+    bot.on('pre_checkout_query', (ctx) => {
+      console.log('pre_checkout_query', JSON.stringify(ctx))
 
-    return ctx.answerPreCheckoutQuery(true)
-  })
+      return ctx.answerPreCheckoutQuery(true)
+    })
 
-  // handle successful payment
-  bot.on(':successful_payment', async (ctx) => {
-    const logger = ctx.logger.child({ name: 'successful_payment', user_id: ctx.from!.id })
+    // handle successful payment
+    bot.on(':successful_payment', async (ctx) => {
+      const logger = ctx.logger.child({ name: 'successful_payment', user_id: ctx.from!.id })
 
-    try {
-      // clear order info from session
-      const session = await ctx.session
-      session.order = {}
-      logger.debug('cleared order info from session')
+      try {
+        // clear order info from session
+        const session = await ctx.session
+        session.order = {}
+        logger.debug('cleared order info from session')
 
-      // change route to main menu
-      session.route = Routes.Welcome
+        // change route to main menu
+        session.route = Routes.Welcome
 
-      // create message about successful payment
-      const { text, parseMode } = successfulPaymentText(session.invitedByUserName)
+        // create message about successful payment
+        const { text, parseMode } = successfulPaymentText(session.invitedByUserName)
 
-      // show success message to user
-      await ctx.reply(text, {
-        reply_markup: mainMenu,
-        parse_mode: parseMode,
-        deleteInFuture: true,
-      })
-    } catch (error) {
-      logger.error(`failed to handle successful payment: ${error}`)
-    }
-  })
+        // show success message to user
+        await ctx.reply(text, {
+          reply_markup: menus.Main.Main,
+          parse_mode: parseMode,
+          deleteInFuture: true,
+        })
+      } catch (error) {
+        logger.error(`failed to handle successful payment: ${error}`)
+      }
+    })
+  }
 
   // handle unhandled errors
   bot.catch((err) => {

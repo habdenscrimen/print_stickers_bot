@@ -2,7 +2,6 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
 import { RouteHandler } from '.'
-import { mainMenu } from '../menus/main'
 import { OrderStatus } from '../../../domain'
 
 dayjs.extend(utc)
@@ -121,7 +120,7 @@ export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
     await ctx.reply(successMessage, {
       deleteInFuture: true,
       deletePrevBotMessages: true,
-      reply_markup: mainMenu,
+      reply_markup: ctx.menus.Main.Main,
     })
   } catch (error) {
     logger.error(`failed to cancel user order: ${error}`)

@@ -1,16 +1,43 @@
-import { Config } from '../../../../config'
-import { OrderPrice } from '../../../services'
-import { Text } from './text'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+import { escapeMarkdown, SelectStickersTexts, TextOptions } from '.'
 
-interface Options {
-  stickersCount: number
-  orderPrice: OrderPrice
-  config: Config
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+type Text<TextName extends keyof SelectStickersTexts> = (
+  options: TextOptions,
+  args: Parameters<SelectStickersTexts[TextName]>,
+) => ReturnType<SelectStickersTexts[TextName]>
+
+export const newSelectStickersTexts = (options: TextOptions): SelectStickersTexts => {
+  return {
+    FailedToCreateStickerSet: (...args) =>
+      escapeMarkdown(failedToCreateStickerSet(options, args)),
+    ConfirmSelectedStickers: (...args) =>
+      escapeMarkdown(confirmSelectedStickers(options, args)),
+    MotivateToSelectMoreStickers: (...args) =>
+      escapeMarkdown(motivateToSelectMoreStickers(options, args)),
+  }
 }
 
-export const motivateToSelectMoreStickersText = (options: Options): Text => {
-  const { stickersCount, orderPrice, config } = options
+const failedToCreateStickerSet: Text<'FailedToCreateStickerSet'> = ({ config }) => {
+  return `
+😔 Не вдалося створити пак наліпок, спробуй ще раз.
+  `
+}
 
+const confirmSelectedStickers: Text<'ConfirmSelectedStickers'> = ({ config }) => {
+  return `
+Бот зібрав усі обрані тобою наліпки у пак — перевір, чи все в порядку 😎
+  `
+}
+
+const motivateToSelectMoreStickers: Text<'MotivateToSelectMoreStickers'> = (
+  { config },
+  [{ orderPrice, stickersCount }],
+) => {
   let motivationalText = ``
 
   if (orderPrice.orderPriceLevel === 'level_1') {
@@ -54,13 +81,6 @@ _Наприклад, 10 наліпок коштують *160* грн, а 11 на
 ${motivationalText}
 Щоб додати наліпки, просто продовжуй їх надсилати 👇
 `
-    .replace(/\(/gm, '\\(')
-    .replace(/\)/gm, '\\)')
-    .replace(/\./gm, '\\.')
-    .replace(/\:/gm, '\\:')
 
-  return {
-    text,
-    parseMode: 'MarkdownV2',
-  }
+  return text
 }

@@ -82,16 +82,15 @@ const createUser: Handler<'CreateUser'> = async (db, [telegramUserID, user]) => 
   const createdAt = new Date().toISOString()
   const referralCode = customAlphabet(lowercase, 20)()
 
-  await db
-    .collection('users')
-    .doc(telegramUserID.toString())
-    .set({
-      ...user,
-      telegram_user_id: telegramUserID,
-      referral_code: referralCode,
-      created_at: createdAt,
-      // free_stickers_count: 0,
-      // FIXME: set back to 0!
-      free_stickers_count: 3,
-    } as User)
+  const newUser: Partial<User> = {
+    ...user,
+    telegram_user_id: telegramUserID,
+    referral_code: referralCode,
+    created_at: createdAt,
+    free_stickers_count: 0,
+  }
+
+  await db.collection('users').doc(telegramUserID.toString()).set(newUser)
+
+  return newUser
 }

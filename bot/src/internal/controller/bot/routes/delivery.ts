@@ -1,13 +1,7 @@
 import { Keyboard } from 'grammy'
 import { RouteHandler, Routes } from '.'
 import { goLike } from '../../../../pkg/function_exec'
-import { mainMenu } from '../menus/main'
-import { selectPaymentMethod, selectPaymentMethodInBot } from '../menus/select_payment_method'
-import {
-  askPhoneNumberText,
-  paymentMethodInfoText,
-  successfulOrderWithoutPaymentText,
-} from '../texts'
+import { askPhoneNumberText } from '../texts'
 
 export const delivery: RouteHandler = (nextRoute) => async (ctx) => {
   let logger = ctx.logger.child({ name: 'delivery-route', user_id: ctx.from!.id })
@@ -51,7 +45,9 @@ export const delivery: RouteHandler = (nextRoute) => async (ctx) => {
       const [_, err] = await goLike(ctx.repos.Users.UpdateUser(ctx.from!.id, { phone_number }))
       if (err) {
         logger.error(`failed to save phone number to database: ${err}`)
-        await ctx.reply('Не вдалося зберегти номер телефону', { reply_markup: mainMenu })
+        await ctx.reply('Не вдалося зберегти номер телефону', {
+          reply_markup: ctx.menus.Main.Main,
+        })
         return
       }
       logger.debug('saved phone number to database')
@@ -121,10 +117,11 @@ export const delivery: RouteHandler = (nextRoute) => async (ctx) => {
 
       // show message about successful order
       logger.debug(`order created for free`)
-      const { parseMode, text } = successfulOrderWithoutPaymentText()
+      const text = ctx.texts.Payment.SuccessOrderWithoutPayment()
+
       await ctx.reply(text, {
-        parse_mode: parseMode,
-        reply_markup: mainMenu,
+        parse_mode: 'MarkdownV2',
+        reply_markup: ctx.menus.Main.Main,
         deleteInFuture: true,
         deletePrevBotMessages: true,
       })
@@ -132,13 +129,15 @@ export const delivery: RouteHandler = (nextRoute) => async (ctx) => {
     }
 
     // create payment info message
-    const paymentInfoMessage = paymentMethodInfoText({ novaPoshtaAvailable, orderPrice })
-    logger = logger.child({ paymentInfoMessage })
+    const text = ctx.texts.Payment.SelectPaymentMethod({ novaPoshtaAvailable, orderPrice })
+    logger = logger.child({ text })
 
     // show payment info with payment options
-    await ctx.reply(paymentInfoMessage.text, {
-      reply_markup: novaPoshtaAvailable ? selectPaymentMethod : selectPaymentMethodInBot,
-      parse_mode: paymentInfoMessage.parseMode,
+    await ctx.reply(text, {
+      reply_markup: ctx.config.features.liqPay
+        ? ctx.menus.Payment.SelectPaymentMethod
+        : ctx.menus.Payment.ChooseNovaPoshtaMethod,
+      parse_mode: 'MarkdownV2',
       deleteInFuture: true,
       deletePrevBotMessages: true,
     })

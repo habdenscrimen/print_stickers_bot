@@ -1,5 +1,4 @@
 import { RouteHandler } from '.'
-import { selectStickersDoneMenu } from '../menus/select_stickers_done'
 import {
   animatedStickersNotSupportedText,
   gotStickerText,
@@ -38,7 +37,7 @@ export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
     const showDoneButton = stickersCount > 0
 
     await ctx.reply(animatedStickersNotSupportedText.text, {
-      reply_markup: showDoneButton ? selectStickersDoneMenu : undefined,
+      reply_markup: showDoneButton ? ctx.menus.SelectStickers.Done : undefined,
       deleteInFuture: true,
       deletePrevBotMessages: true,
     })
@@ -56,7 +55,7 @@ export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
     const showDoneButton = stickersCount > 0
 
     await ctx.reply(stickerAlreadySelectedText.text, {
-      reply_markup: showDoneButton ? selectStickersDoneMenu : undefined,
+      reply_markup: showDoneButton ? ctx.menus.SelectStickers.Done : undefined,
       deleteInFuture: true,
       deletePrevBotMessages: true,
     })
@@ -70,7 +69,7 @@ export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
 
   // send user a message that sticker was added
   await ctx.reply(gotStickerText(stickersCount + 1).text, {
-    reply_markup: selectStickersDoneMenu,
+    reply_markup: ctx.menus.SelectStickers.Done,
     deleteInFuture: true,
     deletePrevBotMessages: true,
   })

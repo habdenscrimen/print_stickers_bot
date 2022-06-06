@@ -1,22 +1,32 @@
-import { MenuFlavor } from '@grammyjs/menu'
+import { Menu, MenuFlavor } from '@grammyjs/menu'
 import { Filter, Middleware } from 'grammy'
 import { BotContext } from '..'
-import { mainMenu } from './main'
-import { selectStickersDoneMenu } from './select_stickers_done'
-import { confirmSelectStickersDoneMenu } from './confirm_select_stickers_done'
-import { confirmStickerSet } from './confirm_sticker_set'
-import { selectPaymentMethod, selectPaymentMethodInBot } from './select_payment_method'
 
-type MenuHandler = Middleware<Filter<BotContext, 'callback_query:data'> & MenuFlavor>
+export type MenuHandler = Middleware<Filter<BotContext, 'callback_query:data'> & MenuFlavor>
 
 // @ts-expect-error
 export type Ctx = Parameters<MenuHandler>['0']
 
-export const menus = {
-  mainMenu,
-  selectStickersDoneMenu,
-  confirmSelectStickersDoneMenu,
-  confirmStickerSet,
-  selectPaymentMethod,
-  selectPaymentMethodInBot,
+export type BotMenu = Menu<BotContext>
+
+export interface Menus {
+  Main: MainMenus
+  SelectStickers: SelectStickersMenus
+  Payment: PaymentMenus
+}
+
+export interface MainMenus {
+  Main: BotMenu
+}
+
+export interface SelectStickersMenus {
+  FinishSelectingStickers: BotMenu
+  Done: BotMenu
+  ConfirmStickerSet: BotMenu
+}
+
+export interface PaymentMenus {
+  SelectPaymentMethod: BotMenu
+  ChooseNovaPoshtaMethod: BotMenu
+  // SelectInBot: BotMenu
 }

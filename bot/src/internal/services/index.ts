@@ -19,6 +19,11 @@ export interface UserService {
       newTelegramStickerSet?: string
     }
   }) => Promise<void>
+  GetUserByID: (options: { telegramUserID: number }) => Promise<User | undefined>
+  CreateUser: (options: {
+    telegramUserID: number
+    user: Partial<User>
+  }) => Promise<Partial<User>>
 }
 
 export interface AdminNotificationPayloads {

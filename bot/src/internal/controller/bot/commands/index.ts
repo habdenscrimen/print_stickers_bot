@@ -1,6 +1,6 @@
 import { Filter, Middleware } from 'grammy'
 import { BotContext } from '..'
-import { start } from './start'
+import { start, startWithoutReferral } from './start'
 
 type CommandContext = Filter<
   Omit<BotContext, 'match'> & {
@@ -13,4 +13,5 @@ export type Command = Middleware<CommandContext>
 
 export const commands = {
   start,
+  startWithoutReferral,
 }

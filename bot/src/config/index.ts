@@ -31,6 +31,10 @@ export const newConfig = () => {
       },
       avoidCreatingStickerSet: JSON.parse(process.env.BOT_AVOID_CREATING_STICKER_SET!) || false,
     },
+    features: {
+      liqPay: false,
+      referralProgram: false,
+    },
     payment: {
       liqpay: {
         // publicKey:

@@ -1,7 +1,6 @@
 import { Command } from '.'
 import { goLike } from '../../../../pkg/function_exec'
-import { mainMenu } from '../menus/main'
-import { startText } from '../texts'
+import { User } from '../../../domain'
 
 export const start: Command = async (ctx) => {
   let logger = ctx.logger.child({ name: 'start-command', user_id: ctx.from!.id })
@@ -57,8 +56,10 @@ export const start: Command = async (ctx) => {
     // save current user to session
     session.user = currentUser
 
-    const { parseMode, text } = startText(invitedByName)
-    await ctx.reply(text, { reply_markup: mainMenu, parse_mode: parseMode })
+    const text = ctx.texts.MainMenu.Start({
+      invitedByName: ctx.config.features.referralProgram ? invitedByName : undefined,
+    })
+    await ctx.reply(text, { reply_markup: ctx.menus.Main.Main, parse_mode: 'MarkdownV2' })
 
     logger.debug('current user exists, saved to session')
     return
@@ -97,6 +98,56 @@ export const start: Command = async (ctx) => {
   session.user = newUser
   logger.debug('set current user to session')
 
-  const { parseMode, text } = startText(invitedByName)
-  await ctx.reply(text, { reply_markup: mainMenu, parse_mode: parseMode })
+  const text = ctx.texts.MainMenu.Start({
+    invitedByName: ctx.config.features.referralProgram ? invitedByName : undefined,
+  })
+  await ctx.reply(text, { reply_markup: ctx.menus.Main.Main, parse_mode: 'MarkdownV2' })
+}
+
+export const startWithoutReferral: Command = async (ctx) => {
+  let logger = ctx.logger.child({ name: 'start-command' })
+
+  try {
+    // get user id
+    const userID = ctx.from!.id
+    logger = logger.child({ user_id: userID })
+    logger.debug(`got user id`)
+
+    // get session
+    const session = await ctx.session
+
+    // get current user from database
+    const user = await ctx.services.User.GetUserByID({ telegramUserID: userID })
+
+    let currentUser = user
+
+    // check if no user found
+    if (!user) {
+      logger.debug(`user not found, creating a new user in database`)
+
+      // create a new user in database if not found
+      const newUser = await ctx.services.User.CreateUser({
+        telegramUserID: userID,
+        user: {
+          username: ctx.from?.username,
+          first_name: ctx.from?.first_name,
+          last_name: ctx.from?.last_name,
+          telegram_chat_id: ctx.chat.id,
+        },
+      })
+      logger = logger.child({ new_user: newUser })
+      logger.debug(`created a new user in database`)
+
+      currentUser = newUser as User
+    }
+
+    // update user in session
+    session.user = currentUser
+
+    // reply with start message
+    const text = ctx.texts.MainMenu.Start({})
+    await ctx.reply(text, { reply_markup: ctx.menus.Main.Main, parse_mode: 'MarkdownV2' })
+  } catch (error) {
+    logger.error(`failed to handle start command: ${error}`)
+  }
 }

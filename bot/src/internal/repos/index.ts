@@ -17,7 +17,7 @@ export interface UsersRepo {
       newTelegramStickerSet?: string
     },
   ) => Promise<void>
-  CreateUser: (telegramUserID: number, user: Partial<User>) => Promise<void>
+  CreateUser: (telegramUserID: number, user: Partial<User>) => Promise<Partial<User>>
 }
 
 export interface OrdersRepo {

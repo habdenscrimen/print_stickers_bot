@@ -1,15 +1,6 @@
-import { Menu } from '@grammyjs/menu'
-import { Ctx } from '.'
-import { BotContext } from '..'
-import { motivateToSelectMoreStickersText } from '../texts'
-import { confirmSelectStickersDoneMenu } from './confirm_select_stickers_done'
+import { MenuHandler } from '../..'
 
-export const selectStickersDoneMenu = new Menu<BotContext>('select-stickers-done').text(
-  `👌 Це все`,
-  finishSelectingStickers,
-)
-
-async function finishSelectingStickers(ctx: Ctx) {
+export const done: MenuHandler = async (ctx) => {
   let logger = ctx.logger.child({
     name: 'select-stickers-done-menu: Finish',
     user_id: ctx.from.id,
@@ -29,16 +20,16 @@ async function finishSelectingStickers(ctx: Ctx) {
     logger.debug('calculated order price')
 
     // create message that motivates user to select more stickers
-    const message = motivateToSelectMoreStickersText({
-      config: ctx.config,
+    const text = ctx.texts.SelectStickers.MotivateToSelectMoreStickers({
       orderPrice,
       stickersCount,
     })
-    logger = logger.child({ message })
+    logger = logger.child({ text })
 
-    await ctx.reply(message.text, {
-      reply_markup: confirmSelectStickersDoneMenu,
-      parse_mode: message.parseMode,
+    await ctx.reply(text, {
+      // reply_markup: confirmSelectStickersDoneMenu,
+      reply_markup: ctx.menus.SelectStickers.FinishSelectingStickers,
+      parse_mode: 'MarkdownV2',
       deleteInFuture: true,
       deletePrevBotMessages: true,
     })

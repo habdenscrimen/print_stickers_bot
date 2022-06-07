@@ -67,7 +67,7 @@ export const adminAnswerQuestion = functions
       // get question ID and answer from request query
       const { question_id, answer } = req.query
       if (!question_id || !answer) {
-        res.status(400).send('questionId and answer are required')
+        res.status(400).send('question_id and answer are required')
         return
       }
 

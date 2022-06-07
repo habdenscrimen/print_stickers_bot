@@ -2,7 +2,7 @@ import admin from 'firebase-admin'
 import { customAlphabet } from 'nanoid'
 import { lowercase } from 'nanoid-dictionary'
 import { OrdersRepo } from '.'
-import { Order } from '../domain'
+import { Order, OrderEvent } from '../domain'
 
 type Handler<HandlerName extends keyof OrdersRepo> = (
   database: admin.firestore.Firestore,
@@ -49,6 +49,15 @@ export const createOrder: Handler<'CreateOrder'> = async (db, [order]) => {
 
   const now = new Date().toISOString()
 
+  const events: Partial<OrderEvent> = {}
+
+  // create `confirmed` event if payment method is NovaPoshta
+  if (order.payment?.method === 'nova_poshta') {
+    events.confirmed = now
+  } else {
+    events.payment_pending = now
+  }
+
   await db
     .collection('orders')
     .doc(orderID)
@@ -56,7 +65,7 @@ export const createOrder: Handler<'CreateOrder'> = async (db, [order]) => {
       ...order,
       id: orderID,
       created_at: now,
-      events: { payment_pending: now },
+      events,
     } as Order)
 
   return orderID

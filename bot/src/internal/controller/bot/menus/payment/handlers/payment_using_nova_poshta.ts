@@ -58,8 +58,6 @@ export const paymentUsingNovaPoshta: MenuHandler = async (ctx) => {
     logger = logger.child({ text })
     logger.debug(`created message text`)
 
-    console.log('1')
-
     await ctx.reply(text, {
       reply_markup: ctx.menus.Main.Main,
       parse_mode: 'MarkdownV2',

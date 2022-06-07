@@ -39,7 +39,7 @@ const selectPaymentMethod: Text<'SelectPaymentMethod'> = (
 
 👉 Вартість замовлення: *${orderPrice.stickersPrice}* грн
 👉 Вартість доставки: *${orderPrice.codPrice}* грн
-👉 Всього: *${orderPrice.codPrice}* грн
+👉 Всього: *${(orderPrice.codPrice + orderPrice.stickersPrice).toFixed(2)}* грн
     `
   }
 

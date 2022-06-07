@@ -25,6 +25,7 @@ export interface Texts {
   SelectStickers: SelectStickersTexts
   Delivery: DeliveryTexts
   Payment: PaymentTexts
+  FAQ: FAQTexts
 }
 
 export interface TextOptions {
@@ -64,6 +65,14 @@ export interface PaymentTexts {
   }) => string
 }
 
+export interface FAQTexts {
+  Title: () => string
+  HowLongIsOrderProcessing: () => string
+  CanCancelOrder: () => string
+  AskQuestion: () => string
+  AskQuestionSuccess: () => string
+}
+
 export const escapeMarkdown = (text: string): string => {
   return (
     text
@@ -74,6 +83,7 @@ export const escapeMarkdown = (text: string): string => {
       .replace(/\-/gm, '\\-')
       .replace(/\!/gm, '\\!')
       .replace(/\#/gm, '\\#')
+      .replace(/\>/gm, '\\>')
       // fix link in markdown
       .replace(/]\\\(/gm, '](')
       .replace(

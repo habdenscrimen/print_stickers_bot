@@ -5,6 +5,7 @@ import { welcome } from './welcome'
 import { selectStickers } from './select_stickers'
 import { delivery } from './delivery'
 import { cancelOrder } from './cancel_order'
+import { askQuestion } from './ask_question'
 
 export enum Routes {
   Idle = 'idle',
@@ -14,6 +15,7 @@ export enum Routes {
   RequestContact = 'request_contact',
   Payment = 'payment',
   CancelOrder = 'cancel_order',
+  AskQuestion = 'ask_question',
 }
 
 export type RouteHandler = (nextRoute: Routes) => Middleware<BotContext>
@@ -27,3 +29,4 @@ router.route(Routes.Welcome, welcome(Routes.SelectStickers))
 router.route(Routes.SelectStickers, selectStickers(Routes.Delivery))
 router.route(Routes.Delivery, delivery(Routes.RequestContact))
 router.route(Routes.CancelOrder, cancelOrder(Routes.Idle))
+router.route(Routes.AskQuestion, askQuestion(Routes.Idle))

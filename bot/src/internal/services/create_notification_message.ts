@@ -24,21 +24,21 @@ export const createNotificationMessage = async (
         }
         log = log.child({ order })
 
-        return `➕ Нове замовлення, ₴${order.stickers_cost}.`
+        return `➕ Нове замовлення, ₴${order.stickers_cost}, ID: ${orderID}.`
       }
 
       if (payload.admin.event === 'order_cancelled') {
         const { orderID } = payload.admin
           .payload as AdminNotificationPayloads['order_cancelled']
 
-        return `❌ Замовлення з ID ${orderID} автоматично відмінено.`
+        return `❌ Замовлення автоматично відмінено, ID: ${orderID}.`
       }
 
       if (payload.admin.event === 'order_cancellation_requested') {
         const { orderID } = payload.admin
           .payload as AdminNotificationPayloads['order_cancellation_requested']
 
-        return `⏳❌ Створений запит на відміну замовлення з ID ${orderID}.`
+        return `⏳❌ Створений запит на відміну замовлення, ID: ${orderID}.`
       }
 
       if (payload.admin.event === 'order_cannot_be_refunded') {
@@ -47,14 +47,23 @@ export const createNotificationMessage = async (
 
         return `⚠️ Непередбачувана ситуація — помилка при відміні замовлення з ID ${orderID}!`
       }
+
+      if (payload.admin.event === 'new_question') {
+        const { questionID } = payload.admin
+          .payload as AdminNotificationPayloads['new_question']
+
+        return `➕ Нове питання, ID: ${questionID}.`
+      }
     }
 
     if (payload.user) {
       if (payload.user.event === 'order_refunded') {
+        const { orderID } = payload.user.payload as UserNotificationPayloads['order_refunded']
+
         // get order by id
-        const order = await repos.Orders.GetOrder(payload.user.payload.orderID)
+        const order = await repos.Orders.GetOrder(orderID)
         if (!order) {
-          throw new Error(`order not found: ${payload.user.payload.orderID}`)
+          throw new Error(`order not found: ${orderID}`)
         }
         log = log.child({ order })
 
@@ -66,10 +75,13 @@ export const createNotificationMessage = async (
       }
 
       if (payload.user.event === 'admin_cancelled_order') {
+        const { orderID } = payload.user
+          .payload as UserNotificationPayloads['admin_cancelled_order']
+
         // get order by id
-        const order = await repos.Orders.GetOrder(payload.user.payload.orderID)
+        const order = await repos.Orders.GetOrder(orderID)
         if (!order) {
-          throw new Error(`order not found: ${payload.user.payload.orderID}`)
+          throw new Error(`order not found: ${orderID}`)
         }
         log = log.child({ order })
 
@@ -107,6 +119,22 @@ export const createNotificationMessage = async (
         log = log.child({ user_name: userName })
 
         return `🎉 ${userName} зробив(ла) перше замовлення за твоїм реферальним повиланням! Ви удвох отримали по 3 безкоштовних наліпки!`
+      }
+
+      if (payload.user.event === 'question_answered') {
+        const { questionID } = payload.user
+          .payload as UserNotificationPayloads['question_answered']
+
+        // get question by ID
+        const question = await repos.Questions.GetQuestion({ questionID })
+        if (!question) {
+          throw new Error(`question not found`)
+        }
+        if (!question.answer || !question.answered_at) {
+          throw new Error(`question is not answered`)
+        }
+
+        return `👌 Нещодавно Ви ставили наступне запитання: "${question.question}"\nВідповідаємо:\n\n${question.answer}\n\nℹ️ Якщо у Вас ще залишились питання, можете поставити їх за допомогою кнопки у головному меню.`
       }
     }
 

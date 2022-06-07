@@ -1,5 +1,5 @@
 import { Config } from '../../config'
-import { Order, User } from '../domain'
+import { Order, Question, User } from '../domain'
 
 export interface Services {
   Orders: OrdersService
@@ -7,6 +7,7 @@ export interface Services {
   Payment: PaymentService
   User: UserService
   Notification: NotificationService
+  Question: QuestionService
 }
 
 export interface UserService {
@@ -29,6 +30,9 @@ export interface UserService {
 export interface AdminNotificationPayloads {
   new_order: {
     orderID: string
+  }
+  new_question: {
+    questionID: string
   }
   order_cancelled: {
     orderID: string
@@ -53,6 +57,10 @@ export interface UserNotificationPayloads {
   order_by_your_referral_code: {
     telegramChatID: number
     orderID: string
+  }
+  question_answered: {
+    telegramChatID: number
+    questionID: string
   }
 }
 
@@ -106,4 +114,12 @@ export interface TelegramService {
   CreateStickerSet: (userID: number, stickerFileIDs: string[]) => Promise<[string | null, any]>
   DeleteStickerSet: (userID: number, stickerSetName: string) => Promise<void>
   SendMessage: (chatID: number, text: string) => Promise<void>
+}
+
+export interface QuestionService {
+  CreateQuestion: (options: {
+    question: Omit<Question, 'id' | 'created_at' | 'answered_at'>
+  }) => Promise<string>
+  GetUnansweredQuestions: () => Promise<Question[]>
+  AnswerQuestion: (options: { questionID: string; answer: string }) => Promise<void>
 }

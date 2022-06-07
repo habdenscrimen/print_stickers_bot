@@ -38,6 +38,53 @@ export const adminCancelOrderHandler = functions
     }
   })
 
+export const adminGetUnansweredQuestions = functions
+  .region(config.functions.region)
+  .https.onRequest(async (req, res) => {
+    let log = logger.child({ name: 'admin-get-unanswered-questions-handler', req })
+
+    try {
+      // get unanswered questions
+      const unansweredQuestions = await services.Question.GetUnansweredQuestions()
+      log = log.child({ unansweredQuestions })
+      log.info(`successfully got unanswered questions`)
+
+      // send response
+      res.status(200).send({ status: 'success', data: unansweredQuestions })
+    } catch (error) {
+      res
+        .status(500)
+        .send({ status: 'error', data: `failed to get unanswered questions: ${error}` })
+    }
+  })
+
+export const adminAnswerQuestion = functions
+  .region(config.functions.region)
+  .https.onRequest(async (req, res) => {
+    const log = logger.child({ name: 'admin-answer-question-handler', req })
+
+    try {
+      // get question ID and answer from request query
+      const { question_id, answer } = req.query
+      if (!question_id || !answer) {
+        res.status(400).send('questionId and answer are required')
+        return
+      }
+
+      // answer question
+      await services.Question.AnswerQuestion({
+        answer: answer as string,
+        questionID: question_id as string,
+      })
+      log.debug(`successfully answered question ${question_id}`)
+
+      // send response
+      res.status(200).send({ status: 'success', data: 'ok' })
+    } catch (error) {
+      res.status(500).send({ status: 'error', data: `failed to answer question: ${error}` })
+    }
+  })
+
 interface WebhookRequestBody {
   data: string
   signature: string

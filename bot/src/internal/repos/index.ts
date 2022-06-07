@@ -1,8 +1,9 @@
-import { Order, OrderStatus, User } from '../domain'
+import { Order, OrderStatus, Question, User } from '../domain'
 
 export interface Repos {
   Users: UsersRepo
   Orders: OrdersRepo
+  Questions: QuestionsRepo
 }
 
 export interface UsersRepo {
@@ -26,4 +27,16 @@ export interface OrdersRepo {
   GetUserOrders: (userID: number, excludeStatuses?: OrderStatus[]) => Promise<Order[]>
   UpdateOrder: (orderID: string, order: Partial<Order>) => Promise<void>
   GetOrder: (orderID: string) => Promise<Order | undefined>
+}
+
+export interface QuestionsRepo {
+  CreateQuestion: (
+    question: Omit<Question, 'id' | 'created_at' | 'answered_at'>,
+  ) => Promise<string>
+  GetUnansweredQuestions: () => Promise<Question[]>
+  GetQuestion: (options: { questionID: string }) => Promise<Question>
+  UpdateQuestion: (options: {
+    questionID: string
+    question: Partial<Question>
+  }) => Promise<void>
 }

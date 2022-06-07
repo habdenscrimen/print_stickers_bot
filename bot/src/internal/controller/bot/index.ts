@@ -26,6 +26,7 @@ import { newSelectStickersTexts } from './texts/select_stickers'
 import { newDeliveryTexts } from './texts/delivery'
 import { newPaymentMenus } from './menus/payment'
 import { newPaymentTexts } from './texts/payment'
+import { newFAQTexts } from './texts/faq'
 
 interface BotOptions {
   config: Config
@@ -115,6 +116,7 @@ export const newBot = (options: BotOptions) => {
     SelectStickers: newSelectStickersTexts({ config }),
     Delivery: newDeliveryTexts({ config }),
     Payment: newPaymentTexts({ config }),
+    FAQ: newFAQTexts({ config }),
   }
 
   // init menus
@@ -145,6 +147,7 @@ export const newBot = (options: BotOptions) => {
 
   // use menus
   bot.use(menus.Main.Main)
+  bot.use(menus.Main.GoBackToMainMenu)
   bot.use(menus.Payment.ChooseNovaPoshtaMethod)
   bot.use(menus.Payment.SelectPaymentMethod)
   bot.use(menus.SelectStickers.ConfirmStickerSet)

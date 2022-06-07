@@ -14,6 +14,8 @@ import { APIs } from '../api/api'
 import { newLiqpayAPI } from '../api/psp/liqpay'
 import { newNotificationService } from '../services/notification'
 import { newUserService } from '../services/user'
+import { newQuestionsRepo } from '../repos/questions'
+import { newQuestionService } from '../services/question'
 
 interface App {
   repos: Repos
@@ -37,6 +39,7 @@ export const newApp = (config: Config): App => {
   const repos: Repos = {
     Users: newUsersRepo(firestore),
     Orders: newOrdersRepo(firestore),
+    Questions: newQuestionsRepo(firestore),
   }
 
   // init apis
@@ -75,6 +78,13 @@ export const newApp = (config: Config): App => {
     telegramService,
     notificationService,
   })
+  const questionService = newQuestionService({
+    apis,
+    config,
+    logger,
+    repos,
+    notificationService,
+  })
 
   const services: Services = {
     Orders: ordersService,
@@ -82,6 +92,7 @@ export const newApp = (config: Config): App => {
     Payment: paymentService,
     Notification: notificationService,
     User: userService,
+    Question: questionService,
   }
 
   // init bot

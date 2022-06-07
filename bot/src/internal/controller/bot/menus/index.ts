@@ -17,6 +17,7 @@ export interface Menus {
 
 export interface MainMenus {
   Main: BotMenu
+  GoBackToMainMenu: BotMenu
 }
 
 export interface SelectStickersMenus {
@@ -28,5 +29,4 @@ export interface SelectStickersMenus {
 export interface PaymentMenus {
   SelectPaymentMethod: BotMenu
   ChooseNovaPoshtaMethod: BotMenu
-  // SelectInBot: BotMenu
 }

@@ -11,6 +11,8 @@
     "dev": "NODE_ENV=development FIREBASE_STORAGE_EMULATOR_HOST=\"localhost:9199\" ts-node ./src/index.ts",
     "start": "NODE_ENV=production ts-node ./src/index.ts",
     "build": "rm -rf ./dist && tsc --build",
+    "build:and:run": "npm run build && NODE_ENV=production node dist/index.js",
+    "run": "NODE_ENV=production node dist/index.js",
     "test": "time ava"
   },
   "keywords": [],

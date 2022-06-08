@@ -1,6 +1,7 @@
 import GraphicsMagick from 'gm'
 import { promisify } from 'util'
 import fs from 'fs'
+import { exec } from 'child_process'
 import { ImageService } from '.'
 
 const gm = GraphicsMagick.subClass({ imageMagick: true })
@@ -60,8 +61,35 @@ export const createSVGOutline: ImageService<'CreateSVGOutline'> = async (
   fs.writeFileSync(outlineFilePath, outlineContentWithUpdatedSize, 'utf-8')
   logger.debug('updated outline size', { path: outlineFilePath })
 
+  // replace outline with centerline (required for printing)
+  const centerlinedOutlineFilePath = fileServices.NewTempFileDirectory('svg')
+  const command = `autotrace --centerline --output-file=${centerlinedOutlineFilePath} ${outlineFilePath}`
+  const { stderr } = await promisify(exec)(command)
+  if (stderr) {
+    logger.error('failed to merge SVG files', { stderr })
+    throw new Error(stderr)
+  }
+  logger.debug('outline replaced with centerline', {
+    centerlinedOutlineFilePath,
+    command,
+  })
+
+  // update outline size
+  const { heightInPX, widthInPX } = context.config.imageSizing
+  const centerlinedOutlineContent = fs.readFileSync(centerlinedOutlineFilePath, 'utf-8')
+  const centerlinedOutlineContentWithUpdatedSize = centerlinedOutlineContent.replace(
+    /width=".+" height=".+"/gim,
+    `viewBox="0 0 ${widthInPX} ${heightInPX}"`,
+  )
+  fs.writeFileSync(
+    centerlinedOutlineFilePath,
+    centerlinedOutlineContentWithUpdatedSize,
+    'utf-8',
+  )
+  logger.debug('updated outline size', { path: centerlinedOutlineContentWithUpdatedSize })
+
   return {
-    filePath: outlineFilePath,
+    filePath: centerlinedOutlineFilePath,
     originalHeight: imageSize.height,
     originalWidth: imageSize.width,
   }

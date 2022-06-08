@@ -4,7 +4,6 @@ import fs from 'fs'
 import { Services } from '../services'
 import { Context } from '../context'
 import { Command } from '.'
-import { OrderEvent } from '../domain'
 
 // TODO: add error handling
 export const createLayoutsCommand: Command<'CreateLayouts'> = async (
@@ -89,12 +88,10 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (
     const { events } = await context.db.GetOrder(orderID)
 
     // add `layout_ready` event to order
-    const layoutReadyOrderEvent = { layout_ready: new Date().toISOString() } as OrderEvent
-
     await context.db.UpdateOrder(orderID, {
       layouts_ids: layoutIDs,
       status: 'layout_ready',
-      events: [...events, layoutReadyOrderEvent],
+      events: { ...events, layout_ready: new Date().toISOString() },
     })
   })
   await Promise.all(updateOrdersPromise)

@@ -1,4 +1,3 @@
-import fs from 'fs'
 import { Context } from '../../context'
 import { TelegramServices } from '..'
 import { getFileBuffer } from './get_file_buffer'

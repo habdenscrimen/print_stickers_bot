@@ -124,10 +124,18 @@ const calculateOrderPrice: Service<'CalculateOrderPrice'> = async (
       (stickersPrice * config.delivery.paybackPercentCost) / 100
     log = log.child({ cod_price: codPrice })
 
+    // calculate P.O.D. (Pay On Delivery) price for poshtomat
+    const codPoshtomatPrice =
+      config.delivery.poshtomatCost +
+      config.delivery.paybackFixCost +
+      (stickersPrice * config.delivery.paybackPercentCost) / 100
+    log = log.child({ cod_price: codPrice })
+
     log.debug('calculated order price')
     return {
       deliveryPrice: config.delivery.cost,
       codPrice,
+      codPoshtomatPrice,
       stickersPrice,
       orderPriceLevel: priceLevel,
       freeStickersUsed,

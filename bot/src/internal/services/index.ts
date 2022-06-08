@@ -96,6 +96,7 @@ export interface OrderPrice {
   stickersPrice: number
   deliveryPrice: number
   codPrice: number
+  codPoshtomatPrice: number
   freeStickersUsed: number
   freeStickersLeft: number
 }

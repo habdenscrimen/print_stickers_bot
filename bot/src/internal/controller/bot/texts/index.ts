@@ -63,6 +63,7 @@ export interface PaymentTexts {
     novaPoshtaAvailable: boolean
     orderPrice: OrderPrice
   }) => string
+  CanceledOrder: () => string
 }
 
 export interface FAQTexts {

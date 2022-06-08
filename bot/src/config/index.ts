@@ -30,6 +30,9 @@ export const newConfig = () => {
         testToken: process.env.BOT_LIQPAY_TEST_TOKEN!,
       },
       avoidCreatingStickerSet: JSON.parse(process.env.BOT_AVOID_CREATING_STICKER_SET!) || false,
+      textLinks: {
+        aboutService: `https://telegra.ph/Print-Stickers-Bot-06-08`,
+      },
     },
     features: {
       liqPay: false,
@@ -94,7 +97,8 @@ export const newConfig = () => {
       incrementFreeStickersImmediately: false,
     },
     delivery: {
-      cost: 41,
+      cost: 45,
+      poshtomatCost: 50,
       paybackFixCost: 20,
       paybackPercentCost: 2,
     },

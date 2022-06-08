@@ -20,7 +20,7 @@ export const myOrders: MenuHandler = async (ctx) => {
     // check if user has any orders
     if (userOrders.length === 0) {
       // reply with no orders message
-      await ctx.editMessageText(`Поки що у тебе немає активних замовлень`)
+      await ctx.editMessageText(`Поки що у Вас немає активних замовлень.`)
       logger.debug('user has no orders', { userID })
       return
     }

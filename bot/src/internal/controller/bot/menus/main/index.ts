@@ -19,51 +19,63 @@ interface MainMenuOptions {
 
 export const newMainMenu = (options: MainMenuOptions): MainMenus => {
   if (options.config.features.referralProgram) {
-    mainMenu.register(selectStickersSubmenu)
-    mainMenu.register(askQuestionSubmenu)
-    mainMenu.register(stickersAndOrdersSubmenu)
-    mainMenu.register(goToMyOrdersMenu)
-    mainMenu.register(faqSubmenu)
-    mainMenu.register(goBackToMainMenuSubmenu)
+    const mainMenuInstance = mainMenu(options)
+
+    mainMenuInstance.register(selectStickersSubmenu)
+    mainMenuInstance.register(askQuestionSubmenu)
+    mainMenuInstance.register(stickersAndOrdersSubmenu)
+    mainMenuInstance.register(goToMyOrdersMenu)
+    mainMenuInstance.register(faqSubmenu)
+    mainMenuInstance.register(goBackToMainMenuSubmenu)
 
     return {
-      Main: mainMenu,
+      Main: mainMenuInstance,
       GoBackToMainMenu: goBackToMainMenuSubmenu,
     }
   }
 
-  mainMenuWithoutReferral.register(selectStickersSubmenu)
-  mainMenuWithoutReferral.register(askQuestionSubmenu)
-  mainMenuWithoutReferral.register(stickersAndOrdersSubmenu)
-  mainMenuWithoutReferral.register(goToMyOrdersMenu)
-  mainMenuWithoutReferral.register(faqSubmenu)
-  mainMenuWithoutReferral.register(goBackToMainMenuSubmenu)
+  const mainMenuWithoutReferralInstance = mainMenuWithoutReferral(options)
+
+  mainMenuWithoutReferralInstance.register(selectStickersSubmenu)
+  mainMenuWithoutReferralInstance.register(askQuestionSubmenu)
+  mainMenuWithoutReferralInstance.register(stickersAndOrdersSubmenu)
+  mainMenuWithoutReferralInstance.register(goToMyOrdersMenu)
+  mainMenuWithoutReferralInstance.register(faqSubmenu)
+  mainMenuWithoutReferralInstance.register(goBackToMainMenuSubmenu)
 
   return {
-    Main: mainMenuWithoutReferral,
+    Main: mainMenuWithoutReferralInstance,
     GoBackToMainMenu: goBackToMainMenuSubmenu,
   }
 }
 
-const mainMenu = new Menu<BotContext>('main')
-  .text(`🚀 Замовити наліпки`, selectStickers)
-  .row()
-  .text(`👫 Запросити друзів`, referralProgram)
-  .row()
-  .text(`✉️ Мої замовлення`, goToMyOrders)
-  .text(`❓ Питання`, faq)
-  .row()
-  .url(`📚 Про сервіс`, 'https://telegra.ph/Test-05-30-157')
-  .row()
+const mainMenu = (options: MainMenuOptions) => {
+  const { aboutService } = options.config.bot.textLinks
 
-const mainMenuWithoutReferral = new Menu<BotContext>('main-without-referral')
-  .text(`🚀 Замовити наліпки`, selectStickers)
-  .row()
-  .text(`✉️ Мої замовлення`, goToMyOrders)
-  .text(`❓ Питання`, faq)
-  .row()
-  .url(`📚 Про сервіс`, 'https://telegra.ph/Test-05-30-157')
-  .row()
+  return new Menu<BotContext>('main')
+    .text(`🚀 Замовити наліпки`, selectStickers)
+    .row()
+    .text(`👫 Запросити друзів`, referralProgram)
+    .row()
+    .text(`✉️ Мої замовлення`, goToMyOrders)
+    .text(`❓ Питання`, faq)
+    .row()
+    .url(`📚 Про сервіс`, aboutService)
+    .row()
+}
+
+const mainMenuWithoutReferral = (options: MainMenuOptions) => {
+  const { aboutService } = options.config.bot.textLinks
+
+  return new Menu<BotContext>('main-without-referral')
+    .text(`🚀 Замовити наліпки`, selectStickers)
+    .row()
+    .text(`✉️ Мої замовлення`, goToMyOrders)
+    .text(`❓ Питання`, faq)
+    .row()
+    .url(`📚 Про сервіс`, aboutService)
+    .row()
+}
 
 const selectStickersSubmenu = new Menu<BotContext>('select-stickers')
   .text('⬅️ Назад', goToMainMenu)

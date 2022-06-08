@@ -2,6 +2,7 @@ import { Menu } from '@grammyjs/menu'
 import { PaymentMenus } from '..'
 import { BotContext } from '../..'
 import { Config } from '../../../../../config'
+import { cancelOrder } from './handlers/cancel_order'
 import { paymentUsingBot } from './handlers/payment_using_bot'
 import { paymentUsingNovaPoshta } from './handlers/payment_using_nova_poshta'
 
@@ -28,6 +29,8 @@ const selectPaymentMethod = (options: PaymentMenusOptions) => {
 const chooseNovaPoshtaMethod = (options: PaymentMenusOptions) => {
   return new Menu<BotContext>('select-nova-poshta-payment-method')
     .text(`🚚 Підтверджую замовлення`, paymentUsingNovaPoshta)
+    .row()
+    .text(`❌ Скасувати замовлення`, cancelOrder)
     .row()
 }
 // const selectInBot = (options: PaymentMenusOptions) => {

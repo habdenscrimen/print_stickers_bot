@@ -2,24 +2,10 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
 import { RouteHandler } from '.'
-import { OrderStatus } from '../../../domain'
+import { orderStatuses } from '../texts/order_statuses'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
-
-const orderStatuses: Record<OrderStatus, string> = {
-  payment_pending: '⏳ Очікує оплати',
-  confirmed: `✅ Замовлення сплачено`,
-  layout_ready: `🖨 Виготовлення`,
-  printing: `🖨 Виготовлення`,
-  delivery: `🚚 Доставка`,
-  completed: `✅ Замовлення виконано`,
-  cancellation_pending: `❌ Створений запит на скасування`,
-  cancelled: `❌ Замовлення скасовано`,
-  refund_failed_wait_reserve: `❌ Замовлення скасовано, створений запит на повернення коштів`,
-  refund_success_wait_amount: `❌ Замовлення скасовано, створений запит на повернення коштів`,
-  refunded: `❌ Замовлення скасовано, кошти повернуто`,
-}
 
 export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
   let logger = ctx.logger.child({ name: 'cancel-order-route', user_id: ctx.from!.id })
@@ -28,7 +14,7 @@ export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
     // check if user entered a valid order number
     if (!ctx.message?.text) {
       logger.debug('message is not text')
-      await ctx.editMessageText(`Будь ласка, напиши номер замовлення (наприклад, 1)`)
+      await ctx.editMessageText(`Будь ласка, напишіть номер замовлення (наприклад, 1)`)
     }
 
     // get session
@@ -44,7 +30,7 @@ export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
       if (!userOrders.length) {
         logger.debug('user has no orders', { userID: ctx.from!.id })
         await ctx.editMessageText(
-          `У тебе немає активних замовлень. Обери наліпки для створення замовлення 😎`,
+          `У Вас немає активних замовлень. Оберіть наліпки для створення замовлення 😎`,
         )
         return
       }
@@ -53,7 +39,7 @@ export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
       if (orderNumber < 1 || orderNumber > userOrders.length) {
         logger.debug('order number is out of range')
         await ctx.editMessageText(
-          `Вказано невірний номер замовлення. Будь ласка, напиши номер замовлення (наприклад, 1)`,
+          `Вказано невірний номер замовлення. Будь ласка, напишіть номер замовлення (наприклад, 1)`,
         )
         return
       }
@@ -85,8 +71,8 @@ export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
       // show confirmation message
       const message =
         order.status === 'confirmed'
-          ? `Ти хочеш видалити це замовлення:\n\n${orderInfo}Будь ласка, напиши причину скасування замовлення, і я скасую його.`
-          : `Ти хочеш видалити це замовлення:\n\n${orderInfo}Будь ласка, напиши причину скасування замовлення, і я створю запит на його скасування.`
+          ? `Ви хочете скасувати це замовлення:\n\n${orderInfo}Будь ласка, напишіть причину скасування, і ми скасуємо його.`
+          : `Ви хочете скасувати це замовлення:\n\n${orderInfo}Будь ласка, напишіть причину скасування, і ми створимо запит на його скасування.`
 
       await ctx.reply(message, { parse_mode: 'Markdown', deleteInFuture: true })
       return
@@ -96,7 +82,7 @@ export const cancelOrder: RouteHandler = (nextRoute) => async (ctx) => {
     const { orderToDelete } = session
     if (!orderToDelete) {
       logger.debug('no order to delete in session')
-      await ctx.editMessageText(`Будь ласка, напиши номер замовлення (наприклад, 1)`)
+      await ctx.editMessageText(`Будь ласка, напишіть номер замовлення (наприклад, 1)`)
       return
     }
 

@@ -10,7 +10,7 @@ export const delivery: RouteHandler = (nextRoute) => async (ctx) => {
     // check if message is not text
     if (!ctx.message?.text && !ctx.message?.contact) {
       logger.debug('message is not text')
-      await ctx.reply('Будь ласка, напиши дані для доставки', {
+      await ctx.reply('Будь ласка, напишіть дані для доставки', {
         deleteInFuture: true,
         deletePrevBotMessages: true,
       })

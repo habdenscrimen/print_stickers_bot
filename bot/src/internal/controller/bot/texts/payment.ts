@@ -16,14 +16,21 @@ export const newPaymentTexts = (options: TextOptions): PaymentTexts => {
     SuccessOrderWithoutPayment: (...args) =>
       escapeMarkdown(successOrderWithoutPayment(options, args)),
     SelectPaymentMethod: (...args) => escapeMarkdown(selectPaymentMethod(options, args)),
+    CanceledOrder: (...args) => escapeMarkdown(canceledOrder(options, args)),
   }
+}
+
+const canceledOrder: Text<'CanceledOrder'> = () => {
+  return `
+Замовлення скасоване, повертаємось у головне меню 👇
+  `
 }
 
 const successOrderWithoutPayment: Text<'SuccessOrderWithoutPayment'> = ({ config }) => {
   return `
 ✅ Замовлення успішно оформлене і буде відправлено до кінця наступного робочого тижня.
 
-ℹ️ Ти можеш переглянути статус замовлення на сторінці “✉️ *Мої замовлення*”.
+ℹ️ Ви можете переглянути статус замовлення на сторінці “✉️ *Мої замовлення*”.
 
 А зараз повертаємось у головне меню 👇
   `
@@ -38,8 +45,7 @@ const selectPaymentMethod: Text<'SelectPaymentMethod'> = (
 🚚 Оплатити замовлення можна при отриманні на Новій Пошті.
 
 👉 Вартість замовлення: *${orderPrice.stickersPrice}* грн
-👉 Вартість доставки: *${orderPrice.codPrice}* грн
-👉 Всього: *${(orderPrice.codPrice + orderPrice.stickersPrice).toFixed(2)}* грн
+👉 Вартість доставки: *${orderPrice.codPrice}* грн. (*${orderPrice.codPoshtomatPrice}* грн. при доставці у поштомат)
     `
   }
 
@@ -48,7 +54,7 @@ const selectPaymentMethod: Text<'SelectPaymentMethod'> = (
   }
 
   return `
-Обери спосіб оплати (від цього залежить вартість доставки).
+Оберіть спосіб оплати (від цього залежить вартість доставки).
 
 💳 *Оплата за допомогою бота (картка або Apple/Google Pay)*
     👉 Вартість доставки буде *${orderPrice.deliveryPrice}* грн.

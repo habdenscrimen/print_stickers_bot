@@ -23,7 +23,7 @@ export const myStickerSets: MenuHandler = async (ctx) => {
     if (userOrders.length === 0) {
       // reply with no orders message
       await ctx.editMessageText(
-        `Поки що у тебе немає паків наліпок.\nПри замовленні наліпок я створю пак із них, на памʼять 😎`,
+        `Поки що у Вас немає паків наліпок.\nПри замовленні наліпок я створю пак із них, на памʼять 😎`,
       )
       logger.debug('user has no sticker sets')
       return
@@ -39,7 +39,7 @@ export const myStickerSets: MenuHandler = async (ctx) => {
       .join('\n')
 
     // send message with user's stickers sets
-    await ctx.editMessageText(`Твої наліпки:\n\n${stickerSetsInline}`, {
+    await ctx.editMessageText(`Ваші наліпки:\n\n${stickerSetsInline}`, {
       parse_mode: 'Markdown',
     })
   } catch (error) {

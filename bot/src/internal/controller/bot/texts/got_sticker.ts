@@ -4,7 +4,7 @@ export const gotStickerText = (stickersCount: number): Text => {
   return {
     text: `
 ✅ Отримав (всього ${stickersCount})
-Продовжуй надсилати наліпки 👇 
+Продовжуйте надсилати наліпки 👇 
   `,
     parseMode: 'Markdown',
   }

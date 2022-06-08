@@ -24,7 +24,7 @@ export const cancelOrder: MenuHandler = async (ctx) => {
     if (userOrders.length === 0) {
       // reply with no orders message
       await ctx.editMessageText(
-        `У тебе немає активних замовлень. Обери наліпки для створення замовлення 😎`,
+        `У Вас немає активних замовлень. Оберіть наліпки для створення замовлення 😎`,
         { reply_markup: stickersAndOrdersSubmenu },
       )
       logger.debug('user has no orders', { userID })

@@ -3,7 +3,6 @@ import { lowercase } from 'nanoid-dictionary'
 import { Logger } from 'pino'
 import { TelegramService } from '.'
 import { Config } from '../../config'
-import { goLike } from '../../pkg/function_exec'
 import { APIs } from '../api/api'
 import { BotContext } from '../controller/bot'
 import { Repos } from '../repos'
@@ -26,6 +25,7 @@ export const newTelegramService = (options: TelegramServiceOptions): TelegramSer
     CreateStickerSet: (...args) => createStickerSet(options, args),
     DeleteStickerSet: (...args) => deleteStickerSet(options, args),
     SendMessage: (...args) => sendMessage(options, args),
+    AddStickerToSet: (...args) => addStickerToSet(options, args),
   }
 }
 
@@ -41,67 +41,77 @@ const sendMessage: Service<'SendMessage'> = async ({ logger, tgApi }, [chatID, t
   }
 }
 
+const addStickerToSet: Service<'AddStickerToSet'> = async (
+  { logger, tgApi, config },
+  [{ userID, stickerFileID, stickerSetName }],
+) => {
+  const log = logger.child({
+    name: 'createStickerSet',
+    user_id: userID,
+    first_sticker_file_id: stickerFileID,
+    sticker_set_name: stickerSetName,
+  })
+
+  try {
+    // avoid creating sticker set (using during development)
+    if (config.bot.avoidCreatingStickerSet) {
+      log.warn('avoid creating sticker set')
+      return
+    }
+
+    await tgApi.addStickerToSet(userID, stickerSetName, '😆', { png_sticker: stickerFileID })
+    log.debug(`successfully added sticker to set`)
+  } catch (error) {
+    log.error(`failed to add sticker to set: ${error}`)
+  }
+}
+
 const createStickerSet: Service<'CreateStickerSet'> = async (
   { logger, repos, tgApi, config },
-  [userID, stickerFileIDs],
+  [{ userID, firstStickerFileID }],
 ) => {
-  let log = logger.child({ name: 'createStickerSet', user_id: userID })
-  log = log.child({ stickerFileIDs })
+  let log = logger.child({
+    name: 'createStickerSet',
+    user_id: userID,
+    first_sticker_file_id: firstStickerFileID,
+  })
 
-  // generate random sticker pack name
-  const prefix = customAlphabet(lowercase, 20)()
-  const { username } = config.bot
-  const stickerSetName = `${prefix}_by_${username}`
-  log = log.child({ stickerSetName })
+  try {
+    // generate random sticker pack name
+    const prefix = customAlphabet(lowercase, 20)()
+    const { username } = config.bot
+    const stickerSetName = `${prefix}_by_${username}`
+    log = log.child({ stickerSetName })
 
-  // avoid creating sticker set (using during development)
-  if (config.bot.avoidCreatingStickerSet) {
-    log.warn('avoid creating sticker set')
-    return [stickerSetName, null]
+    // avoid creating sticker set (using during development)
+    if (config.bot.avoidCreatingStickerSet) {
+      log.warn('avoid creating sticker set')
+      return stickerSetName
+    }
+
+    // get user
+    const user = await repos.Users.GetUserByID(userID)
+    if (!user) {
+      log.error('user not found')
+      throw new Error('user not found')
+    }
+    log = log.child({ user })
+
+    // create sticker pack with 1st sticker
+    await tgApi.createNewStickerSet(
+      userID,
+      stickerSetName,
+      `Мої наліпки #${(user?.telegram_sticker_sets?.length || 0) + 1}`,
+      '😆',
+      { png_sticker: firstStickerFileID },
+    )
+    log.debug('created sticker set')
+
+    return stickerSetName
+  } catch (error) {
+    log.error(`failed to create sticker set: ${error}`)
+    throw new Error(`failed to create sticker set: ${error}`)
   }
-
-  // get user
-  const [user, getUserErr] = await goLike(repos.Users.GetUserByID(userID))
-  if (getUserErr) {
-    log.error('failed to get user', { getUserErr })
-    return [null, getUserErr]
-  }
-  if (!user) {
-    log.error('user not found')
-    return [null, new Error('user not found')]
-  }
-  log = log.child({ user })
-
-  // create sticker pack with 1st sticker
-  await tgApi.createNewStickerSet(
-    userID,
-    stickerSetName,
-    `Мої наліпки #${(user?.telegram_sticker_sets?.length || 0) + 1}`,
-    '😆',
-    { png_sticker: stickerFileIDs[0] },
-  )
-  log.debug('created sticker set')
-
-  // check if sticker set has 1 sticker
-  if (stickerFileIDs.length === 1) {
-    log.debug('sticker set has 1 sticker', { stickerSetName })
-    return [stickerSetName, null]
-  }
-
-  // add other stickers to sticker pack
-  const addStickersToPackPromise = stickerFileIDs.slice(1).map((stickerFileID) =>
-    tgApi.addStickerToSet(userID, stickerSetName, '😆', {
-      png_sticker: stickerFileID,
-    }),
-  )
-  const [_, addStickersErr] = await goLike(Promise.all(addStickersToPackPromise))
-  if (addStickersErr) {
-    log.error('failed to add stickers to set', { addStickersErr })
-    return [null, addStickersErr]
-  }
-  log.debug('added stickers to set')
-
-  return [stickerSetName, null]
 }
 
 const deleteStickerSet: Service<'DeleteStickerSet'> = async (

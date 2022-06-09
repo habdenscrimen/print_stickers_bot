@@ -12,7 +12,10 @@ const { bot, services, logger } = newApp(config)
 export const botWebhooksHandler = functions
   .region(config.functions.region)
   // set min instances number to 1 to prevent cold start on that 1 instance
-  .runWith({ maxInstances: config.env === 'production' ? 1 : 0 })
+  .runWith({
+    minInstances: config.env === 'production' ? 1 : 0,
+    timeoutSeconds: 540,
+  })
   .https.onRequest(webhookCallback(bot))
 
 // TODO: add source validation (request to this endpoint can be sent from Operational Dashboard only)

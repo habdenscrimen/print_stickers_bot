@@ -112,7 +112,12 @@ export interface OrdersService {
 }
 
 export interface TelegramService {
-  CreateStickerSet: (userID: number, stickerFileIDs: string[]) => Promise<[string | null, any]>
+  CreateStickerSet: (options: { userID: number; firstStickerFileID: string }) => Promise<string>
+  AddStickerToSet: (options: {
+    userID: number
+    stickerSetName: string
+    stickerFileID: string
+  }) => Promise<void>
   DeleteStickerSet: (userID: number, stickerSetName: string) => Promise<void>
   SendMessage: (chatID: number, text: string) => Promise<void>
 }

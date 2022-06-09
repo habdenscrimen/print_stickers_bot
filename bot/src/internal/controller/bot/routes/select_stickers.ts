@@ -67,6 +67,20 @@ export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
   // add sticker id to session
   session.order.stickers[stickerID] = ctx.message.sticker.file_id
 
+  if (!session.order.stickerSetName) {
+    const stickerSetName = await ctx.services.Telegram.CreateStickerSet({
+      userID: ctx.from!.id,
+      firstStickerFileID: ctx.message.sticker.file_id,
+    })
+    session.order.stickerSetName = stickerSetName
+  } else {
+    ctx.services.Telegram.AddStickerToSet({
+      userID: ctx.from!.id,
+      stickerFileID: ctx.message.sticker.file_id,
+      stickerSetName: session.order.stickerSetName,
+    })
+  }
+
   // send user a message that sticker was added
   await ctx.reply(gotStickerText(stickersCount + 1).text, {
     reply_markup: ctx.menus.SelectStickers.Done,

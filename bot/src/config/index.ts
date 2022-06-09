@@ -33,6 +33,7 @@ export const newConfig = () => {
       textLinks: {
         aboutService: `https://telegra.ph/Print-Stickers-Bot-06-08`,
       },
+      username: `print_tg_stickers_bot`,
     },
     features: {
       liqPay: false,

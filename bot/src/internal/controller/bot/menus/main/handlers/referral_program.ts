@@ -18,9 +18,10 @@ export const referralProgram: MenuHandler = async (ctx) => {
   const freeStickersCount = user.free_stickers_count
 
   const { freeStickerForInvitedUser } = ctx.config.referral
+  const { username } = ctx.config.bot
 
   // create a message with referral link and referral program instructions
-  const message = `Ваше реферальне посилання (натисніть щоб скопіювати):\n\`https://t.me/print_stickers_ua_bot?start=${referralCode}\`\n\nКоли хтось зареєструється за цим посиланням і зробить перше замовлення, ви удвох отримаєте по ${freeStickerForInvitedUser} безкоштовних стікера 🔥\n\nЗараз безкоштовних стікерів: ${freeStickersCount}`
+  const message = `Ваше реферальне посилання (натисніть щоб скопіювати):\n\`https://t.me/${username}?start=${referralCode}\`\n\nКоли хтось зареєструється за цим посиланням і зробить перше замовлення, ви удвох отримаєте по ${freeStickerForInvitedUser} безкоштовних стікера 🔥\n\nЗараз безкоштовних стікерів: ${freeStickersCount}`
   logger = logger.child({ message })
 
   // send message with referral link

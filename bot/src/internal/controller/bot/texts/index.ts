@@ -88,8 +88,8 @@ export const escapeMarkdown = (text: string): string => {
       // fix link in markdown
       .replace(/]\\\(/gm, '](')
       .replace(
-        /\\_by\\_print\\_stickers\\_ua\\_bot\\\)/gm,
-        '\\_by\\_print\\_stickers\\_ua\\_bot)',
+        /\\_by\\_print\\_tg\\_stickers\\_bot\\\)/gm,
+        '\\_by\\_print\\_tg\\_stickers\\_bot)',
       )
   )
 }

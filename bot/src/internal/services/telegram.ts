@@ -50,7 +50,8 @@ const createStickerSet: Service<'CreateStickerSet'> = async (
 
   // generate random sticker pack name
   const prefix = customAlphabet(lowercase, 20)()
-  const stickerSetName = `${prefix}_by_print_stickers_ua_bot`
+  const { username } = config.bot
+  const stickerSetName = `${prefix}_by_${username}`
   log = log.child({ stickerSetName })
 
   // avoid creating sticker set (using during development)

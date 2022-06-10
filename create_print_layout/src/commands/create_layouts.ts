@@ -53,11 +53,11 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (
     return printReadyImages
   })
 
-  const [images] = await Promise.all(processAndUploadImagesPromise)
+  const res = await Promise.all(processAndUploadImagesPromise)
   logger.info('processed and uploaded images', { orderIDs })
 
   // create layouts
-  const imagePaths = images.map(({ filePath }) => filePath)
+  const imagePaths = res.flat().map(({ filePath }) => filePath)
   const layouts = await createLayouts(context, services, imagePaths)
   logger.info('created layouts', { layouts: layouts.filePaths })
 

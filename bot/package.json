@@ -33,14 +33,12 @@
   "homepage": "https://github.com/habdenscrimen/print_stickers_bot#readme",
   "dependencies": {
     "@faker-js/faker": "^6.3.1",
-    "@grammyjs/conversations": "^0.6.0",
     "@grammyjs/menu": "^1.1.1",
     "@grammyjs/router": "^1.1.1",
     "@mswjs/interceptors": "^0.16.0",
     "crypto-js": "^4.1.1",
     "dayjs": "^1.11.2",
     "dotenv": "^16.0.0",
-    "download": "^8.0.0",
     "firebase": "^9.8.2",
     "firebase-admin": "^10.1.0",
     "firebase-functions": "^3.20.1",
@@ -49,10 +47,7 @@
     "nanoid-dictionary": "^4.3.0",
     "node-fetch": "^2.6.7",
     "pino": "^7.11.0",
-    "pino-pretty": "^7.6.1",
-    "telegraf": "^4.7.0",
-    "typegram": "^3.9.0",
-    "winston": "^3.7.2"
+    "pino-pretty": "^7.6.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^16.2.3",
@@ -64,6 +59,7 @@
     "@types/node-fetch": "^2.6.1",
     "@typescript-eslint/eslint-plugin": "^5.21.0",
     "@typescript-eslint/parser": "^5.21.0",
+    "@vercel/node": "^2.1.0",
     "ava": "^4.2.0",
     "eslint": "^8.14.0",
     "eslint-config-airbnb": "^19.0.4",

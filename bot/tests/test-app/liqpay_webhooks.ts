@@ -1,7 +1,7 @@
 import Base64 from 'crypto-js/enc-base64'
 import crypto from 'crypto-js'
 import fetch from 'node-fetch'
-import { WebhookPayload } from '../../src'
+import { WebhookPayload } from '../../src/functions/liqpay-webhook'
 
 interface WebhookBody {
   data: string

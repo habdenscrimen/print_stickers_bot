@@ -134,3 +134,4 @@ files
 files/
 
 functions
+!src/functions

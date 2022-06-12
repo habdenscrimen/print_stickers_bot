@@ -7,6 +7,10 @@ import { newApp } from '../internal/app'
 const config = newConfig()
 const { bot } = newApp(config)
 
-export default async (req: functions.https.Request, res: functions.Response) => {
-  return webhookCallback(bot)(req, res)
-}
+export default functions
+  .region(config.functions.region)
+  .runWith({
+    minInstances: config.env === 'production' ? 1 : 0,
+    timeoutSeconds: 540,
+  })
+  .https.onRequest(webhookCallback(bot))

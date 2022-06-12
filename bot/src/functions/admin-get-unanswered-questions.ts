@@ -3,9 +3,9 @@ import { newConfig } from '../config'
 import { newApp } from '../internal/app'
 
 const config = newConfig()
-const { services, logger } = newApp(config)
 
-export default async (req: functions.https.Request, res: functions.Response) => {
+export default functions.region(config.functions.region).https.onRequest(async (req, res) => {
+  const { services, logger } = newApp(config)
   let log = logger.child({ name: 'admin-get-unanswered-questions-handler', req })
 
   try {
@@ -21,4 +21,4 @@ export default async (req: functions.https.Request, res: functions.Response) => 
       .status(500)
       .send({ status: 'error', data: `failed to get unanswered questions: ${error}` })
   }
-}
+})

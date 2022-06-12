@@ -28,6 +28,9 @@ export const paymentUsingNovaPoshta: MenuHandler = async (ctx) => {
       return
     }
 
+    // show loading
+    await ctx.editMessageText(`⏳ Створюємо замовлення...`, { reply_markup: undefined })
+
     // create order in database
     const orderID = await ctx.services.Orders.CreateOrder({
       delivery_address: session.order.deliveryInfo!,

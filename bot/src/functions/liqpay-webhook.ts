@@ -5,7 +5,6 @@ import { newConfig } from '../config'
 import { newApp } from '../internal/app'
 
 const config = newConfig()
-const { services, logger } = newApp(config)
 
 interface WebhookRequestBody {
   data: string
@@ -28,7 +27,8 @@ export interface WebhookPayload {
   reserve_date?: number
 }
 
-export default async (req: functions.https.Request, res: functions.Response) => {
+export default functions.region(config.functions.region).https.onRequest(async (req, res) => {
+  const { services, logger } = newApp(config)
   let log = logger.child({ name: 'liqpay-webhook', req })
 
   // TODO: move handling webhook to service
@@ -121,4 +121,4 @@ export default async (req: functions.https.Request, res: functions.Response) => 
   } catch (error) {
     console.log(`failed to handle webhook: ${error}`)
   }
-}
+})

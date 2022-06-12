@@ -1,11 +1,32 @@
 import { getFirestore } from 'firebase-admin/firestore'
-import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
+import { getFunctions, connectFunctionsEmulator, Functions } from 'firebase/functions'
 import * as firebaseClient from 'firebase/app'
 import { StorageAdapter } from 'grammy'
 import admin from 'firebase-admin'
 import { Config } from '../../config'
 
-export const initFirebase = (config: Config) => {
+interface FirebaseApp {
+  firebaseApp: admin.app.App
+  firestore: admin.firestore.Firestore
+  functions: Functions
+}
+
+export const initFirebase = (config: Config): FirebaseApp => {
+  const adminApps = admin.apps
+  const clientApps = firebaseClient.getApps()
+
+  if (adminApps.length !== 0 && clientApps.length !== 0) {
+    const db = getFirestore()
+
+    const functions = getFunctions(clientApps[0], 'europe-central2')
+
+    return {
+      firebaseApp: adminApps[0]!,
+      firestore: db,
+      functions,
+    }
+  }
+
   // init firebase app
   const app = admin.initializeApp({
     credential: admin.credential.applicationDefault(),

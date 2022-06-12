@@ -3,9 +3,9 @@ import { newConfig } from '../config'
 import { newApp } from '../internal/app'
 
 const config = newConfig()
-const { services, logger } = newApp(config)
 
-export default async (req: functions.https.Request, res: functions.Response) => {
+export default functions.region(config.functions.region).https.onRequest(async (req, res) => {
+  const { services, logger } = newApp(config)
   const log = logger.child({ name: 'admin-answer-question-handler', req })
 
   try {
@@ -28,4 +28,4 @@ export default async (req: functions.https.Request, res: functions.Response) => 
   } catch (error) {
     res.status(500).send({ status: 'error', data: `failed to answer question: ${error}` })
   }
-}
+})

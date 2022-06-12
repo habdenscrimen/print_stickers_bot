@@ -39,7 +39,7 @@ const addNotification: Service<'AddNotification'> = async (
   try {
     log.debug('adding notification to notifications list')
 
-    const addNotification = httpsCallable(functions, 'addNotification')
+    const addNotification = httpsCallable(functions, 'functions-addNotification')
     await addNotification(payload)
 
     log.info(`successfully added notification to notifications list`)

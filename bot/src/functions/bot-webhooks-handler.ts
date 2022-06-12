@@ -10,7 +10,7 @@ const { bot } = newApp(config)
 export default functions
   .region(config.functions.region)
   .runWith({
-    minInstances: config.env === 'production' ? 1 : 0,
+    minInstances: config.env === 'production' ? 3 : 0,
     timeoutSeconds: 540,
   })
   .https.onRequest(webhookCallback(bot))

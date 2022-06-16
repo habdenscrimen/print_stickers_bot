@@ -242,12 +242,12 @@ const adminCancelOrder: Service<'AdminCancelOrder'> = async (
     log.debug('deleted sticker set')
 
     // if order status is not refunded, create refund (it can be refunded if order was cancelled by admin but refund creation failed)
-    if (order.status !== 'refunded') {
+    if (order.status !== 'refunded' && order.payment?.method !== 'nova_poshta') {
       await paymentService.CreateRefund(orderID)
     }
 
     // send notification that order is cancelled and refund is created
-    notificationService.AddNotification({
+    await notificationService.AddNotification({
       user: {
         event: 'admin_cancelled_order',
         payload: { orderID, telegramChatID: order.user_id },

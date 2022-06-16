@@ -19,7 +19,45 @@ export const newSelectStickersTexts = (options: TextOptions): SelectStickersText
       escapeMarkdown(confirmSelectedStickers(options, args)),
     MotivateToSelectMoreStickers: (...args) =>
       escapeMarkdown(motivateToSelectMoreStickers(options, args)),
+    AddStickerToOrder: (...args) => escapeMarkdown(addStickerToOrder(options, args)),
+    RemoveStickerFromOrder: (...args) => escapeMarkdown(removeStickerFromOrder(options, args)),
+    StickerNotInOrder: (...args) => escapeMarkdown(stickerNotInOrder(options, args)),
+    StickerRemovedFromOrder: (...args) =>
+      escapeMarkdown(stickerRemovedFromOrder(options, args)),
+    AllStickersRemovedFromOrder: (...args) =>
+      escapeMarkdown(allStickersRemovedFromOrder(options, args)),
   }
+}
+
+const allStickersRemovedFromOrder: Text<'AllStickersRemovedFromOrder'> = ({ config }) => {
+  return `
+Ви видалили всі наліпки із замовлення. Повертаємось у головне меню 👇
+  `
+}
+
+const addStickerToOrder: Text<'AddStickerToOrder'> = ({ config }) => {
+  return `
+Надішліть наліпку, яку хочете додати 👇
+  `
+}
+
+const removeStickerFromOrder: Text<'RemoveStickerFromOrder'> = ({ config }) => {
+  return `
+Надішліть наліпку _зі створеного ботом паку_, яку хочете видалити 👇
+  `
+}
+
+const stickerRemovedFromOrder: Text<'StickerRemovedFromOrder'> = ({ config }) => {
+  return `
+✅ Наліпка видалена.
+Якщо хочете видалити ще наліпки, просто надішліть їх _зі створеного ботом паку_ 👇
+  `
+}
+
+const stickerNotInOrder: Text<'StickerNotInOrder'> = ({ config }) => {
+  return `
+Ви не обирали цю наліпку для друку. Надішліть наліпку _зі створеного ботом паку_, яку хочете видалити 👇
+  `
 }
 
 const failedToCreateStickerSet: Text<'FailedToCreateStickerSet'> = ({ config }) => {

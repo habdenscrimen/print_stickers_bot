@@ -7,7 +7,7 @@ import {
   GrammyError,
   HttpError,
 } from 'grammy'
-import { Message } from 'grammy/out/platform.node'
+import { AbortSignal } from 'grammy/out/shim.node'
 import { Config } from '../../../config'
 import { Order, User } from '../../domain'
 import { Logger } from '../../logger'
@@ -36,11 +36,17 @@ interface BotOptions {
   storageAdapter: StorageAdapter<BotSessionData>
 }
 
+interface StickersRelation {
+  originalStickerFileUniqueID: string
+  stickerFileUniqueID: string
+}
+
 interface SessionOrder {
   stickerSetName: string | undefined
   stickers: Record<string, string> | undefined
   invitedByTelegramUserID: number | undefined
   deliveryInfo: string | undefined
+  stickersRelation: StickersRelation[] | undefined
 }
 
 interface SessionUser extends User {
@@ -71,7 +77,8 @@ export interface BotContext extends Context, LazySessionFlavor<BotSessionData> {
       deletePrevBotMessages?: boolean
     },
     signal?: AbortSignal,
-  ) => Promise<Message.TextMessage>
+  ) => ReturnType<Context['reply']>
+  // add custom fields to `editMessageText` options
   editMessageText: (
     text: Parameters<Context['editMessageText']>['0'],
     other?: Parameters<Context['editMessageText']>['1'] & {
@@ -150,6 +157,7 @@ export const newBot = (options: BotOptions) => {
   bot.use(menus.Main.GoBackToMainMenu)
   bot.use(menus.Payment.ChooseNovaPoshtaMethod)
   bot.use(menus.Payment.SelectPaymentMethod)
+  bot.use(menus.SelectStickers.GoToConfirmStickerSet)
   bot.use(menus.SelectStickers.ConfirmStickerSet)
   bot.use(menus.SelectStickers.FinishSelectingStickers)
   bot.use(menus.SelectStickers.Done)

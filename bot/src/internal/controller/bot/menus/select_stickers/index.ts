@@ -2,10 +2,13 @@ import { Menu } from '@grammyjs/menu'
 import { SelectStickersMenus } from '..'
 import { BotContext } from '../..'
 import { Config } from '../../../../../config'
+import { Routes } from '../../routes'
+import { addSticker } from './handlers/add_sticker'
 import { cancelStickers } from './handlers/cancel_stickers'
 import { confirmStickers } from './handlers/confirm_stickers'
 import { done } from './handlers/done'
 import { finishSelectingStickers } from './handlers/finish_selecting_stickers'
+import { removeSticker } from './handlers/remove_sticker'
 
 interface SelectStickersMenusOptions {
   config: Config
@@ -14,10 +17,16 @@ interface SelectStickersMenusOptions {
 export const newSelectStickersMenus = (
   options: SelectStickersMenusOptions,
 ): SelectStickersMenus => {
+  const confirmStickerSet = confirmStickerSetMenu(options)
+  const goToConfirmStickerSet = goToConfirmStickerSetMenu(options)
+
+  confirmStickerSet.register(goToConfirmStickerSet)
+
   return {
-    ConfirmStickerSet: confirmStickerSetMenu(options),
+    ConfirmStickerSet: confirmStickerSet,
     FinishSelectingStickers: finishSelectingStickersMenu(options),
     Done: doneMenu(options),
+    GoToConfirmStickerSet: goToConfirmStickerSet,
   }
 }
 
@@ -54,13 +63,36 @@ export const confirmStickerSetMenu = (options: SelectStickersMenusOptions) =>
       const session = await ctx.session
 
       range
-        .url(`💅 Переглянути пак`, `https://t.me/addstickers/${session.order.stickerSetName}`)
+        .url(`👁 Переглянути пак`, `https://t.me/addstickers/${session.order.stickerSetName}`)
         .row()
     })
+    .text(`➕ Додати наліпку`, addSticker)
+    .row()
+    .text(`➖ Видалити наліпку`, removeSticker)
+    .row()
     .text(`✅ Все супер, підтверджую`, confirmStickers)
     .row()
-    .text(`❌ Давай спочатку`, cancelStickers)
+    .text(`❌ У головне меню`, cancelStickers)
     .row()
+
+const goToConfirmStickerSetMenu = (options: SelectStickersMenusOptions) => {
+  return new Menu<BotContext>('go-to-confirm-sticker-set')
+    .dynamic(async (ctx, range) => {
+      // get session
+      const session = await ctx.session
+
+      range
+        .url(`👁 Переглянути пак`, `https://t.me/addstickers/${session.order.stickerSetName}`)
+        .row()
+    })
+    .text(`⬅️ Назад`, async (ctx) => {
+      // set route to delivery
+      const session = await ctx.session
+      session.route = Routes.Delivery
+
+      await ctx.menu.nav(`confirm-sticker-set`, { immediate: true })
+    })
+}
 
 const doneMenu = (options: SelectStickersMenusOptions) =>
   new Menu<BotContext>('select-stickers-done').text(`👌 Це все`, done)

@@ -25,6 +25,7 @@ export const paymentUsingNovaPoshta: MenuHandler = async (ctx) => {
       orderPrice.stickersPrice >
       ctx.config.payment.novaPoshta.maxOrderPriceAllowedWithoutPrepayment
     ) {
+      logger.error(`order price is too high to process order without prepayment`)
       return
     }
 

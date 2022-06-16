@@ -10,7 +10,7 @@ import { newOrdersRepo } from '../repos/orders'
 import { newOrdersService } from '../services/orders'
 import { newTelegramService } from '../services/telegram'
 import { newPaymentService } from '../services/payment'
-import { APIs } from '../api/api'
+import { APIs, PSPApi } from '../api/api'
 import { newLiqpayAPI } from '../api/psp/liqpay'
 import { newNotificationService } from '../services/notification'
 import { newUserService } from '../services/user'
@@ -43,8 +43,11 @@ export const newApp = (config: Config): App => {
   }
 
   // init apis
+  // @ts-expect-error
+  const liqpayAPI: PSPApi = config.features.liqPay ? newLiqpayAPI({ config, logger }) : {}
+
   const apis: APIs = {
-    PSP: newLiqpayAPI({ config, logger }),
+    PSP: liqpayAPI,
   }
 
   // init telegram api

@@ -29,6 +29,10 @@ export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
     session.order.stickers = {}
   }
 
+  if (!session.order.stickersRelation) {
+    session.order.stickersRelation = []
+  }
+
   // save stickers count to constant
   const stickersCount = Object.keys(session.order.stickers).length
 
@@ -68,17 +72,26 @@ export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
   session.order.stickers[stickerID] = ctx.message.sticker.file_id
 
   if (!session.order.stickerSetName) {
-    const stickerSetName = await ctx.services.Telegram.CreateStickerSet({
-      userID: ctx.from!.id,
-      firstStickerFileID: ctx.message.sticker.file_id,
-    })
+    const { stickerSetName, stickerFileUniqueID } =
+      await ctx.services.Telegram.CreateStickerSet({
+        userID: ctx.from!.id,
+        firstStickerFileID: ctx.message.sticker.file_id,
+      })
     session.order.stickerSetName = stickerSetName
-  } else {
-    ctx.services.Telegram.AddStickerToSet({
-      userID: ctx.from!.id,
-      stickerFileID: ctx.message.sticker.file_id,
-      stickerSetName: session.order.stickerSetName,
+
+    session.order.stickersRelation.push({
+      originalStickerFileUniqueID: ctx.message.sticker.file_unique_id,
+      stickerFileUniqueID,
     })
+
+    // send user a message that sticker was added
+    await ctx.reply(gotStickerText(stickersCount + 1).text, {
+      reply_markup: ctx.menus.SelectStickers.Done,
+      deleteInFuture: true,
+      deletePrevBotMessages: true,
+    })
+    logger.debug('received sticker', { stickerID })
+    return
   }
 
   // send user a message that sticker was added
@@ -88,4 +101,15 @@ export const selectStickers: RouteHandler = (nextRoute) => async (ctx) => {
     deletePrevBotMessages: true,
   })
   logger.debug('received sticker', { stickerID })
+
+  const { stickerFileUniqueID } = await ctx.services.Telegram.AddStickerToSet({
+    userID: ctx.from!.id,
+    stickerFileID: ctx.message.sticker.file_id,
+    stickerSetName: session.order.stickerSetName,
+  })
+
+  session.order.stickersRelation!.push({
+    originalStickerFileUniqueID: ctx.message!.sticker!.file_unique_id,
+    stickerFileUniqueID,
+  })
 }

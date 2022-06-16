@@ -42,13 +42,13 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (
     const printReadyImages = await Promise.all(preparedImagesPromise)
     logger.debug('prepared images for printing', { orderID })
 
-    // upload images to storage
-    const uploadFilesPromise = printReadyImages.map(({ file }, index) => {
-      const path = `${context.config.storage.paths.printReadyImages}/${orderID}/${index}.svg`
-      return context.storage.UploadFile(file, path)
-    })
-    await Promise.all(uploadFilesPromise)
-    logger.debug('uploaded images to storage', { orderID })
+    // // upload images to storage
+    // const uploadFilesPromise = printReadyImages.map(({ file }, index) => {
+    //   const path = `${context.config.storage.paths.printReadyImages}/${orderID}/${index}.svg`
+    //   return context.storage.UploadFile(file, path)
+    // })
+    // await Promise.all(uploadFilesPromise)
+    // logger.debug('uploaded images to storage', { orderID })
 
     return printReadyImages
   })

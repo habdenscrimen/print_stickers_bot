@@ -24,6 +24,7 @@ export interface SelectStickersMenus {
   FinishSelectingStickers: BotMenu
   Done: BotMenu
   ConfirmStickerSet: BotMenu
+  GoToConfirmStickerSet: BotMenu
 }
 
 export interface PaymentMenus {

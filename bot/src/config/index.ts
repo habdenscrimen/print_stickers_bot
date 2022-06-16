@@ -1,4 +1,6 @@
-import 'dotenv/config'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 /** 
   All prices are in UAH. For example, price 500 means 500 UAH.
@@ -33,7 +35,10 @@ export const newConfig = () => {
       textLinks: {
         aboutService: `https://telegra.ph/Print-Stickers-Bot-06-08`,
       },
-      username: `print_tg_stickers_bot`,
+      username:
+        process.env.NODE_ENV !== 'production'
+          ? `development_print_stickers_bot`
+          : `print_tg_stickers_bot`,
     },
     features: {
       liqPay: false,
@@ -59,7 +64,7 @@ export const newConfig = () => {
             : `https://9162-37-73-156-140.ngrok.io/print-stickers/europe-central2/liqpayWebhook`,
       },
       novaPoshta: {
-        maxOrderPriceAllowedWithoutPrepayment: 500,
+        maxOrderPriceAllowedWithoutPrepayment: 3000,
       },
     },
     tariffs: {

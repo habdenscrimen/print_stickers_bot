@@ -51,6 +51,11 @@ export interface SelectStickersTexts {
     stickersCount: number
     orderPrice: OrderPrice
   }) => string
+  AddStickerToOrder: () => string
+  RemoveStickerFromOrder: () => string
+  StickerNotInOrder: () => string
+  StickerRemovedFromOrder: () => string
+  AllStickersRemovedFromOrder: () => string
 }
 
 export interface DeliveryTexts {

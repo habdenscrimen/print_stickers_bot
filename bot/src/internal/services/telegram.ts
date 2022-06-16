@@ -26,6 +26,7 @@ export const newTelegramService = (options: TelegramServiceOptions): TelegramSer
     DeleteStickerSet: (...args) => deleteStickerSet(options, args),
     SendMessage: (...args) => sendMessage(options, args),
     AddStickerToSet: (...args) => addStickerToSet(options, args),
+    RemoveStickerFromSet: (...args) => removeStickerFromSet(options, args),
   }
 }
 
@@ -45,7 +46,7 @@ const addStickerToSet: Service<'AddStickerToSet'> = async (
   { logger, tgApi, config },
   [{ userID, stickerFileID, stickerSetName }],
 ) => {
-  const log = logger.child({
+  let log = logger.child({
     name: 'createStickerSet',
     user_id: userID,
     first_sticker_file_id: stickerFileID,
@@ -56,13 +57,24 @@ const addStickerToSet: Service<'AddStickerToSet'> = async (
     // avoid creating sticker set (using during development)
     if (config.bot.avoidCreatingStickerSet) {
       log.warn('avoid creating sticker set')
-      return
+      return { stickerFileUniqueID: '' }
     }
 
     await tgApi.addStickerToSet(userID, stickerSetName, '😆', { png_sticker: stickerFileID })
+
+    // get sticker from set
+    const stickerSet = await tgApi.getStickerSet(stickerSetName)
+    log = log.child({ stickerSet })
+    log.debug('got sticker set')
+
+    const lastSticker = stickerSet.stickers[stickerSet.stickers.length - 1]
+
     log.debug(`successfully added sticker to set`)
+    return { stickerFileUniqueID: lastSticker.file_unique_id }
   } catch (error) {
+    log = log.child({ error })
     log.error(`failed to add sticker to set: ${error}`)
+    throw new Error(`failed to add sticker to set: ${error}`)
   }
 }
 
@@ -86,7 +98,7 @@ const createStickerSet: Service<'CreateStickerSet'> = async (
     // avoid creating sticker set (using during development)
     if (config.bot.avoidCreatingStickerSet) {
       log.warn('avoid creating sticker set')
-      return stickerSetName
+      return { stickerSetName, stickerFileUniqueID: '' }
     }
 
     // get user
@@ -107,7 +119,12 @@ const createStickerSet: Service<'CreateStickerSet'> = async (
     )
     log.debug('created sticker set')
 
-    return stickerSetName
+    // get sticker from set
+    const stickerSet = await tgApi.getStickerSet(stickerSetName)
+    log = log.child({ stickerSet })
+    log.debug('got sticker set')
+
+    return { stickerSetName, stickerFileUniqueID: stickerSet.stickers[0].file_unique_id }
   } catch (error) {
     log.error(`failed to create sticker set: ${error}`)
     throw new Error(`failed to create sticker set: ${error}`)
@@ -127,7 +144,7 @@ const deleteStickerSet: Service<'DeleteStickerSet'> = async (
   try {
     // avoid creating sticker set (using during development)
     if (config.bot.avoidCreatingStickerSet) {
-      log.warn('avoid creating deleting set')
+      log.warn('avoid deleting set')
       return
     }
 
@@ -164,5 +181,29 @@ const deleteStickerSet: Service<'DeleteStickerSet'> = async (
     log.debug('sticker set deleted')
   } catch (error) {
     log.error(`failed to delete sticker set: ${error}`)
+  }
+}
+
+const removeStickerFromSet: Service<'RemoveStickerFromSet'> = async (
+  { logger, tgApi, config },
+  [{ stickerFileID }],
+) => {
+  let log = logger.child({
+    name: 'removeStickerFromSet',
+    sticker_file_id: stickerFileID,
+  })
+
+  try {
+    // avoid deleting sticker from set (using in development)
+    if (config.bot.avoidCreatingStickerSet) {
+      log.warn('avoid deleting sticker from set')
+      return
+    }
+
+    // delete sticker from sticker set
+    await tgApi.deleteStickerFromSet(stickerFileID)
+  } catch (error) {
+    log = log.child({ error })
+    log.error(`failed to remove sticker from set`)
   }
 }

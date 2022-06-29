@@ -33,7 +33,7 @@ export const InitApp = async (config: Config) => {
     Order: stickerService,
   }
 
-  const bot = NewBot({
+  const bot = await NewBot({
     config,
     logger,
     storageAdapter,

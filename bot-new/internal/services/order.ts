@@ -28,10 +28,7 @@ export const newOrderService = (options: OrderServiceOptions): OrderService => {
   }
 }
 
-const isStickerDuplicate: Service<'IsStickerDuplicate'> = async (
-  { logger, repos },
-  [{ ctx }],
-) => {
+const isStickerDuplicate: Service<'IsStickerDuplicate'> = async ({ logger }, [{ ctx }]) => {
   let log = logger.child({ name: 'order-isStickerDuplicate' })
 
   try {
@@ -143,10 +140,7 @@ const addSticker: Service<'AddSticker'> = async ({ logger, repos }, [{ ctx }]) =
   }
 }
 
-const deleteSticker: Service<'DeleteSticker'> = async (
-  { logger, repos },
-  [{ ctx, fileID }],
-) => {
+const deleteSticker: Service<'DeleteSticker'> = async ({ logger }, [{ ctx, fileID }]) => {
   let log = logger.child({ name: 'order-deleteSticker', fileID })
 
   try {
@@ -169,7 +163,7 @@ const deleteSticker: Service<'DeleteSticker'> = async (
   }
 }
 
-const deleteOrder: Service<'DeleteOrder'> = async ({ logger, repos }, [{ ctx }]) => {
+const deleteOrder: Service<'DeleteOrder'> = async ({ logger }, [{ ctx }]) => {
   let log = logger.child({ name: 'order-deleteOrder' })
 
   try {
@@ -202,7 +196,7 @@ const deleteOrder: Service<'DeleteOrder'> = async ({ logger, repos }, [{ ctx }])
   }
 }
 
-const getOrderInfo: Service<'GetOrderInfo'> = async ({ logger, repos }, [{ ctx }]) => {
+const getOrderInfo: Service<'GetOrderInfo'> = async ({ logger }, [{ ctx }]) => {
   let log = logger.child({ name: 'order-getOrderInfo' })
 
   try {
@@ -236,7 +230,7 @@ const getOrderInfo: Service<'GetOrderInfo'> = async ({ logger, repos }, [{ ctx }
   }
 }
 
-const saveDeliveryInfo: Service<'SaveDeliveryInfo'> = async ({ logger, repos }, [{ ctx }]) => {
+const saveDeliveryInfo: Service<'SaveDeliveryInfo'> = async ({ logger }, [{ ctx }]) => {
   let log = logger.child({ name: 'order-saveDeliveryInfo' })
 
   try {

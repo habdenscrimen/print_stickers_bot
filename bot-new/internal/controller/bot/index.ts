@@ -13,6 +13,7 @@ import {
 } from './composers'
 import { SessionState, SessionSteps } from './session'
 import { BotContext } from './context'
+import { commands } from './commands'
 
 interface Options {
   config: Config
@@ -21,7 +22,7 @@ interface Options {
   services: Services
 }
 
-export const NewBot = (options: Options): Bot<BotContext, Api<RawApi>> => {
+export const NewBot = async (options: Options): Promise<Bot<BotContext, Api<RawApi>>> => {
   // init bot
   const bot = new Bot<BotContext>(options.config.bot.token, {
     client: {
@@ -59,6 +60,9 @@ export const NewBot = (options: Options): Bot<BotContext, Api<RawApi>> => {
 
     return next()
   })
+
+  // set commands for quick use in clients (like /start)
+  await bot.api.setMyCommands(commands)
 
   bot.use(menusComposer)
   bot.use(commandsComposer)

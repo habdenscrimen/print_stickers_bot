@@ -17,9 +17,9 @@ export const messages = {
     let motivationalText = ``
 
     if (count < 6) {
-      motivationalText = `Ви можете обрати 6 стікерів, і тоді вартість одного стікера зменшиться до *16 грн\\/шт\\*.`
+      motivationalText = `Ви можете обрати 6 стікерів, і тоді вартість одного стікера зменшиться до *16 грн\\/шт*\\.`
     } else if (count < 11) {
-      motivationalText = `Ви можете обрати 11 стікерів, і тоді вартість одного стікера зменшиться до *14 грн\\/шт\\*.`
+      motivationalText = `Ви можете обрати 11 стікерів, і тоді вартість одного стікера зменшиться до *14 грн\\/шт*\\.`
     } else if (count < 25) {
       motivationalText = `Ви можете обрати 25 стікерів, і тоді за доставку заплатимо ми\\.`
     }
@@ -141,7 +141,8 @@ selectStickersComposer.use(async (ctx, next) => {
   const handleUpdate = await checkUpdate(ctx)
 
   if (!handleUpdate) {
-    return next()
+    await next()
+    return
   }
 
   let logger = ctx.logger.child({ name: 'select-stickers-composer' })
@@ -151,14 +152,14 @@ selectStickersComposer.use(async (ctx, next) => {
     if (!ctx.message?.sticker) {
       await ctx.reply(messages.noStickerReceived)
       logger.debug(`no sticker received`)
-      return next()
+      return
     }
 
     // check if sticker is animated
     if (ctx.message.sticker.is_animated || ctx.message.sticker.is_video) {
       await ctx.reply(messages.animatedStickerReceived)
       logger.debug(`animated sticker received`)
-      return next()
+      return
     }
 
     // check if sticker is duplicate
@@ -166,17 +167,14 @@ selectStickersComposer.use(async (ctx, next) => {
     if (isDuplicate) {
       await ctx.reply(messages.duplicateStickerReceived)
       logger.debug(`duplicate sticker received`)
-      return next()
+      return
     }
 
     // add sticker
     await ctx.services.Order.AddSticker({ ctx })
     await ctx.reply(messages.stickerAdded, { reply_markup: finishSelectingStickersMenu })
-
-    return next()
   } catch (error) {
     logger = logger.child({ error })
     logger.error(`failed to handle select-stickers composer: ${error}`)
-    return next()
   }
 })

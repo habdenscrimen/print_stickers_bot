@@ -56,7 +56,8 @@ removeStickersFromOrderComposer.use(async (ctx, next) => {
   const handleUpdate = await checkUpdate(ctx)
 
   if (!handleUpdate) {
-    return next()
+    await next()
+    return
   }
 
   let logger = ctx.logger.child({ name: 'remove-stickers-from-order-composer' })
@@ -66,7 +67,7 @@ removeStickersFromOrderComposer.use(async (ctx, next) => {
     if (!ctx.message?.sticker) {
       await ctx.reply(messages.noStickerReceived)
       logger.debug(`no sticker received`)
-      return next()
+      return
     }
 
     // check if sticker is from the bot's sticker set
@@ -86,7 +87,7 @@ removeStickersFromOrderComposer.use(async (ctx, next) => {
     if (!stickerInSessionSticker) {
       await ctx.reply(messages.stickerNotFromSet)
       logger.debug(`sticker not from bot's sticker set`)
-      return next()
+      return
     }
 
     // delete sticker
@@ -107,14 +108,12 @@ removeStickersFromOrderComposer.use(async (ctx, next) => {
       ])
 
       logger.debug(`all stickers deleted`)
-      return next()
+      return
     }
 
     await ctx.reply(messages.stickerDeleted, { reply_markup: goToEditSelectedStickersMenu })
-    return next()
   } catch (error) {
     logger = logger.child({ error })
     logger.error(`failed to handle remove-stickers-from-order composer: ${error}`)
-    return next()
   }
 })

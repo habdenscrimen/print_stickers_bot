@@ -22,7 +22,8 @@ askPhoneNumberComposer.use(async (ctx, next) => {
   const handleUpdate = await checkUpdate(ctx)
 
   if (!handleUpdate) {
-    return next()
+    await next()
+    return
   }
 
   let logger = ctx.logger.child({ name: 'ask-phone-number-composer' })
@@ -32,13 +33,13 @@ askPhoneNumberComposer.use(async (ctx, next) => {
     const isContactSaved = await ctx.services.User.IsContactSaved({ ctx })
     if (isContactSaved) {
       logger.debug(`contact already saved`)
-      return next()
+      return
     }
 
     // check if phone number was sent
     if (!ctx.message?.contact) {
       await ctx.reply(messages.noContactReceived)
-      return next()
+      return
     }
 
     // save phone number
@@ -53,10 +54,8 @@ askPhoneNumberComposer.use(async (ctx, next) => {
         remove_keyboard: true,
       },
     })
-    return next()
   } catch (error) {
     logger = logger.child({ error })
     logger.error(`failed to handle ask-phone-number composer: ${error}`)
-    return next()
   }
 })

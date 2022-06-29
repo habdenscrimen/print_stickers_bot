@@ -36,7 +36,7 @@ _Не хвилюйтеся щодо формату, пишіть як зручн
   🚚 Оплатити замовлення можна при отриманні на Новій Пошті\\.
 
   👉 Вартість замовлення: *${options.price} грн*\\.
-  👉 Вартість доставки: *45 грн\\*. \\(*50 грн*\\. при доставці у поштомат\\)
+  👉 Вартість доставки: *45 грн*\\. \\(*50 грн*\\. при доставці у поштомат\\)
   `,
 }
 
@@ -82,7 +82,8 @@ askDeliveryInfoComposer.use(async (ctx, next) => {
   const handleUpdate = await checkUpdate(ctx)
 
   if (!handleUpdate) {
-    return next()
+    await next()
+    return
   }
 
   let logger = ctx.logger.child({ name: 'ask-delivery-info-composer' })
@@ -92,7 +93,7 @@ askDeliveryInfoComposer.use(async (ctx, next) => {
     if (!ctx.message?.text) {
       await ctx.reply(askDeliveryInfoMessages.noDeliveryInfoReceived)
       logger.debug(`no delivery info received`)
-      return next()
+      return
     }
 
     // save delivery info
@@ -107,11 +108,10 @@ askDeliveryInfoComposer.use(async (ctx, next) => {
     const message = askDeliveryInfoMessages.askToConfirmOrder({ price: orderInfo.price })
 
     await ctx.reply(message, { reply_markup: confirmOrderMenu })
-
-    return next()
   } catch (error) {
+    console.log(error)
+
     logger = logger.child({ error })
     logger.error(`failed to handle ask-phone-number composer: ${error}`)
-    return next()
   }
 })

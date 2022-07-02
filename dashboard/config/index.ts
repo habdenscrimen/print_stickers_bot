@@ -10,8 +10,9 @@ export const GetConfig = () => ({
   bot: {
     token: process.env.BOT_TOKEN!,
     username:
-      // process.env.NODE_ENV === 'production' ? 'stickasybot' : 'development_print_stickers_bot',
-      process.env.NODE_ENV === 'production' ? 'stickasybot' : 'stickasybot',
+      process.env.NODE_ENV === 'production'
+        ? 'development_print_stickers_bot'
+        : 'development_print_stickers_bot',
     // faqDocURL: `https://print-telegram-stickers.notion.site/22a245fe0495451ca5614150e2f092ee`,
     // supportBotURL: `https://t.me/stickasy_support_bot`,
   },

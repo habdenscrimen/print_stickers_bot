@@ -1,6 +1,5 @@
 import { Config, ConfigLogLevel } from 'config'
 import pino, { Logger as PinoLogger } from 'pino'
-// import pretty from 'pino-pretty'
 
 interface Options {
   config: Config

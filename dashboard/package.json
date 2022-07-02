@@ -6,12 +6,13 @@
   "scripts": {
     "build": "webpack --config webpack/prod.config.js",
     "build:dev": "webpack --config webpack/dev.config.js",
-    "start": "node build/botWebhookHandler",
+    "start": "node build/dashboardHandler",
     "dev": "npm run build:dev && npm start",
     "check:format": "prettier --check \"./!(node_modules|build|dist)/**/*.{ts,tsx,js,jsx}\"",
     "check:typescript": "tsc --noEmit -p .",
     "check:eslint": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
-    "check": "npm run check:format && npm run check:typescript && npm run check:eslint"
+    "check": "npm run check:format && npm run check:typescript && npm run check:eslint",
+    "test": "NODE_ENV=development ava"
   },
   "keywords": [],
   "author": "",
@@ -22,8 +23,10 @@
     "@types/aws-lambda": "^8.10.100",
     "@types/nanoid-dictionary": "^4.2.0",
     "@types/node": "^18.0.0",
+    "@types/node-fetch": "^2.6.2",
     "@typescript-eslint/eslint-plugin": "^5.28.0",
     "@typescript-eslint/parser": "^5.28.0",
+    "ava": "^4.3.0",
     "bluebird": "^3.7.2",
     "clean-webpack-plugin": "^4.0.0",
     "dotenv-webpack": "^7.1.0",
@@ -39,6 +42,7 @@
     "serverless-webpack": "^5.7.1",
     "terser-webpack-plugin": "^5.3.3",
     "ts-loader": "^9.3.0",
+    "ts-node": "^10.8.1",
     "typescript": "^4.7.4",
     "webpack": "^5.73.0",
     "webpack-cli": "^4.10.0",
@@ -49,14 +53,23 @@
     "@aws-sdk/client-dynamodb": "^3.118.0",
     "@aws-sdk/lib-dynamodb": "^3.118.0",
     "@aws/dynamodb-auto-marshaller": "^0.7.1",
-    "@grammyjs/menu": "^1.1.2",
-    "@grammyjs/parse-mode": "^1.1.2",
-    "@grammyjs/router": "^2.0.0",
     "aws-crt": "^1.12.5",
     "aws-lambda": "^1.0.7",
-    "grammy": "^1.8.3",
     "nanoid": "^4.0.0",
     "nanoid-dictionary": "^4.3.0",
-    "pino": "^8.1.0"
+    "node-fetch": "^2.6.7",
+    "pino": "^8.1.0",
+    "pino-webpack-plugin": "^1.2.0"
+  },
+  "ava": {
+    "extensions": [
+      "ts"
+    ],
+    "files": [
+      "internal/**/*.test.ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
   }
 }

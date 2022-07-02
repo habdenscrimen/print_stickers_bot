@@ -2,8 +2,8 @@ import { Menu } from '@grammyjs/menu'
 import { BotContext } from '../../context'
 import { SessionSteps } from '../../session'
 
-const faqDocURL = `https://print-telegram-stickers.notion.site/22a245fe0495451ca5614150e2f092ee`
-const supportBotURL = `https://t.me/stickasy_support_bot`
+const faqDocURL = `https://telegra.ph/St%D1%96kasi--pitannya-v%D1%96dpov%D1%96d%D1%96-07-02`
+const supportBotURL = `https://t.me/stickasy_support`
 
 export const mainMenuText = `
 Привіт 👋

@@ -26,7 +26,14 @@ export const NewBot = async (options: Options): Promise<Bot<BotContext, Api<RawA
   // init bot
   const bot = new Bot<BotContext>(options.config.bot.token, {
     client: {
-      canUseWebhookReply: (method) => !new Set(['getStickerSet', 'sendMessage']).has(method),
+      canUseWebhookReply: (method) =>
+        !new Set([
+          'getStickerSet',
+          'createNewStickerSet',
+          'addStickerToSet',
+          'deleteStickerFromSet',
+          'sendMessage',
+        ]).has(method),
     },
   })
 

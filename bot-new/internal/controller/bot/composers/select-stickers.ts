@@ -54,7 +54,7 @@ export const editSelectedStickersMenu = new Menu<BotContext>('edit-selected-stic
     range.url(`👁 Переглянути стікери`, `https://t.me/addstickers/${stickerSetName}`).row()
   })
   .row()
-  .text(`➕ Додати стікери`, async (ctx) => {
+  .text(`➕ Додати стікер`, async (ctx) => {
     // set step to SelectStickers
     const session = await ctx.session
     session.step = SessionSteps.SelectStickers
@@ -62,7 +62,7 @@ export const editSelectedStickersMenu = new Menu<BotContext>('edit-selected-stic
     await ctx.reply(messages.addStickerToOrder)
   })
   .row()
-  .text(`➖ Видалити стікери`, async (ctx) => {
+  .text(`➖ Прибрати стікер`, async (ctx) => {
     // set step to RemoveStickerFromOrder
     const session = await ctx.session
     session.step = SessionSteps.RemoveStickerFromOrder
@@ -90,6 +90,7 @@ export const editSelectedStickersMenu = new Menu<BotContext>('edit-selected-stic
     await ctx.reply(messages.askPhoneNumber, {
       reply_markup: {
         keyboard: new Keyboard().requestContact('🤙 Надіслати номер').build(),
+        resize_keyboard: true,
       },
     })
   })

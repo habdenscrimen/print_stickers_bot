@@ -10,6 +10,7 @@ import { InitApp } from 'internal/app'
 
 // if development, run bot in long-polling mode
 if (process.env.NODE_ENV === 'development') {
+  // if (process.env.NODE_ENV === 'production') {
   const config = GetConfig()
 
   InitApp(config).then(({ bot }) => {

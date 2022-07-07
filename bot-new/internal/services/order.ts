@@ -1,5 +1,7 @@
 import { customAlphabet } from 'nanoid'
 import { lowercase } from 'nanoid-dictionary'
+import fetch from 'node-fetch'
+import CryptoJS from 'crypto-js'
 import { Config } from 'config'
 import { Repos } from 'internal/repos'
 import { Logger } from 'pkg/logger'
@@ -59,7 +61,7 @@ const addSticker: Service<'AddSticker'> = async ({ logger, repos }, [{ ctx }]) =
 
     // check if sticker set for the current order already exists
     const session = await ctx.session
-    const stickerSetExists = session.order.stickerSetName !== undefined
+    const stickerSetExists = Boolean(session.order.stickerSetName)
 
     // if not, create new sticker set
     if (!stickerSetExists) {
@@ -74,7 +76,11 @@ const addSticker: Service<'AddSticker'> = async ({ logger, repos }, [{ ctx }]) =
       log.debug(`got user`)
 
       // create new sticker set with the source sticker as 1st
-      const stickerSetName = `${customAlphabet(lowercase, 20)()}_by_${ctx.config.bot.username}`
+      const prefix = customAlphabet(lowercase, 20)()
+      const stickerSetName = `${prefix}_by_${ctx.config.bot.username}`
+      log = log.child({ stickerSetName })
+      log.debug(`generated sticker set name`)
+
       const stickerSetCount = user.telegram_sticker_sets?.length || 0
 
       await ctx.api.createNewStickerSet(
@@ -132,8 +138,6 @@ const addSticker: Service<'AddSticker'> = async ({ logger, repos }, [{ ctx }]) =
 
     return { stickerSetName }
   } catch (error) {
-    console.log(error)
-
     log = log.child({ error })
     log.error(`failed to add sticker: ${error}`)
     throw new Error(`failed to add sticker: ${error}`)
@@ -281,9 +285,72 @@ const createOrder: Service<'CreateOrder'> = async ({ logger, repos, config }, [{
       stickerSetName: undefined,
       deliveryInfo: undefined,
     }
+
+    // send facebook purchase event
+    await sendFacebookPurchaseEvent({
+      config,
+      logger,
+      paymentAmount: orderInfo.price,
+      firstName: ctx.from?.first_name || 'Unknown',
+      lastName: ctx.from?.last_name || '-',
+    })
   } catch (error) {
     log = log.child({ error })
-    log.error(`failed to get order info: ${error}`)
-    throw new Error(`failed to get order info: ${error}`)
+    log.error(`failed to create order: ${error}`)
+    throw new Error(`failed to create order: ${error}`)
+  }
+}
+
+interface SendFacebookPurchaseEventOptions {
+  config: Config
+  logger: Logger
+  firstName: string
+  lastName?: string
+  paymentAmount: number
+}
+
+// TODO: move to API layer
+const sendFacebookPurchaseEvent = async (options: SendFacebookPurchaseEventOptions) => {
+  const { accessToken, pixelID } = options.config.analytics.instagram
+
+  let log = options.logger.child({ name: 'order-sendFacebookPurchaseEvent' })
+
+  const body = JSON.stringify({
+    data: [
+      {
+        event_name: 'Purchase',
+        event_time: Math.round(Date.now() / 1000),
+        action_source: 'other',
+        user_data: {
+          fn: [CryptoJS.SHA256(options.firstName).toString(CryptoJS.enc.Hex)],
+          ln: [CryptoJS.SHA256(options.lastName || '-').toString(CryptoJS.enc.Hex)],
+        },
+        custom_data: {
+          currency: 'UAH',
+          value: `${Math.round(options.paymentAmount)}`,
+        },
+      },
+    ],
+  })
+  log = log.child({ body })
+  log.debug('created event body')
+
+  const response = await fetch(
+    `https://graph.facebook.com/v14.0/${pixelID}/events?access_token=${accessToken}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+    },
+  )
+  log = log.child({ response })
+  log.debug('got response')
+
+  const data = await response.json()
+  log = log.child({ data })
+  log.debug('parsed response')
+
+  if (!response.ok) {
+    log.error(`failed to send facebook purchase event: ${data}`)
   }
 }

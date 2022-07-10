@@ -33,12 +33,17 @@ askPhoneNumberComposer.use(async (ctx, next) => {
     const isContactSaved = await ctx.services.User.IsContactSaved({ ctx })
     if (isContactSaved) {
       logger.debug(`contact already saved`)
+
+      // track analytics event
+      ctx.analytics.trackEvent('Ask phone number scene: contact already saved', ctx.from!.id)
       return
     }
 
     // check if phone number was sent
     if (!ctx.message?.contact) {
       await ctx.reply(messages.noContactReceived)
+      // track analytics event
+      ctx.analytics.trackEvent('Ask phone number scene: no contact received', ctx.from!.id)
       return
     }
 
@@ -48,6 +53,9 @@ askPhoneNumberComposer.use(async (ctx, next) => {
     // set step to AskDeliveryInfo
     const session = await ctx.session
     session.step = SessionSteps.AskDeliveryInfo
+
+    // track funnel event
+    ctx.analytics.trackEvent('Funnel: Ask delivery info', ctx.from!.id)
 
     await ctx.reply(askDeliveryInfoMessages.entering, {
       reply_markup: {

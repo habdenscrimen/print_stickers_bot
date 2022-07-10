@@ -36,9 +36,20 @@ export const mainMenu = new Menu<BotContext>('main-menu')
     // set step to SelectStickers
     const session = await ctx.session
     session.step = SessionSteps.SelectStickers
+
+    // track funnel event
+    ctx.analytics.trackEvent('Funnel: Select stickers', ctx.from.id)
+
+    // track analytics event
+    ctx.analytics.trackEvent('(tap) Main menu: Order stickers', ctx.from.id)
   })
   .row()
-  .submenu(`❓ Є питання`, 'faq-submenu')
+  .text(`❓ Є питання`, async (ctx) => {
+    ctx.menu.nav('faq-submenu')
+
+    // track analytics event
+    ctx.analytics.trackEvent('(tap) Main menu: Have a question', ctx.from!.id)
+  })
   .row()
 
 const faqSubmenu = new Menu<BotContext>('faq-submenu')
@@ -46,7 +57,12 @@ const faqSubmenu = new Menu<BotContext>('faq-submenu')
   .row()
   .url(`✍️ Поставити питання`, supportBotURL)
   .row()
-  .back(`⬅️ Назад`)
+  .text(`⬅️ Назад`, async (ctx) => {
+    ctx.menu.back()
+
+    // track analytics event
+    ctx.analytics.trackEvent('(tap) FAQ submenu: Back to Main menu', ctx.from!.id)
+  })
   .row()
 
 mainMenu.register(faqSubmenu)

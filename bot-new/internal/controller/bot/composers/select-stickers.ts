@@ -60,6 +60,9 @@ export const editSelectedStickersMenu = new Menu<BotContext>('edit-selected-stic
     session.step = SessionSteps.SelectStickers
 
     await ctx.reply(messages.addStickerToOrder)
+
+    // track analytics event
+    ctx.analytics.trackEvent('(tap) Edit stickers submenu: Add sticker', ctx.from.id)
   })
   .row()
   .text(`➖ Прибрати стікер`, async (ctx) => {
@@ -68,9 +71,15 @@ export const editSelectedStickersMenu = new Menu<BotContext>('edit-selected-stic
     session.step = SessionSteps.RemoveStickerFromOrder
 
     await ctx.reply(messages.sendStickerToRemove)
+
+    // track analytics event
+    ctx.analytics.trackEvent('(tap) Edit stickers submenu: Remove sticker', ctx.from.id)
   })
   .row()
   .text(`✅ Дякую, це все`, async (ctx) => {
+    // track analytics event
+    ctx.analytics.trackEvent(`(tap) Edit stickers submenu: That's all`, ctx.from.id)
+
     // check if phone number already saved
     const isPhoneNumberSaved = await ctx.services.User.IsContactSaved({ ctx })
 
@@ -80,12 +89,18 @@ export const editSelectedStickersMenu = new Menu<BotContext>('edit-selected-stic
       session.step = SessionSteps.AskDeliveryInfo
 
       await ctx.reply(askDeliveryInfoMessages.entering)
+
+      // track funnel event
+      ctx.analytics.trackEvent('Funnel: Ask delivery info', ctx.from.id)
       return
     }
 
     // set step to AskPhoneNumber
     const session = await ctx.session
     session.step = SessionSteps.AskPhoneNumber
+
+    // track funnel event
+    ctx.analytics.trackEvent('Funnel: Ask phone number', ctx.from.id)
 
     await ctx.reply(messages.askPhoneNumber, {
       reply_markup: {
@@ -105,6 +120,9 @@ export const editSelectedStickersMenu = new Menu<BotContext>('edit-selected-stic
       ctx.reply(mainMenuText, { reply_markup: mainMenu }),
       ctx.services.Order.DeleteOrder({ ctx }),
     ])
+
+    // track analytics event
+    ctx.analytics.trackEvent('(tap) Edit stickers submenu: Go to main menu', ctx.from.id)
   })
   .row()
 
@@ -123,6 +141,16 @@ const finishSelectingStickersMenu = new Menu<BotContext>('finish-selecting-stick
     // set step to ConfirmSelectedStickers
     const session = await ctx.session
     session.step = SessionSteps.ConfirmSelectedStickers
+
+    // track analytics event
+    ctx.analytics.trackEvent(
+      `(tap) Finish selecting stickers menu: That's all`,
+      ctx.from.id,
+      orderInfo,
+    )
+
+    // track funnel event
+    ctx.analytics.trackEvent('Funnel: Confirm selected stickers', ctx.from.id)
   })
   .row()
 
@@ -153,6 +181,11 @@ selectStickersComposer.use(async (ctx, next) => {
     if (!ctx.message?.sticker) {
       await ctx.reply(messages.noStickerReceived)
       logger.debug(`no sticker received`)
+
+      // track analytics event
+      ctx.analytics.trackEvent('Select stickers scene: No sticker received', ctx.from!.id, {
+        ...(ctx.message || {}),
+      })
       return
     }
 
@@ -160,6 +193,13 @@ selectStickersComposer.use(async (ctx, next) => {
     if (ctx.message.sticker.is_animated || ctx.message.sticker.is_video) {
       await ctx.reply(messages.animatedStickerReceived)
       logger.debug(`animated sticker received`)
+
+      // track analytics event
+      ctx.analytics.trackEvent(
+        'Select stickers scene: Animated sticker received',
+        ctx.from!.id,
+        { ...(ctx.message || {}) },
+      )
       return
     }
 
@@ -168,6 +208,12 @@ selectStickersComposer.use(async (ctx, next) => {
     if (isDuplicate) {
       await ctx.reply(messages.duplicateStickerReceived)
       logger.debug(`duplicate sticker received`)
+
+      // track analytics event
+      ctx.analytics.trackEvent(
+        'Select stickers scene: Duplicate sticker received',
+        ctx.from!.id,
+      )
       return
     }
 

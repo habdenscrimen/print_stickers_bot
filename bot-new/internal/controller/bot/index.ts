@@ -3,6 +3,7 @@ import { Config } from 'config'
 import { Logger } from 'pkg/logger'
 import { Services } from 'internal/services'
 import { hydrateReply, parseMode } from '@grammyjs/parse-mode'
+import { Analytics } from 'pkg/analytics'
 import {
   askDeliveryInfoComposer,
   askPhoneNumberComposer,
@@ -20,6 +21,7 @@ interface Options {
   logger: Logger
   storageAdapter: StorageAdapter<SessionState>
   services: Services
+  analytics: Analytics
 }
 
 export const NewBot = async (options: Options): Promise<Bot<BotContext, Api<RawApi>>> => {
@@ -64,6 +66,7 @@ export const NewBot = async (options: Options): Promise<Bot<BotContext, Api<RawA
     ctx.logger = options.logger.child({ user: ctx.from?.id })
     ctx.config = options.config
     ctx.services = options.services
+    ctx.analytics = options.analytics
 
     return next()
   })

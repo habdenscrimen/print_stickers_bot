@@ -13,8 +13,16 @@ export const startCommand: Command = async (ctx) => {
     // delete order (if exists)
     await ctx.services.Order.DeleteOrder({ ctx })
 
+    // get user data from context
+    const { id: userID, first_name, last_name, username } = ctx.from!
+
+    // set user in analytics
+    ctx.analytics.setUser({ id: userID, firstName: first_name, lastName: last_name, username })
+
+    // track funnel event
+    ctx.analytics.trackEvent('Funnel: Main menu', userID)
+
     // get user
-    const userID = ctx.from!.id
     const user = await ctx.services.User.GetUserByID({ telegramUserID: userID })
     logger = logger.child({ user })
     logger.debug(`got user`)
@@ -37,6 +45,9 @@ export const startCommand: Command = async (ctx) => {
       })
       logger = logger.child({ user: currentUser })
       logger.debug(`user created`)
+
+      // set user source in mixpanel
+      ctx.analytics.setUser({ id: userID, source })
     }
 
     // update user in session

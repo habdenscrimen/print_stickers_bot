@@ -10,6 +10,7 @@ import { newUserService } from 'internal/services/user'
 import { NewDbClient } from 'pkg/dynamodb/client'
 import { newStorageAdapter } from 'pkg/dynamodb/storage-adapter'
 import { NewLogger } from 'pkg/logger'
+import { Analytics } from 'pkg/analytics'
 
 export const InitApp = async (config: Config) => {
   const logger = NewLogger({ level: config.log.level, config })
@@ -33,11 +34,16 @@ export const InitApp = async (config: Config) => {
     Order: stickerService,
   }
 
+  // init mixpanel
+  const analytics = new Analytics(config.analytics.mixpanel.projectToken)
+
+  // init bot
   const bot = await NewBot({
     config,
     logger,
     storageAdapter,
     services,
+    analytics,
   })
 
   return {

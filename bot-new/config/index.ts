@@ -29,6 +29,9 @@ export const GetConfig = () => ({
       pixelID: 805268244181073,
       accessToken: `EAAHjmGZBCgEABAM9jLRJUi5s0sAFs2UBCW3ZCRClZB0piYZB3otyD5dCZBq2xUXcrKvUqIbdsNQNukOVgYb8syXwZCgMIksTVQvTJb9dxdnPpbWfrymo13476EELqSDZAH5JFfhQAGRYHNt4B3wBBs9Gs8d55YcqgN0VZAqrc9rj2qY1MnpEdd4zzUi90FwOFK0ZD`,
     },
+    mixpanel: {
+      projectToken: process.env.MIXPANEL_PROJECT_TOKEN!,
+    },
   },
 })
 

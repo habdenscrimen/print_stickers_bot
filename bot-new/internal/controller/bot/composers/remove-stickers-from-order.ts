@@ -36,6 +36,9 @@ const goToEditSelectedStickersMenu = new Menu<BotContext>('go-to-edit-selected-s
     })
 
     await ctx.reply(message, { reply_markup: editSelectedStickersMenu })
+
+    // track analytics event
+    ctx.analytics.trackEvent('Go to edit selected stickers menu: Go back', ctx.from!.id)
   })
 
 // create composer
@@ -67,6 +70,13 @@ removeStickersFromOrderComposer.use(async (ctx, next) => {
     if (!ctx.message?.sticker) {
       await ctx.reply(messages.noStickerReceived)
       logger.debug(`no sticker received`)
+
+      // track analytics event
+      ctx.analytics.trackEvent(
+        'Remove stickers from order scene: No sticker received',
+        ctx.from!.id,
+        { ...(ctx.message || {}) },
+      )
       return
     }
 
@@ -87,6 +97,12 @@ removeStickersFromOrderComposer.use(async (ctx, next) => {
     if (!stickerInSessionSticker) {
       await ctx.reply(messages.stickerNotFromSet)
       logger.debug(`sticker not from bot's sticker set`)
+
+      // track analytics event
+      ctx.analytics.trackEvent(
+        'Remove stickers from order scene: Sticker not from bot set received',
+        ctx.from!.id,
+      )
       return
     }
 

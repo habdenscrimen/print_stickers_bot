@@ -53,6 +53,12 @@ const confirmOrderMenu = new Menu<BotContext>('confirm-order-menu')
     const session = await ctx.session
     session.step = SessionSteps.MainMenu
 
+    // track analytics event
+    ctx.analytics.trackEvent(`(tap) Confirm order menu: Confirm order`, ctx.from.id)
+
+    // track funnel event
+    ctx.analytics.trackEvent('Funnel: Order created', ctx.from!.id)
+
     await ctx.reply(askDeliveryInfoMessages.orderCreated, { reply_markup: mainMenu })
   })
   .row()
@@ -60,6 +66,9 @@ const confirmOrderMenu = new Menu<BotContext>('confirm-order-menu')
     // set step to MainMenu
     const session = await ctx.session
     session.step = SessionSteps.MainMenu
+
+    // track analytics event
+    ctx.analytics.trackEvent(`(tap) Confirm order menu: Cancel order`, ctx.from.id)
 
     // reply and delete order in parallel
     await Promise.all([
@@ -97,6 +106,11 @@ askDeliveryInfoComposer.use(async (ctx, next) => {
     if (!ctx.message?.text) {
       await ctx.reply(askDeliveryInfoMessages.noDeliveryInfoReceived)
       logger.debug(`no delivery info received`)
+
+      // track analytics event
+      ctx.analytics.trackEvent(`Ask delivery info scene: no text received`, ctx.from!.id, {
+        ...(ctx.message || {}),
+      })
       return
     }
 
@@ -106,6 +120,9 @@ askDeliveryInfoComposer.use(async (ctx, next) => {
     // set step to ConfirmOrder
     const session = await ctx.session
     session.step = SessionSteps.ConfirmOrder
+
+    // track funnel event
+    ctx.analytics.trackEvent('Funnel: Confirm order', ctx.from!.id)
 
     // reply with menu
     const orderInfo = await ctx.services.Order.GetOrderInfo({ ctx })

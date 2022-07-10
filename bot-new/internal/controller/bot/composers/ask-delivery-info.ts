@@ -32,20 +32,24 @@ _Не хвилюйтеся щодо формату, пишіть як зручн
 
 А зараз повертаємось у головне меню 👇
 `,
-  askToConfirmOrder: (options: { price: number }) => {
+  askToConfirmOrder: (options: { price: number; stickersCount: number }) => {
     const commission = Math.round(20 + (options.price / 100) * 2)
 
     return `
   🚚 Оплатити замовлення можна при отриманні на Новій Пошті\\.
 
   👉 Вартість замовлення: *${options.price} грн*\\.
-  👉 Вартість доставки: *45 грн*\\. \\(*50 грн*\\. при доставці у поштомат\\) \\+ *${commission} грн* \\(комісія Нової Пошти\\)\\.
+  ${
+    options.stickersCount < 25
+      ? `👉 Вартість доставки: *45 грн*\\. \\(*50 грн*\\. при доставці у поштомат\\) \\+ *${commission} грн* \\(комісія Нової Пошти\\)\\.`
+      : `👉 Доставка безкоштовна\\.`
+  }
 `
   },
 }
 
 const confirmOrderMenu = new Menu<BotContext>('confirm-order-menu')
-  .text(`🚚 Підтверджую замовлення`, async (ctx) => {
+  .text(`✅ Підтверджую замовлення`, async (ctx) => {
     // create order
     await ctx.services.Order.CreateOrder({ ctx })
 
@@ -62,7 +66,7 @@ const confirmOrderMenu = new Menu<BotContext>('confirm-order-menu')
     await ctx.reply(askDeliveryInfoMessages.orderCreated, { reply_markup: mainMenu })
   })
   .row()
-  .text(`❌ Скасувати замовлення`, async (ctx) => {
+  .text(`⬅️ У головне меню`, async (ctx) => {
     // set step to MainMenu
     const session = await ctx.session
     session.step = SessionSteps.MainMenu
@@ -126,7 +130,10 @@ askDeliveryInfoComposer.use(async (ctx, next) => {
 
     // reply with menu
     const orderInfo = await ctx.services.Order.GetOrderInfo({ ctx })
-    const message = askDeliveryInfoMessages.askToConfirmOrder({ price: orderInfo.price })
+    const message = askDeliveryInfoMessages.askToConfirmOrder({
+      price: orderInfo.price,
+      stickersCount: orderInfo.stickersCount,
+    })
 
     await ctx.reply(message, { reply_markup: confirmOrderMenu })
   } catch (error) {

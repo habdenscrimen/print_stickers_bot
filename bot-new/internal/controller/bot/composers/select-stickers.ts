@@ -47,36 +47,7 @@ export const selectStickersComposer = new Composer<BotContext>()
 
 // create Edit Selected Stickers menu
 export const editSelectedStickersMenu = new Menu<BotContext>('edit-selected-stickers-menu')
-  .dynamic(async (ctx, range) => {
-    const session = await ctx.session
-    const { stickerSetName } = session.order
-
-    range.url(`👁 Переглянути стікери`, `https://t.me/addstickers/${stickerSetName}`).row()
-  })
-  .row()
-  .text(`➕ Додати стікер`, async (ctx) => {
-    // set step to SelectStickers
-    const session = await ctx.session
-    session.step = SessionSteps.SelectStickers
-
-    await ctx.reply(messages.addStickerToOrder)
-
-    // track analytics event
-    ctx.analytics.trackEvent('(tap) Edit stickers submenu: Add sticker', ctx.from.id)
-  })
-  .row()
-  .text(`➖ Прибрати стікер`, async (ctx) => {
-    // set step to RemoveStickerFromOrder
-    const session = await ctx.session
-    session.step = SessionSteps.RemoveStickerFromOrder
-
-    await ctx.reply(messages.sendStickerToRemove)
-
-    // track analytics event
-    ctx.analytics.trackEvent('(tap) Edit stickers submenu: Remove sticker', ctx.from.id)
-  })
-  .row()
-  .text(`✅ Дякую, це все`, async (ctx) => {
+  .text(`✅ Супер, далі`, async (ctx) => {
     // track analytics event
     ctx.analytics.trackEvent(`(tap) Edit stickers submenu: That's all`, ctx.from.id)
 
@@ -110,7 +81,37 @@ export const editSelectedStickersMenu = new Menu<BotContext>('edit-selected-stic
     })
   })
   .row()
-  .text(`❌ У головне меню`, async (ctx) => {
+  .dynamic(async (ctx, range) => {
+    const session = await ctx.session
+    const { stickerSetName } = session.order
+
+    range.url(`👁 Переглянути стікери`, `https://t.me/addstickers/${stickerSetName}`).row()
+  })
+  .row()
+  .text(`➕ Додати стікер`, async (ctx) => {
+    // set step to SelectStickers
+    const session = await ctx.session
+    session.step = SessionSteps.SelectStickers
+
+    await ctx.reply(messages.addStickerToOrder)
+
+    // track analytics event
+    ctx.analytics.trackEvent('(tap) Edit stickers submenu: Add sticker', ctx.from.id)
+  })
+  .row()
+  .text(`➖ Прибрати стікер`, async (ctx) => {
+    // set step to RemoveStickerFromOrder
+    const session = await ctx.session
+    session.step = SessionSteps.RemoveStickerFromOrder
+
+    await ctx.reply(messages.sendStickerToRemove)
+
+    // track analytics event
+    ctx.analytics.trackEvent('(tap) Edit stickers submenu: Remove sticker', ctx.from.id)
+  })
+  .row()
+
+  .text(`⬅️ У головне меню`, async (ctx) => {
     // set step to MainMenu
     const session = await ctx.session
     session.step = SessionSteps.MainMenu

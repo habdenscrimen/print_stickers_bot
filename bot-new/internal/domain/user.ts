@@ -12,4 +12,6 @@ export interface User {
 
   // timestamps
   created_at: string
+
+  source: string // where this user are coming from
 }

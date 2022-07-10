@@ -1,6 +1,5 @@
 const { merge } = require('webpack-merge')
-// const TerserPlugin = require('terser-webpack-plugin')
-
+const Dotenv = require('dotenv-webpack')
 const sharedConfig = require('./shared.config')
 
 module.exports = merge(sharedConfig, {
@@ -10,4 +9,10 @@ module.exports = merge(sharedConfig, {
     // FIXME: lambda functions does not work with terser-webpack-plugin
     minimize: false,
   },
+  plugins: [
+    new Dotenv({
+      safe: true,
+      path: '.env',
+    }),
+  ],
 })

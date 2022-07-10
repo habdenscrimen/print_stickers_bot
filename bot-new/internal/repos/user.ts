@@ -52,6 +52,7 @@ const createUser: Handler<'CreateUser'> = async (db, [{ user }]) => {
       first_name: user.firstName,
       last_name: user.lastName,
       created_at: now,
+      source: user.source,
     })
 
     await db.send(
@@ -69,6 +70,7 @@ const createUser: Handler<'CreateUser'> = async (db, [{ user }]) => {
       phone_number: user.phoneNumber,
       telegram_user_id: user.telegramUserID,
       username: user.username,
+      source: user.source,
     }
   } catch (error) {
     throw new Error(`failed to create user: ${error}`)

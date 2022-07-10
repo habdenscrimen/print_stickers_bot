@@ -50,6 +50,7 @@ export const createUser: Service<'CreateUser'> = async ({ repos, logger }, [{ us
         lastName: user.last_name!,
         phoneNumber: user.phone_number!,
         username: user.username!,
+        source: user.source!,
       },
     })
     log.debug(`user created`)
@@ -64,7 +65,7 @@ export const createUser: Service<'CreateUser'> = async ({ repos, logger }, [{ us
   }
 }
 
-const isContactSaved: Service<'IsContactSaved'> = async ({ logger, repos }, [{ ctx }]) => {
+const isContactSaved: Service<'IsContactSaved'> = async ({ logger }, [{ ctx }]) => {
   let log = logger.child({ name: 'user-isContactSaved' })
 
   try {

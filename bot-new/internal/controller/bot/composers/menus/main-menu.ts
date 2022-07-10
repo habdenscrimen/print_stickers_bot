@@ -26,37 +26,20 @@ export const mainMenuText = `
 `
 
 const createOrderInstructionText = `
-🚀 Надішліть потрібні стікери\\!
-
-ℹ️ Розмір надрукованого стікера — *4х4* см\\.
-\\(Якщо стікер у Телеграмі менший, то і надрукований відповідно буде меншим\\.\\)
-
-*Зверніть увагу*, що чим більше стікерів Ви замовите, тим нижчою буде ціна\\:
-👉 1\\-5 — 18 грн\\/шт
-👉 6\\-10 — 16 грн\\/шт
-👉 від 11 — 14 грн\\/шт
-🚚 від 25 — безкоштовна доставка
-
-Надсилайте стікери прямо зараз 👇
+Надішліть стікери, які хочете надрукувати 👇
 `
 
 export const mainMenu = new Menu<BotContext>('main-menu')
   .text(`🚀 Замовити стікери`, async (ctx) => {
-    await ctx.editMessageText(createOrderInstructionText)
-
-    ctx.menu.nav('create-order-submenu')
+    await ctx.reply(createOrderInstructionText)
 
     // set step to SelectStickers
     const session = await ctx.session
     session.step = SessionSteps.SelectStickers
   })
   .row()
-  .submenu(`❓ Поставити питання`, 'faq-submenu')
+  .submenu(`❓ Є питання`, 'faq-submenu')
   .row()
-// .text(`✉️ Мої замовлення`, async (ctx) => {
-//   await ctx.reply('Мої замовлення')
-// })
-// .row()
 
 const faqSubmenu = new Menu<BotContext>('faq-submenu')
   .url(`📃 Список популярних питань`, faqDocURL)
@@ -66,17 +49,4 @@ const faqSubmenu = new Menu<BotContext>('faq-submenu')
   .back(`⬅️ Назад`)
   .row()
 
-const createOrderSubmenu = new Menu<BotContext>('create-order-submenu')
-  .text(`⬅️ Назад`, async (ctx) => {
-    await ctx.editMessageText(mainMenuText)
-
-    ctx.menu.back()
-
-    // set step to MainMenu
-    const session = await ctx.session
-    session.step = SessionSteps.MainMenu
-  })
-  .row()
-
 mainMenu.register(faqSubmenu)
-mainMenu.register(createOrderSubmenu)

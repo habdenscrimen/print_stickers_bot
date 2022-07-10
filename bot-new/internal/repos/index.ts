@@ -11,6 +11,7 @@ interface CreateUserOptions {
   phoneNumber: string
   firstName: string
   lastName: string
+  source: string
 }
 
 export interface UserRepo {

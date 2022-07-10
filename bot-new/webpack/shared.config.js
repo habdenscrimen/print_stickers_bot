@@ -1,7 +1,6 @@
 const path = require('path')
 // const nodeExternals = require('webpack-node-externals')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
-const Dotenv = require('dotenv-webpack')
 
 module.exports = {
   entry: {
@@ -36,10 +35,5 @@ module.exports = {
       },
     ],
   },
-  plugins: [
-    new CleanWebpackPlugin(),
-    new Dotenv({
-      safe: true,
-    }),
-  ],
+  plugins: [new CleanWebpackPlugin()],
 }

@@ -23,12 +23,16 @@ export const startCommand: Command = async (ctx) => {
 
     // if no user found, create new user
     if (!currentUser) {
+      // get source from url param
+      const source = ctx.message?.text.split(' ')[1] || 'unknown'
+
       currentUser = await ctx.services.User.CreateUser({
         user: {
           telegram_user_id: userID,
           username: ctx.from!.username,
           first_name: ctx.from!.first_name,
           last_name: ctx.from?.last_name,
+          source,
         },
       })
       logger = logger.child({ user: currentUser })

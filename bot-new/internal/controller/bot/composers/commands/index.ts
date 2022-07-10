@@ -8,7 +8,7 @@ export const commandsComposer = new Composer<BotContext>()
 commandsComposer.on('::bot_command', async (ctx) => {
   const command = ctx.message!.text!.substring(1)
 
-  if (command === 'start') {
+  if (command.includes('start')) {
     // @ts-ignore
     await startCommand(ctx)
   }

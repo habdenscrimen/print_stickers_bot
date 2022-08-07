@@ -14,6 +14,7 @@ export const GetConfig = () => ({
       process.env.NODE_ENV === 'production' ? 'stickasybot' : 'development_print_stickers_bot',
     // faqDocURL: `https://print-telegram-stickers.notion.site/22a245fe0495451ca5614150e2f092ee`,
     // supportBotURL: `https://t.me/stickasy_support_bot`,
+    adminNotificationsChannelID: -615170844,
   },
 
   log: {
@@ -33,6 +34,13 @@ export const GetConfig = () => ({
       projectToken: process.env.MIXPANEL_PROJECT_TOKEN!,
     },
   },
+
+  promoCodes: [
+    // {
+    //   code: 'keddr',
+    //   discountPercent: 20,
+    // },
+  ],
 })
 
 export type Config = ReturnType<typeof GetConfig>

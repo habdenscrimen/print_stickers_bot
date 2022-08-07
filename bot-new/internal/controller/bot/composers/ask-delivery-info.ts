@@ -76,7 +76,7 @@ const confirmOrderMenu = new Menu<BotContext>('confirm-order-menu')
 
     // reply and delete order in parallel
     await Promise.all([
-      ctx.reply(mainMenuText, { reply_markup: mainMenu }),
+      ctx.reply(mainMenuText(session.order.promoCode), { reply_markup: mainMenu }),
       ctx.services.Order.DeleteOrder({ ctx }),
     ])
   })

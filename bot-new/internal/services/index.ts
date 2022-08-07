@@ -1,5 +1,6 @@
 import { BotContext } from 'internal/controller/bot/context'
 import { User } from 'internal/domain'
+import { PromoCode } from 'internal/domain/promo-code'
 
 export interface Services {
   // Orders: OrdersService
@@ -27,6 +28,7 @@ export interface OrderService {
     stickerCost: number
     stickersCount: number
     price: number
+    promoCode: PromoCode | undefined
   }>
   SaveDeliveryInfo: (options: { ctx: BotContext }) => Promise<void>
   CreateOrder: (options: { ctx: BotContext }) => Promise<void>

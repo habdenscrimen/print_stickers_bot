@@ -1,8 +1,10 @@
 import { User } from 'internal/domain'
+import { PromoCode } from 'internal/domain/promo-code'
 
 export enum SessionSteps {
   FAQ = 'faq',
   MainMenu = 'main-menu',
+  AskPromoCode = 'ask-promo-code',
   SelectStickers = 'select-stickers',
   ConfirmSelectedStickers = 'confirm-selected-stickers',
   RemoveStickerFromOrder = 'remove-sticker-from-order',
@@ -21,6 +23,7 @@ interface Order {
     sourceFileID: string // file id of sticker in the source sticker set, used for adding sticker to bot's sticker set
   }[]
   deliveryInfo: string | undefined
+  promoCode: PromoCode | undefined
 }
 
 export interface SessionState {

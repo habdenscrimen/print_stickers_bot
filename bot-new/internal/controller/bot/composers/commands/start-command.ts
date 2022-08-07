@@ -48,12 +48,20 @@ export const startCommand: Command = async (ctx) => {
 
       // set user source in mixpanel
       ctx.analytics.setUser({ id: userID, source })
+
+      // check that query param is a valid promo code
+      const promoCode = ctx.config.promoCodes.find(({ code }) => code === source)
+
+      // if promo code found, set it in session
+      if (promoCode) {
+        session.order.promoCode = promoCode
+      }
     }
 
     // update user in session
     session.user = currentUser
 
-    await ctx.reply(mainMenuText, { reply_markup: mainMenu })
+    await ctx.reply(mainMenuText(session.order.promoCode), { reply_markup: mainMenu })
   } catch (error) {
     console.log(error)
 

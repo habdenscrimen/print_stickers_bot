@@ -1,11 +1,25 @@
 import { Menu } from '@grammyjs/menu'
+import { PromoCode } from 'internal/domain/promo-code'
 import { BotContext } from '../../context'
 import { SessionSteps } from '../../session'
 
 const faqDocURL = `https://telegra.ph/St%D1%96kasi--pitannya-v%D1%96dpov%D1%96d%D1%96-07-02`
 const supportBotURL = `https://t.me/stickasy_support`
 
-export const mainMenuText = `
+export const mainMenuText = (promoCode?: PromoCode) => {
+  const getPrice = (normalPrice: number, promoCode?: PromoCode) => {
+    return promoCode
+      ? Math.floor(normalPrice - (normalPrice / 100) * promoCode.discountPercent)
+      : normalPrice
+  }
+
+  const price = {
+    level_1: getPrice(18, promoCode),
+    level_2: getPrice(16, promoCode),
+    level_3: getPrice(14, promoCode),
+  }
+
+  return `
 Привіт 👋
 Цей бот друкує стікери з Телеграму\\.
 
@@ -13,17 +27,22 @@ export const mainMenuText = `
 1️⃣ Надсилаєте боту стікери\\.
 2️⃣ Вводите дані доставки Новою Поштою\\.
 3️⃣ Через тиждень ми відправляємо Вам надруковані стікери\\.
-
+${
+  promoCode
+    ? `\n🎉 Ви використали промо\\-код __${promoCode?.code}__ і отримуєте знижку *${promoCode?.discountPercent}%* на перше замовлення\\!\n`
+    : ''
+}
 *Зверніть увагу*, що чим більше стікерів Ви замовите, тим нижчою буде ціна\\:
-👉 1\\-5 — 18 грн\\/шт
-👉 6\\-10 — 16 грн\\/шт
-👉 від 11 — 14 грн\\/шт
+👉 1\\-5 — ${promoCode ? `~18~ ` : ''}${price.level_1} грн\\/шт
+👉 1\\-5 — ${promoCode ? `~16~ ` : ''}${price.level_2} грн\\/шт
+👉 1\\-5 — ${promoCode ? `~14~ ` : ''}${price.level_3} грн\\/шт
 🚚 від 25 — безкоштовна доставка
 
 🇺🇦 *10%* прибутку ЗСУ\\!
 
 Щоб зробити замовлення _\\(або просто поклацати бота 😄\\)_, тисніть на кнопку нижче 👇
 `
+}
 
 const createOrderInstructionText = `
 Надішліть стікери, які хочете надрукувати 👇

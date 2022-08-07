@@ -5,6 +5,7 @@ import CryptoJS from 'crypto-js'
 import { Config } from 'config'
 import { Repos } from 'internal/repos'
 import { Logger } from 'pkg/logger'
+import { PromoCode } from 'internal/domain/promo-code'
 import { OrderService } from '.'
 
 interface OrderServiceOptions {
@@ -192,6 +193,7 @@ const deleteOrder: Service<'DeleteOrder'> = async ({ logger }, [{ ctx }]) => {
       stickers: [],
       stickerSetName: undefined,
       deliveryInfo: undefined,
+      promoCode: session.order.promoCode,
     }
   } catch (error) {
     log = log.child({ error })
@@ -207,16 +209,30 @@ const getOrderInfo: Service<'GetOrderInfo'> = async ({ logger }, [{ ctx }]) => {
     const session = await ctx.session
     const sessionStickers = session.order.stickers
     const stickersCount = sessionStickers.length
+    const { promoCode } = session.order
+
+    // setup function for getting sticker cost based on promo code
+    const getStickerCost = (normalPrice: number, promoCode?: PromoCode) => {
+      return promoCode
+        ? Math.floor(normalPrice - (normalPrice / 100) * promoCode.discountPercent)
+        : normalPrice
+    }
+
+    const stickersCost = {
+      level_1: getStickerCost(18, promoCode),
+      level_2: getStickerCost(16, promoCode),
+      level_3: getStickerCost(14, promoCode),
+    }
 
     // calculate sticker cost
-    let stickerCost = 18
+    let stickerCost = stickersCost.level_1
 
     if (stickersCount < 6) {
-      stickerCost = 18
+      stickerCost = stickersCost.level_1
     } else if (stickersCount < 11) {
-      stickerCost = 16
+      stickerCost = stickersCost.level_2
     } else {
-      stickerCost = 14
+      stickerCost = stickersCost.level_3
     }
 
     // calculate order price
@@ -226,6 +242,7 @@ const getOrderInfo: Service<'GetOrderInfo'> = async ({ logger }, [{ ctx }]) => {
       stickerCost,
       price: orderPrice,
       stickersCount,
+      promoCode,
     }
   } catch (error) {
     log = log.child({ error })
@@ -273,27 +290,33 @@ const createOrder: Service<'CreateOrder'> = async ({ logger, repos, config }, [{
           (sticker) => sticker.sourceFileID,
         ),
         telegram_sticker_set_name: session.order.stickerSetName!,
+        promo_code: session.order.promoCode,
       },
     })
     log.debug(`created order`)
 
     // TODO: send admin notification about new order
+    await ctx.api.sendMessage(
+      ctx.config.bot.adminNotificationsChannelID,
+      `🎉 Нове замовлення\\!`,
+    )
 
     // delete order info from session
     session.order = {
       stickers: [],
       stickerSetName: undefined,
       deliveryInfo: undefined,
+      promoCode: undefined,
     }
 
-    // send facebook purchase event
-    await sendFacebookPurchaseEvent({
-      config,
-      logger,
-      paymentAmount: orderInfo.price,
-      firstName: ctx.from?.first_name || 'Unknown',
-      lastName: ctx.from?.last_name || '-',
-    })
+    // // send facebook purchase event
+    // await sendFacebookPurchaseEvent({
+    //   config,
+    //   logger,
+    //   paymentAmount: orderInfo.price,
+    //   firstName: ctx.from?.first_name || 'Unknown',
+    //   lastName: ctx.from?.last_name || '-',
+    // })
   } catch (error) {
     log = log.child({ error })
     log.error(`failed to create order: ${error}`)

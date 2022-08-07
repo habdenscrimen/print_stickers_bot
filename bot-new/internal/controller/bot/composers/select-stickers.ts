@@ -1,5 +1,6 @@
 import { Menu } from '@grammyjs/menu'
 import { Composer, Keyboard } from 'grammy'
+import { PromoCode } from 'internal/domain/promo-code'
 import { BotContext } from '../context'
 import { SessionSteps } from '../session'
 import { mainMenu, mainMenuText } from './menus/main-menu'
@@ -11,15 +12,31 @@ export const messages = {
   animatedStickerReceived: `Анімовані стікери наразі не підтримуються 😔`,
   duplicateStickerReceived: `Цей стікер уже додано, пропускаю`,
   stickerAdded: `Стікер додано ✅`,
-  finishSelectingStickers: (options: { count: number; price: number; cost: number }) => {
-    const { cost, count, price } = options
+  finishSelectingStickers: (options: {
+    count: number
+    price: number
+    cost: number
+    promoCode?: PromoCode
+  }) => {
+    const { cost, count, price, promoCode } = options
+
+    const getStickerCost = (normalPrice: number, promoCode?: PromoCode) => {
+      return promoCode
+        ? Math.floor(normalPrice - (normalPrice / 100) * promoCode.discountPercent)
+        : normalPrice
+    }
+
+    const stickersCost = {
+      level_2: getStickerCost(16, promoCode),
+      level_3: getStickerCost(14, promoCode),
+    }
 
     let motivationalText = ``
 
     if (count < 6) {
-      motivationalText = `Ви можете обрати 6 стікерів, і тоді вартість одного стікера зменшиться до *16 грн\\/шт*\\.`
+      motivationalText = `Ви можете обрати 6 стікерів, і тоді вартість одного стікера зменшиться до *${stickersCost.level_2} грн\\/шт*\\.`
     } else if (count < 11) {
-      motivationalText = `Ви можете обрати 11 стікерів, і тоді вартість одного стікера зменшиться до *14 грн\\/шт*\\.`
+      motivationalText = `Ви можете обрати 11 стікерів, і тоді вартість одного стікера зменшиться до *${stickersCost.level_3} грн\\/шт*\\.`
     } else if (count < 25) {
       motivationalText = `Ви можете обрати 25 стікерів, і тоді за доставку заплатимо ми\\.`
     }
@@ -118,7 +135,7 @@ export const editSelectedStickersMenu = new Menu<BotContext>('edit-selected-stic
 
     // reply and delete order in parallel
     await Promise.all([
-      ctx.reply(mainMenuText, { reply_markup: mainMenu }),
+      ctx.reply(mainMenuText(session.order.promoCode), { reply_markup: mainMenu }),
       ctx.services.Order.DeleteOrder({ ctx }),
     ])
 
@@ -135,6 +152,7 @@ const finishSelectingStickersMenu = new Menu<BotContext>('finish-selecting-stick
       cost: orderInfo.stickerCost,
       price: orderInfo.price,
       count: orderInfo.stickersCount,
+      promoCode: orderInfo.promoCode,
     })
 
     await ctx.reply(message, { reply_markup: editSelectedStickersMenu })

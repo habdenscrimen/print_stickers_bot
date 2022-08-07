@@ -17,6 +17,11 @@ export type OrderStatus =
 
 export type OrderEvent = Record<OrderStatus, string>
 
+type PromoCode = {
+  code: string
+  discountPercent: number
+}
+
 export interface Order {
   id: string
   user_id: number
@@ -45,6 +50,9 @@ export interface Order {
 
   // events
   events: OrderEvent
+
+  // promo code
+  promo_code?: PromoCode
 
   // timestamps
   created_at: string

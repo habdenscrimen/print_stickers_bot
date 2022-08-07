@@ -49,6 +49,7 @@ export const NewBot = async (options: Options): Promise<Bot<BotContext, Api<RawA
           stickers: [],
           stickerSetName: undefined,
           deliveryInfo: undefined,
+          promoCode: undefined,
         },
         user: undefined,
       }),

@@ -1,4 +1,5 @@
-import { Order, OrderEvent, OrderStatus, User } from 'internal/domain'
+import { User } from 'internal/domain'
+import { PromoCode } from 'internal/domain/promo-code'
 
 export interface Repos {
   User: UserRepo
@@ -40,6 +41,7 @@ interface CreateOrderOptions {
     method: 'nova_poshta'
   }
   stickers_cost: number
+  promo_code?: PromoCode
 }
 
 export interface OrderRepo {

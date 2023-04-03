@@ -142,15 +142,24 @@ export const newBot = (options: BotOptions) => {
     ctx.texts = texts
     ctx.menus = menus
 
-    if (config.bot.disabled) {
-      await ctx.reply(
-        `Перепрошую, наразі виконуються технічні роботи, тому бот тимчасово недоступний. Спробуйте трохи пізніше.`,
-      )
-      return next()
-    }
-
+    // disable bot
+    await ctx.reply(
+      `Ми вимкнули цього бота. Будь ласка, користуйтесь @stickasybot — той самий бот, тільки швидший 🚀`,
+    )
     return next()
+
+    // if (config.bot.disabled) {
+    //   await ctx.reply(
+    //     `Перепрошую, наразі виконуються технічні роботи, тому бот тимчасово недоступний. Спробуйте трохи пізніше.`,
+    //   )
+    //   return next()
+    // }
+
+    // return next()
   })
+
+  // disable bot
+  return bot
 
   // use menus
   bot.use(menus.Main.Main)
@@ -165,10 +174,10 @@ export const newBot = (options: BotOptions) => {
   // use transformers
   bot.api.config.use(deleteMessagesTransformer(bot.api))
 
-  // if bot is disabled, don't handle any message
-  if (config.bot.disabled) {
-    return bot
-  }
+  // // if bot is disabled, don't handle any message
+  // if (config.bot.disabled) {
+  //   return bot
+  // }
 
   // use commands
   bot.command(

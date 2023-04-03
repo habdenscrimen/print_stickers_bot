@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {                        
+    "target": "es6",
+    "module": "commonjs",
+    "rootDir": ".",
+    "baseUrl": ".",
+    "strict": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true, 
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "paths": {
+      "internal/*": ["./internal/*"],
+      "config/*": ["./config/*"],
+      "pkg/*": ["./pkg/*"],
+    }
+  },
+  "exclude":[
+    "./node_modules",
+  ],
+}

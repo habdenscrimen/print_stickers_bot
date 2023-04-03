@@ -1,5 +1,5 @@
 import getRawBody from 'raw-body'
-import { nanoid } from 'nanoid'
+// import { nanoid } from 'nanoid'
 import fs from 'fs'
 import { Services } from '../services'
 import { Context } from '../context'
@@ -12,52 +12,69 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (
 ) => {
   const logger = context.logger.child({ name: 'createLayoutsCommand' })
 
-  // get confirmed order ids
-  const orderIDs = await context.db.GetOrderIDsByStatus(['confirmed'])
-  logger.debug('got confirmed order ids', { orderIDs })
+  // // get confirmed order ids
+  // const orderIDs = await context.db.GetOrderIDsByStatus(['confirmed'])
+  // logger.debug('got confirmed order ids', { orderIDs })
 
-  if (orderIDs.length === 0) {
-    logger.info('✅ no confirmed orders found')
-    return
-  }
+  // if (orderIDs.length === 0) {
+  //   logger.info('✅ no confirmed orders found')
+  //   return
+  // }
 
-  // process and upload images for every order
-  const processAndUploadImagesPromise = orderIDs.map(async (orderID) => {
-    // get order file ids
-    const order = await context.db.GetOrder(orderID)
-    const orderTelegramFileIDs = order.telegram_sticker_file_ids
-    logger.debug('got order telegram file ids', { orderID, orderTelegramFileIDs })
+  // // process and upload images for every order
+  // const processAndUploadImagesPromise = orderIDs.map(async (orderID) => {
+  // // get order file ids
+  // const order = await context.db.GetOrder(orderID)
+  // const orderTelegramFileIDs = order.telegram_sticker_file_ids
+  // logger.debug('got order telegram file ids', { orderID, orderTelegramFileIDs })
 
-    // get order files from telegram
-    const telegramFilesPromise = orderTelegramFileIDs.map((fileID) =>
-      services.Telegram.GetFileBuffer(fileID),
-    )
-    const files = await Promise.all(telegramFilesPromise)
-    logger.debug('got order files', { orderID })
+  const filePaths = [
+    'https://api.telegram.org/file/bot5471027970:AAFnaJmCmj521eFuGqcoxXM6JWTQ9si7RHc/stickers/file_2005',
+    'https://api.telegram.org/file/bot5471027970:AAFnaJmCmj521eFuGqcoxXM6JWTQ9si7RHc/stickers/file_1793',
+    'https://api.telegram.org/file/bot5471027970:AAFnaJmCmj521eFuGqcoxXM6JWTQ9si7RHc/stickers/file_1792',
+    'https://api.telegram.org/file/bot5471027970:AAFnaJmCmj521eFuGqcoxXM6JWTQ9si7RHc/stickers/file_1791',
+    'https://api.telegram.org/file/bot5471027970:AAFnaJmCmj521eFuGqcoxXM6JWTQ9si7RHc/stickers/file_1795',
+    'https://api.telegram.org/file/bot5471027970:AAFnaJmCmj521eFuGqcoxXM6JWTQ9si7RHc/stickers/file_1794',
+    //
+    'https://api.telegram.org/file/bot5471027970:AAFnaJmCmj521eFuGqcoxXM6JWTQ9si7RHc/stickers/file_1930',
+    'https://api.telegram.org/file/bot5471027970:AAFnaJmCmj521eFuGqcoxXM6JWTQ9si7RHc/stickers/file_1939',
+    'https://api.telegram.org/file/bot5471027970:AAFnaJmCmj521eFuGqcoxXM6JWTQ9si7RHc/stickers/file_1934',
+    'https://api.telegram.org/file/bot5471027970:AAFnaJmCmj521eFuGqcoxXM6JWTQ9si7RHc/stickers/file_1937',
+    'https://api.telegram.org/file/bot5471027970:AAFnaJmCmj521eFuGqcoxXM6JWTQ9si7RHc/stickers/file_1938',
+    'https://api.telegram.org/file/bot5471027970:AAFnaJmCmj521eFuGqcoxXM6JWTQ9si7RHc/stickers/file_1940',
+    'https://api.telegram.org/file/bot5471027970:AAFnaJmCmj521eFuGqcoxXM6JWTQ9si7RHc/stickers/file_1941',
+  ]
 
-    // prepare order images for printing
-    const preparedImagesPromise = files.map((file) =>
-      prepareFileForPrint(context, services, file),
-    )
-    const printReadyImages = await Promise.all(preparedImagesPromise)
-    logger.debug('prepared images for printing', { orderID })
+  // get order files from telegram
+  const telegramFilesPromise = filePaths.map((filePath) =>
+    services.Telegram.GetFileBuffer(filePath),
+  )
+  const files = await Promise.all(telegramFilesPromise)
+  // logger.debug('got order files', { orderID })
 
-    // // upload images to storage
-    // const uploadFilesPromise = printReadyImages.map(({ file }, index) => {
-    //   const path = `${context.config.storage.paths.printReadyImages}/${orderID}/${index}.svg`
-    //   return context.storage.UploadFile(file, path)
-    // })
-    // await Promise.all(uploadFilesPromise)
-    // logger.debug('uploaded images to storage', { orderID })
+  // prepare order images for printing
+  const preparedImagesPromise = files.map((file) =>
+    prepareFileForPrint(context, services, file),
+  )
+  const printReadyImages = await Promise.all(preparedImagesPromise)
+  // logger.debug('prepared images for printing', { orderID })
 
-    return printReadyImages
-  })
+  // // upload images to storage
+  // const uploadFilesPromise = printReadyImages.map(({ file }, index) => {
+  //   const path = `${context.config.storage.paths.printReadyImages}/${orderID}/${index}.svg`
+  //   return context.storage.UploadFile(file, path)
+  // })
+  // await Promise.all(uploadFilesPromise)
+  // logger.debug('uploaded images to storage', { orderID })
 
-  const res = await Promise.all(processAndUploadImagesPromise)
-  logger.info('processed and uploaded images', { orderIDs })
+  // return printReadyImages
+  // })
+
+  // const res = await Promise.all(processAndUploadImagesPromise)
+  // logger.info('processed and uploaded images', { orderIDs })
 
   // create layouts
-  const imagePaths = res.flat().map(({ filePath }) => filePath)
+  const imagePaths = printReadyImages.flat().map(({ filePath }) => filePath)
   const layouts = await createLayouts(context, services, imagePaths)
   logger.info('created layouts', { layouts: layouts.filePaths })
 
@@ -69,33 +86,33 @@ export const createLayoutsCommand: Command<'CreateLayouts'> = async (
   services.File.MoveFiles(layouts.filePaths, randomLayoutsDirectory)
   logger.info('moved layouts to local directory')
 
-  // upload layouts to storage
-  const uploadLayoutsPromise = layouts.files.map(async (file) => {
-    const layoutID = nanoid()
+  // // upload layouts to storage
+  // const uploadLayoutsPromise = layouts.files.map(async (file) => {
+  //   const layoutID = nanoid()
 
-    const { printReadyLayouts } = context.config.storage.paths
-    const path = `${printReadyLayouts}/${now}/${layoutID}.svg`
+  //   const { printReadyLayouts } = context.config.storage.paths
+  //   const path = `${printReadyLayouts}/${now}/${layoutID}.svg`
 
-    await context.storage.UploadFile(file, path)
-    return layoutID
-  })
-  const layoutIDs = await Promise.all(uploadLayoutsPromise)
-  logger.info('uploaded layouts to storage', { layoutIDs })
+  //   await context.storage.UploadFile(file, path)
+  //   return layoutID
+  // })
+  // const layoutIDs = await Promise.all(uploadLayoutsPromise)
+  // logger.info('uploaded layouts to storage', { layoutIDs })
 
-  // update orders in database
-  const updateOrdersPromise = orderIDs.map(async (orderID) => {
-    // get order events
-    const { events } = await context.db.GetOrder(orderID)
+  // // update orders in database
+  // const updateOrdersPromise = orderIDs.map(async (orderID) => {
+  //   // get order events
+  //   const { events } = await context.db.GetOrder(orderID)
 
-    // add `layout_ready` event to order
-    await context.db.UpdateOrder(orderID, {
-      layouts_ids: layoutIDs,
-      status: 'layout_ready',
-      events: { ...events, layout_ready: new Date().toISOString() },
-    })
-  })
-  await Promise.all(updateOrdersPromise)
-  logger.info('updated orders in database', { orderIDs })
+  //   // add `layout_ready` event to order
+  //   await context.db.UpdateOrder(orderID, {
+  //     layouts_ids: layoutIDs,
+  //     status: 'layout_ready',
+  //     events: { ...events, layout_ready: new Date().toISOString() },
+  //   })
+  // })
+  // await Promise.all(updateOrdersPromise)
+  // logger.info('updated orders in database', { orderIDs })
 
   // delete temp files
   services.File.DeleteTempFileDirectory()
